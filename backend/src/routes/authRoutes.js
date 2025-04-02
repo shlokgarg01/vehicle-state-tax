@@ -7,7 +7,7 @@ import {
   deleteUser,
   updateUser,
 } from "../controllers/authController.js";
-import { protect, admin, manager } from "../middlewares/authMiddlewares.js";
+import { protect, authorizeRoles } from "../middlewares/authMiddlewares.js";
 
 const router = express.Router();
 
@@ -21,7 +21,7 @@ router.post("/login", asyncHandler(loginUser));
 router.get(
   "/admin",
   protect,
-  admin,
+  authorizeRoles("admin"),
   asyncHandler((req, res) => {
     res.json({ message: "Welcome, Admin!" });
   })
@@ -31,19 +31,29 @@ router.get(
 router.get(
   "/manager-dashboard",
   protect,
-  manager,
+  authorizeRoles("manger"),
   asyncHandler((req, res) => {
     res.json({ message: "Welcome to the manager dashboard" });
   })
 ); // Token required
 
 // Admin routes
-router.delete("/delete/:userId", protect, admin, asyncHandler(deleteUser));
-router.put("/update/:userId", protect, admin, asyncHandler(updateUser));
+router.delete(
+  "/delete/:userId",
+  protect,
+  authorizeRoles("admin"),
+  asyncHandler(deleteUser)
+);
+router.put(
+  "/update/:userId",
+  protect,
+  authorizeRoles("admin"),
+  asyncHandler(updateUser)
+);
 router.put(
   "/assign-manager/:userId",
   protect,
-  admin,
+  authorizeRoles("admin"),
   asyncHandler(assignManagerRole)
 );
 

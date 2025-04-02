@@ -32,35 +32,16 @@ const protect = asyncHandler(async (req, res, next) => {
   }
 });
 
-// Middleware to allow access only for admins
-const admin = (req, res, next) => {
-  if (req.user && req.user.role === "admin") {
+const authorizeRoles = (...roles) => {
+  return (req, res, next) => {
+    if (!req.user || !roles.includes(req.user.role)) {
+      res.status(403);
+      throw new Error(`Access denied, required roles: ${roles.join(", ")}`);
+    }
     next();
-  } else {
-    res.status(403);
-    throw new Error("Access denied, admin only");
-  }
+  };
 };
 
-// Middleware to allow access only for managers
-const manager = (req, res, next) => {
-  if (req.user && req.user.role === "manager") {
-    next();
-  } else {
-    res.status(403);
-    throw new Error("Access denied, manager only");
-  }
-};
-
-// Middleware to check for multiple roles (admin or manager)
-const adminOrManager = (req, res, next) => {
-  if (req.user && (req.user.role === "admin" || req.user.role === "manager")) {
-    next();
-  } else {
-    res.status(403);
-    throw new Error("Access denied, admin or manager only");
-  }
-};
 // change --> single for function
 
-export { protect, admin, manager, adminOrManager };
+export { protect, authorizeRoles };

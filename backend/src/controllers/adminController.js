@@ -128,7 +128,7 @@ export {
   resetPassword,
   bulkDeleteUsers,
   sendNotification,
-  increaseManagerLimit,
+  // increaseManagerLimit,
   // blocksUser,
-  softDeleteUser,
+  // softDeleteUser,
 };
