@@ -1,14 +1,15 @@
 import mongoose from "mongoose";
+import { TAX_MODES } from "../constants/constants.js";
 
 // Common Tax Schema
 const taxSchema = new mongoose.Schema(
   {
     vehicleNumber: { type: String, required: true }, // Changed to String for flexibility
     mobileNumber: { type: String, required: true }, // Changed to String to support different formats
-    seatCapacity: { type: Number, enum: ["4+1", "5+1", "6+1"] }, // seating capacity change by admin
+    seatCapacity: { type: Number }, // seating capacity change by admin
     taxMode: {
       type: String,
-      enum: ["yearly", "days", "quarterly"],
+      enum: Object.values(TAX_MODES),
       required: true,
     },
     taxFromTo: {
@@ -37,7 +38,7 @@ const borderTaxSchema = new mongoose.Schema({
 const roadTaxSchema = new mongoose.Schema({
   taxMode: {
     type: String,
-    enum: ["yearly", "quarterly"],
+    enum: [TAX_MODES.YEARLY, TAX_MODES.QUARTERLY],
     required: true,
   },
   chassisNumber: { type: String, required: true },
@@ -47,7 +48,7 @@ const roadTaxSchema = new mongoose.Schema({
 const allIndiaPermitSchema = new mongoose.Schema({
   taxMode: {
     type: String,
-    enum: ["yearly"],
+    enum: [TAX_MODES.YEARLY],
     required: true,
   },
   chassisNumber: { type: String, required: true },
@@ -57,7 +58,7 @@ const allIndiaPermitSchema = new mongoose.Schema({
 const allIndiaTaxSchema = new mongoose.Schema({
   taxMode: {
     type: String,
-    enum: ["yearly", "quarterly"],
+    enum: [TAX_MODES.YEARLY, TAX_MODES.QUARTERLY],
     required: true,
   },
   chassisNumber: { type: String, required: true },

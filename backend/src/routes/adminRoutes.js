@@ -11,14 +11,17 @@ import {
   // blockUser,
   // softDeleteUser,
 } from "../controllers/adminController.js";
-import { protect, authorizeRoles } from "../middlewares/authMiddlewares.js";
+import {
+  isAuthenticatedUser,
+  authorizeRoles,
+} from "../middlewares/authMiddlewares.js";
 
 const adminRoutes = express.Router();
 
 // View all users
 adminRoutes.get(
   "/users",
-  protect,
+  isAuthenticatedUser,
   authorizeRoles("admin"),
   asyncHandler(viewUsers)
 );
@@ -26,7 +29,7 @@ adminRoutes.get(
 // Search/filter users
 adminRoutes.get(
   "/users/search",
-  protect,
+  isAuthenticatedUser,
   authorizeRoles("admin"),
   asyncHandler(searchUsers)
 );
@@ -34,7 +37,7 @@ adminRoutes.get(
 // View managers
 adminRoutes.get(
   "/managers",
-  protect,
+  isAuthenticatedUser,
   authorizeRoles("admin"),
   asyncHandler(viewManagers)
 );
@@ -42,7 +45,7 @@ adminRoutes.get(
 // Reset user password
 adminRoutes.put(
   "/reset-password/:userId",
-  protect,
+  isAuthenticatedUser,
   authorizeRoles("admin"),
   asyncHandler(resetPassword)
 );
@@ -50,7 +53,7 @@ adminRoutes.put(
 // Bulk delete users
 adminRoutes.post(
   "/bulk-delete",
-  protect,
+  isAuthenticatedUser,
   authorizeRoles("admin"),
   asyncHandler(bulkDeleteUsers)
 );
@@ -58,7 +61,7 @@ adminRoutes.post(
 // Send system notifications
 adminRoutes.post(
   "/send-notification",
-  protect,
+  isAuthenticatedUser,
   authorizeRoles("admin"),
   asyncHandler(sendNotification)
 );

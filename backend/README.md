@@ -33,3 +33,7 @@ node-jwt-auth/
 clone the repository
 create new branch 
 new branch --> cmd -> npm install
+
+pagination
+search 
+filter
