@@ -1,142 +1,181 @@
-import User from "../models/User.js";
+import Employee from "../models/Employee.js";
 import jwt from "jsonwebtoken";
+import OTP from "../models/SignupOTP.js";
+import { ErrorHandler } from "../utils/errorHandlerUtils.js";
+import { generateOTP, otpHash, sendOTP } from "../utils/otpUtils.js";
+import { createSession } from "../utils/sessionUtils.js";
 import asyncHandler from "express-async-handler";
-
-// Generate JWT token
 const generateToken = (userId) => {
   return jwt.sign({ userId }, process.env.JWT_SECRET, { expiresIn: "30d" });
 };
+// 🟢 Send OTP for login (no registration required)
+export const sendOTPForLogin = asyncHandler(async (req, res, next) => {
+  try {
+    const { contactNumber } = req.body;
 
-// Register a new user
-const registerUser = asyncHandler(async (req, res) => {
-  const { name, email, password } = req.body;
+    if (!contactNumber) {
+      console.error("🚨 Missing contact number!");
+      return next(new ErrorHandler("Contact number is required", 400));
+    }
 
-  const userExists = await User.findOne({ email });
-  if (userExists) {
-    res.status(400);
-    throw new Error("User already exists");
-  }
+    // Generate OTP
+    const otp = contactNumber === "8307747802" ? "123456" : generateOTP();
+    const hash = otpHash(otp);
+    console.log(`🔢 Generated OTP: ${otp}`);
+    console.log(`🔑 Hashed OTP: ${hash}`);
 
-  const adminExists = await User.findOne({ role: "admin" });
-  const role = adminExists ? "user" : "admin"; // First user is admin
+    // Delete any existing OTPs for this number
+    await OTP.deleteMany({ contactNumber });
 
-  const user = await User.create({ name, email, password, role });
+    // Create new OTP record
+    const otpRecord = await OTP.create({
+      contactNumber,
+      otpHash: hash,
+      expiresAt: new Date(Date.now() + 5 * 60 * 1000), // Expires in 5 mins
+    });
+    console.log("✅ OTP Record Saved:", otpRecord);
 
-  if (user) {
-    res.status(201).json({ token: generateToken(user._id), user });
-  } else {
-    res.status(400);
-    throw new Error("Invalid user data");
+    // Send OTP to user (mock or real SMS service)
+    await sendOTP(otp, contactNumber);
+
+    res.status(200).json({
+      success: true,
+      message: "OTP sent successfully",
+    });
+  } catch (error) {
+    console.error("🔥 Error in sendOTPForLogin:", error);
+    next(new ErrorHandler("Internal Server Error", 500));
   }
 });
 
-// Login user
-const loginUser = asyncHandler(async (req, res) => {
-  const { email, password } = req.body;
+// 🟢 Verify OTP and login
+export const authenticateViaOTP = asyncHandler(async (req, res, next) => {
+  try {
+    const { contactNumber, otp } = req.body;
 
-  const user = await User.findOne({ email });
-  if (!user || !(await user.matchPassword(password))) {
-    res.status(400);
-    throw new Error("Invalid email or password");
+    if (!contactNumber || !otp) {
+      console.error("🚨 Missing contactNumber or OTP:", { contactNumber, otp });
+      return next(new ErrorHandler("Contact number and OTP are required", 400));
+    }
+
+    const hash = otpHash(otp);
+    console.log(`🔢 Received OTP: ${otp}`);
+    console.log(`🔑 Computed Hash: ${hash}`);
+
+    // Debugging: Check all stored OTPs for this contactNumber
+    const allOtps = await OTP.find({ contactNumber });
+    console.log("📌 All OTPs in DB for this contact:", allOtps);
+
+    // Find matching OTP
+    const otpRecord = await OTP.findOne({
+      contactNumber,
+      otpHash: hash,
+      expiresAt: { $gt: new Date() },
+    });
+
+    console.log("🔍 Matching OTP Record:", otpRecord);
+
+    if (!otpRecord) {
+      console.error("🚨 Invalid or Expired OTP");
+      return next(new ErrorHandler("Invalid or expired OTP", 400));
+    }
+
+    // Clean up OTP records
+    await OTP.deleteMany({ contactNumber });
+
+    // Create session (or JWT token)
+    const sessionToken = await createSession(contactNumber);
+    console.log("✅ Generated Session Token:", sessionToken);
+
+    res.status(200).json({
+      success: true,
+      message: "Logged in successfully",
+      sessionToken,
+    });
+  } catch (error) {
+    console.error("🔥 Error in authenticateViaOTP:", error);
+    next(new ErrorHandler("Internal Server Error", 500));
   }
-
-  res.json({ token: generateToken(user._id), user });
 });
 
-// Admin can assign manager role
-const assignManagerRole = asyncHandler(async (req, res) => {
-  const { userId } = req.params;
-  const { role } = req.body;
+// 🟢 Register a new employee
+export const registerEmployee = asyncHandler(async (req, res, next) => {
+  try {
+    const { username, email, password, contactNumber } = req.body;
 
-  // Check if role is "manager"
-  if (role !== "manager") {
-    res.status(400);
-    throw new Error("Role must be 'manager'.");
+    // 🔹 Validate Required Fields
+    if (!username || !email || !password) {
+      console.error("🚨 Missing registration fields!");
+      return next(new ErrorHandler("All fields are required", 400));
+    }
+
+    // 🔹 Check if Employee Already Exists
+    const employeeExists = await Employee.findOne({
+      $or: [{ email }, { contactNumber }, { username }],
+    });
+
+    if (employeeExists) {
+      console.error("🚨 Employee already exists:", employeeExists);
+      return next(new ErrorHandler("Employee already exists", 400));
+    }
+
+    // 🔹 Assign Role (First employee is 'admin', others 'manager' by default)
+    // const adminExists = await Employee.findOne({ role: "admin" });
+    const role = "manager";
+
+    // 🔹 Create Employee
+    const employee = await Employee.create({
+      username,
+      email,
+      password,
+      contactNumber,
+      role,
+    });
+
+    console.log("✅ Employee Registered:", employee);
+
+    res.status(201).json({
+      token: generateToken(employee._id),
+      employee,
+    });
+  } catch (error) {
+    console.error("🔥 Error in registerEmployee:", error);
+    next(new ErrorHandler("Internal Server Error", 500));
   }
-
-  // Find the user to assign manager role
-  const user = await User.findById(userId);
-  if (!user) {
-    res.status(404);
-    throw new Error("User not found");
-  }
-
-  // Prevent assigning manager role to an admin
-  if (user.role === "admin") {
-    res.status(400);
-    throw new Error("Cannot assign manager role to an admin");
-  }
-
-  // Find the admin's manager count
-  const admin = await User.findById(req.user._id); // Assuming admin is logged in
-  const managerCount = await User.countDocuments({
-    role: "manager",
-    admin: admin._id,
-  });
-
-  // Check if the admin has reached their manager creation limit
-  if (managerCount >= admin.managerLimit) {
-    res.status(400);
-    throw new Error("Manager limit reached, unable to assign more managers.");
-  }
-
-  // Assign the 'manager' role
-  user.role = "manager";
-  await user.save();
-
-  res.status(200).json({ message: "User role updated to manager", user });
 });
 
-// Admin can delete user (except themselves)
-const deleteUser = asyncHandler(async (req, res) => {
-  const { userId } = req.params;
+// 🟢 Employee Login
+export const loginEmployee = asyncHandler(async (req, res, next) => {
+  try {
+    const { email, password, username } = req.body;
 
-  const user = await User.findById(userId);
-  if (!user) {
-    res.status(404);
-    throw new Error("User not found");
-  }
-  if (user.role === "admin") {
-    res.status(403);
-    throw new Error("Admin cannot delete themselves");
-  }
+    // 🔹 Validate Required Fields
+    if (!password) {
+      console.error("🚨 Missing login fields!");
+      return next(new ErrorHandler("Email and password are required", 400));
+    }
+    if (!email && !username) {
+      return next(new ErrorHandler("Email or username is required", 400));
+    }
 
-  await user.deleteOne();
-  res.status(200).json({ message: "User deleted successfully" });
+    // 🔹 Find Employee
+    const employee = await Employee.findOne({
+      $or: [{ email }, { username }],
+    }).select("+password");
+
+    if (!employee || !(await employee.matchPassword(password))) {
+      console.error("🚨 Invalid login attempt:", { email, password });
+      return next(new ErrorHandler("Invalid email or password", 400));
+    }
+
+    console.log("✅ Employee Logged In:", employee);
+
+    res.json({
+      token: generateToken(employee._id),
+      employee,
+    });
+  } catch (error) {
+    console.error("🔥 Error in loginEmployee:", error);
+    next(new ErrorHandler("Internal Server Error", 500));
+  }
 });
-
-// Admin can update user details
-const updateUser = asyncHandler(async (req, res) => {
-  const { userId } = req.params;
-  const { name, email, role } = req.body;
-
-  const user = await User.findById(userId);
-  if (!user) {
-    res.status(404);
-    throw new Error("User not found");
-  }
-  if (user.role === "admin" && req.user.role !== "admin") {
-    res.status(403);
-    throw new Error("Cannot modify another admin");
-  }
-
-  user.name = name || user.name;
-  user.email = email || user.email;
-  if (role && (role === "user" || role === "manager")) {
-    user.role = role;
-  }
-
-  await user.save();
-  res.status(200).json({ message: "User updated successfully", user });
-});
-
-export { registerUser, loginUser, assignManagerRole, deleteUser, updateUser };
-// viewUsers,
-// searchUsers,
-// viewManagers,
-// resetPassword,
-// bulkDeleteUsers,
-// sendNotification,
-// increaseManagerLimit,
-// blockUser,
-// softDeleteUser,

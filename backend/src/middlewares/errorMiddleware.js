@@ -1,6 +1,10 @@
-import ErrorHandler from "../utils/errorHandlerUtils.js";
+import { ErrorHandler } from "../utils/errorHandlerUtils.js";
 
 const errorHandler = (err, req, res, next) => {
+  if (typeof err === "string") {
+    err = new ErrorHandler(err, 400);
+  }
+
   err.statusCode = err.statusCode || 500;
   err.message = err.message || "Internal Server Error";
 

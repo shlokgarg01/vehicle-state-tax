@@ -22,10 +22,10 @@ app.use(express.json());
 app.use(fileUpload());
 app.use(cookieParser());
 // Routes
-app.use("/api/auth", authRoutes);
-app.use("/api/tax", taxRoutes);
-app.use("/api/banner", bannerRoutes);
-app.use("/api/admin", adminRoutes);
+app.use("/api/v1/auth", authRoutes);
+// app.use("/api/v1/tax", taxRoutes);
+// app.use("/api/v1/banner", bannerRoutes);
+// app.use("/api/v1/admin", adminRoutes);
 // Handle Undefined Routes
 // app.use(notFound);
 // Global Error Handler Middleware (Should be placed last)

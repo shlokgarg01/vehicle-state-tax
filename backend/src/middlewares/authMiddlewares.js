@@ -1,38 +1,30 @@
 import jwt from "jsonwebtoken";
 import asyncHandler from "express-async-handler";
 import User from "../models/User.js";
+import { ErrorHandler } from "../utils/errorHandlerUtils.js";
 
 // Middleware to protect routes with JWT authentication
-const protect = asyncHandler(async (req, res, next) => {
-  let token;
+export const isAuthenticatedUser = asyncHandler(async (req, res, next) => {
+  let token = req.headers["authorization"] || null;
 
-  if (
-    req.headers.authorization &&
-    req.headers.authorization.startsWith("Bearer")
-  ) {
-    try {
-      token = req.headers.authorization.split(" ")[1];
-      const decoded = jwt.verify(token, process.env.JWT_SECRET);
-
-      req.user = await User.findById(decoded.userId).select("-password");
-
-      if (!req.user) {
-        res.status(401);
-        throw new Error("User not found, authorization denied");
-      }
-
-      next();
-    } catch (error) {
-      res.status(401);
-      throw new Error("Invalid or expired token, authorization denied");
-    }
-  } else {
-    res.status(401);
-    throw new Error("No token provided, authorization denied");
+  if (!token) {
+    return next(new ErrorHandler("Please login to access this resource.", 401));
   }
+
+  const decodedData = jwt.verify(token, process.env.JWT_SECRET);
+  const user = await User.findById(decodedData.id);
+
+  if (!user) {
+    return next(
+      new ErrorHandler("Invalid authentication token. Please login.", 401)
+    );
+  }
+
+  req.user = user;
+  next();
 });
 
-const authorizeRoles = (...roles) => {
+export const authorizeRoles = (...roles) => {
   return (req, res, next) => {
     if (!req.user || !roles.includes(req.user.role)) {
       res.status(403);
@@ -44,4 +36,4 @@ const authorizeRoles = (...roles) => {
 
 // change --> single for function
 
-export { protect, authorizeRoles };
+// export { authorizeRoles };

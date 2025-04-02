@@ -1,55 +1,43 @@
 import mongoose from "mongoose";
 import bcrypt from "bcryptjs";
+import mongooseDelete from "mongoose-delete";
+
 const Schema = mongoose.Schema;
-// Role Enum for simplicity
-const roles = ["manager", "user", "admin"];
 
 const userSchema = new Schema({
-  name: {
+  contactNumber: {
     type: String,
-    required: true,
-    // unique: true,
-  },
-  email: {
-    type: String,
-    required: true,
+    required: [true, "Please enter your Contact Number."],
     unique: true,
-    lowercase: true,
-    trim: true, // Clean up any extra spaces
+    validate: {
+      validator: function (number) {
+        return /^[1-9][0-9]{9}$/g.test(number);
+      },
+      message: "Provided Contact Number is invalid.",
+    },
   },
+
   password: {
     type: String,
     required: true,
+    select: false, // Hide password by default
   },
-  role: {
-    type: String,
-    enum: roles,
-    default: "user",
-  },
-  isBlocked: { type: Boolean, default: false },
-  isDeleted: {
-    type: Boolean,
-    default: false, // Default is not deleted
-  },
-  managerLimit: { type: Number, default: 5 },
-});
-// Password hash middleware
-userSchema.pre("save", async function (next) {
-  if (!this.isModified("password")) {
-    return next();
-  }
-  this.password = await bcrypt.hash(this.password, 10);
 });
 
-// Method to compare entered password with hashed password
+// 🔹 Hash Password Before Saving
+userSchema.pre("save", async function (next) {
+  if (!this.isModified("password")) return next();
+  this.password = await bcrypt.hash(this.password, 10);
+  next();
+});
+
+// 🔹 Compare Password
 userSchema.methods.matchPassword = async function (enteredPassword) {
   return await bcrypt.compare(enteredPassword, this.password);
 };
 
+// 🔹 Soft Delete Plugin
+userSchema.plugin(mongooseDelete, { overrideMethods: "all", deletedAt: true });
+
 const User = mongoose.model("User", userSchema);
 export default User;
-// admin (Full access)
-
-// manager (Limited access, controlled by the admin)
-
-// user (Regular user with restricted access)
