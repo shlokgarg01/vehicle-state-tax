@@ -3,45 +3,47 @@ import jwt from "jsonwebtoken";
 import OTP from "../models/SignupOTP.js";
 import { ErrorHandler } from "../utils/errorHandlerUtils.js";
 import { generateOTP, otpHash, sendOTP } from "../utils/otpUtils.js";
-import { createSession } from "../utils/sessionUtils.js";
+
 import asyncHandler from "express-async-handler";
-const generateToken = (userId) => {
-  return jwt.sign({ userId }, process.env.JWT_SECRET, { expiresIn: "30d" });
+import bcrypt from "bcryptjs";
+import User from "../models/User.js";
+const generateToken = (user) => {
+  return jwt.sign(
+    { userId: user._id, role: user.role, contactNumber: user.contactNumber }, // Include role in the payload
+    process.env.JWT_SECRET,
+    { expiresIn: "30d" }
+  );
 };
+
 // 🟢 Send OTP for login (no registration required)
 export const sendOTPForLogin = asyncHandler(async (req, res, next) => {
   try {
     const { contactNumber } = req.body;
 
     if (!contactNumber) {
-      console.error("🚨 Missing contact number!");
       return next(new ErrorHandler("Contact number is required", 400));
     }
 
-    // Generate OTP
     const otp = contactNumber === "8307747802" ? "123456" : generateOTP();
     const hash = otpHash(otp);
+
     console.log(`🔢 Generated OTP: ${otp}`);
     console.log(`🔑 Hashed OTP: ${hash}`);
 
-    // Delete any existing OTPs for this number
+    // Delete existing OTPs
     await OTP.deleteMany({ contactNumber });
 
-    // Create new OTP record
+    // Store OTP in DB
     const otpRecord = await OTP.create({
       contactNumber,
       otpHash: hash,
-      expiresAt: new Date(Date.now() + 5 * 60 * 1000), // Expires in 5 mins
+      expiresAt: new Date(Date.now() + 5 * 60 * 1000),
     });
-    console.log("✅ OTP Record Saved:", otpRecord);
 
-    // Send OTP to user (mock or real SMS service)
+    console.log("✅ OTP Record Saved:", otpRecord);
     await sendOTP(otp, contactNumber);
 
-    res.status(200).json({
-      success: true,
-      message: "OTP sent successfully",
-    });
+    res.status(200).json({ success: true, message: "OTP sent successfully" });
   } catch (error) {
     console.error("🔥 Error in sendOTPForLogin:", error);
     next(new ErrorHandler("Internal Server Error", 500));
@@ -54,7 +56,6 @@ export const authenticateViaOTP = asyncHandler(async (req, res, next) => {
     const { contactNumber, otp } = req.body;
 
     if (!contactNumber || !otp) {
-      console.error("🚨 Missing contactNumber or OTP:", { contactNumber, otp });
       return next(new ErrorHandler("Contact number and OTP are required", 400));
     }
 
@@ -62,11 +63,6 @@ export const authenticateViaOTP = asyncHandler(async (req, res, next) => {
     console.log(`🔢 Received OTP: ${otp}`);
     console.log(`🔑 Computed Hash: ${hash}`);
 
-    // Debugging: Check all stored OTPs for this contactNumber
-    const allOtps = await OTP.find({ contactNumber });
-    console.log("📌 All OTPs in DB for this contact:", allOtps);
-
-    // Find matching OTP
     const otpRecord = await OTP.findOne({
       contactNumber,
       otpHash: hash,
@@ -76,21 +72,24 @@ export const authenticateViaOTP = asyncHandler(async (req, res, next) => {
     console.log("🔍 Matching OTP Record:", otpRecord);
 
     if (!otpRecord) {
-      console.error("🚨 Invalid or Expired OTP");
       return next(new ErrorHandler("Invalid or expired OTP", 400));
     }
 
-    // Clean up OTP records
     await OTP.deleteMany({ contactNumber });
 
-    // Create session (or JWT token)
-    const sessionToken = await createSession(contactNumber);
-    console.log("✅ Generated Session Token:", sessionToken);
+    let user = await User.findOne({ contactNumber });
+    if (!user) {
+      user = await User.create({ contactNumber, role: "user" });
+    }
+
+    const token = generateToken(user);
+    console.log("✅ Generated JWT Token:", token);
 
     res.status(200).json({
       success: true,
       message: "Logged in successfully",
-      sessionToken,
+      token,
+      user,
     });
   } catch (error) {
     console.error("🔥 Error in authenticateViaOTP:", error);
@@ -99,43 +98,47 @@ export const authenticateViaOTP = asyncHandler(async (req, res, next) => {
 });
 
 // 🟢 Register a new employee
+
 export const registerEmployee = asyncHandler(async (req, res, next) => {
   try {
     const { username, email, password, contactNumber } = req.body;
 
-    // 🔹 Validate Required Fields
+    // Ensure only admins can register employees
+    // if (!req.user || req.user.role !== "admin") {
+    //   return next(new ErrorHandler("Only admins can register employees", 403));
+    // }
+
+    // Validate required fields
     if (!username || !email || !password) {
-      console.error("🚨 Missing registration fields!");
       return next(new ErrorHandler("All fields are required", 400));
     }
 
-    // 🔹 Check if Employee Already Exists
+    // Check if employee already exists
     const employeeExists = await Employee.findOne({
       $or: [{ email }, { contactNumber }, { username }],
     });
 
     if (employeeExists) {
-      console.error("🚨 Employee already exists:", employeeExists);
       return next(new ErrorHandler("Employee already exists", 400));
     }
 
-    // 🔹 Assign Role (First employee is 'admin', others 'manager' by default)
-    // const adminExists = await Employee.findOne({ role: "admin" });
+    // New employees are always managers
     const role = "manager";
 
-    // 🔹 Create Employee
+    // Create the employee
     const employee = await Employee.create({
       username,
       email,
       password,
       contactNumber,
-      role,
+      role, // Set role to "manager"
     });
 
-    console.log("✅ Employee Registered:", employee);
+    console.log("✅ Manager Registered by Admin:", employee);
 
     res.status(201).json({
-      token: generateToken(employee._id),
+      success: true,
+      message: "Manager registered successfully",
       employee,
     });
   } catch (error) {
@@ -151,8 +154,8 @@ export const loginEmployee = asyncHandler(async (req, res, next) => {
 
     // 🔹 Validate Required Fields
     if (!password) {
-      console.error("🚨 Missing login fields!");
-      return next(new ErrorHandler("Email and password are required", 400));
+      console.error("🚨 Missing password!");
+      return next(new ErrorHandler("Password is required", 400));
     }
     if (!email && !username) {
       return next(new ErrorHandler("Email or username is required", 400));
@@ -161,10 +164,26 @@ export const loginEmployee = asyncHandler(async (req, res, next) => {
     // 🔹 Find Employee
     const employee = await Employee.findOne({
       $or: [{ email }, { username }],
-    }).select("+password");
+    }).select("+password"); // Ensure password is fetched
 
-    if (!employee || !(await employee.matchPassword(password))) {
-      console.error("🚨 Invalid login attempt:", { email, password });
+    if (!employee) {
+      console.error("🚨 Employee not found:", { email, username });
+      return next(new ErrorHandler("Invalid email or password", 400));
+    }
+
+    // 🔹 Ensure password exists in the database
+    if (!employee.password) {
+      console.error(
+        "🚨 Employee password is missing in the database!",
+        employee
+      );
+      return next(new ErrorHandler("Invalid email or password", 400));
+    }
+
+    // 🔹 Compare Password
+    const isMatch = await bcrypt.compare(password, employee.password);
+    if (!isMatch) {
+      console.error("🚨 Password does not match!", { email });
       return next(new ErrorHandler("Invalid email or password", 400));
     }
 
