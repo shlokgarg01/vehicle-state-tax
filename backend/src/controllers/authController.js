@@ -103,11 +103,6 @@ export const registerEmployee = asyncHandler(async (req, res, next) => {
   try {
     const { username, email, password, contactNumber } = req.body;
 
-    // Ensure only admins can register employees
-    // if (!req.user || req.user.role !== "admin") {
-    //   return next(new ErrorHandler("Only admins can register employees", 403));
-    // }
-
     // Validate required fields
     if (!username || !email || !password) {
       return next(new ErrorHandler("All fields are required", 400));
