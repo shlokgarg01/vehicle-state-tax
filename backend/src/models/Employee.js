@@ -36,7 +36,7 @@ const employeeSchema = new Schema({
   },
   password: {
     type: String,
-    required: true,
+    required: [true, "Password is required"],
     select: false, // Do not return password in queries
   },
   role: {
@@ -49,7 +49,6 @@ const employeeSchema = new Schema({
 
 // 🔹 Hash Password Before Saving
 employeeSchema.pre("save", async function (next) {
-  // ✅ Fixed schema name
   if (!this.isModified("password")) return next();
   this.password = await bcrypt.hash(this.password, 10);
   next();

@@ -16,12 +16,6 @@ const userSchema = new Schema({
       message: "Provided Contact Number is invalid.",
     },
   },
-
-  password: {
-    type: String,
-    required: true,
-    select: false, // Hide password by default
-  },
 });
 
 // 🔹 Hash Password Before Saving

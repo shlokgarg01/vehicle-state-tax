@@ -23,9 +23,9 @@ app.use(fileUpload());
 app.use(cookieParser());
 // Routes
 app.use("/api/v1/auth", authRoutes);
-// app.use("/api/v1/tax", taxRoutes);
+app.use("/api/v1/tax", taxRoutes);
 // app.use("/api/v1/banner", bannerRoutes);
-// app.use("/api/v1/admin", adminRoutes);
+app.use("/api/v1/admin", adminRoutes);
 // Handle Undefined Routes
 // app.use(notFound);
 // Global Error Handler Middleware (Should be placed last)
