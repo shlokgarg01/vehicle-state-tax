@@ -18,3 +18,9 @@ export const TAX_MODES = {
   DAILY: "daily",
   CUSTOM: "custom",
 };
+
+export const VEHICLE_TYPES = {
+  LIGHT: "light goods vehicle",
+  MEDIUM: "medium goods vehicle",
+  HEAVY: "heavy goods vehicle",
+};

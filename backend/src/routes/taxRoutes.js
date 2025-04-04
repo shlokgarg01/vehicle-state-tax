@@ -10,7 +10,7 @@ import {
 
 const taxRoutes = express.Router();
 
-// taxRoutes.post("/submit", submitTaxForm); // Submit tax form
+// taxRoutes.post("/submit", submitTaxForm);
 taxRoutes.post("/", createTax); // Create a tax entry
 taxRoutes.get("/", getAllTaxes); // Get all tax records
 taxRoutes.get("/:id", getTaxById); // Get tax by ID

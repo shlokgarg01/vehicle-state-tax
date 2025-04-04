@@ -3,7 +3,6 @@ import dotenv from "dotenv";
 import connectDB from "./config/db.js";
 import authRoutes from "./routes/authRoutes.js";
 import errorHandler from "./middlewares/errorMiddleware.js";
-// import notFound from "./middlewares/notFoundMiddleware.js";
 import taxRoutes from "./routes/taxRoutes.js";
 import bannerRoutes from "./routes/bannerRoutes.js";
 import adminRoutes from "./routes/adminRoutes.js";
@@ -26,11 +25,6 @@ app.use("/api/v1/auth", authRoutes);
 app.use("/api/v1/tax", taxRoutes);
 // app.use("/api/v1/banner", bannerRoutes);
 app.use("/api/v1/admin", adminRoutes);
-// Handle Undefined Routes
-// app.use(notFound);
-// Global Error Handler Middleware (Should be placed last)
 app.use(errorHandler);
 
 export default app;
-// /api/v1/tax --> change
-// /api/v2/tax

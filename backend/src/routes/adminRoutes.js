@@ -16,12 +16,12 @@ import {
 import { USER_ROLES } from "../constants/constants.js";
 
 const adminRoutes = express.Router();
-// adminRoutes.get(
-//   "/users",
-//   isAuthenticatedUser,
-//   authorizeRoles(USER_ROLES.ADMIN),
-//   searchUsers
-// );
+adminRoutes.get(
+  "/users",
+  isAuthenticatedUser,
+  authorizeRoles(USER_ROLES.ADMIN),
+  searchUsers
+);
 /**
  * @route   GET /api/v1/admin/managers
  * @desc    Fetch all managers with search, filter, and pagination
@@ -45,19 +45,6 @@ adminRoutes.delete(
   authorizeRoles(USER_ROLES.ADMIN),
   deleteUser
 );
-
-/**
- * @route   PUT /api/v1/admin/user/:id
- * @desc    Update user details (name, email, role)
- * @access  Admin Only
- */
-adminRoutes.put(
-  "/user/:id",
-  isAuthenticatedUser,
-  authorizeRoles(USER_ROLES.ADMIN),
-  updateUser
-);
-
 /**
  * @route   DELETE /api/v1/admin/employee/:id
  * @desc    Delete an employee by ID (Admin cannot delete themselves)

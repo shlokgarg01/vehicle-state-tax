@@ -3,24 +3,19 @@ import {
   RoadTax,
   AllIndiaPermit,
   AllIndiaTax,
+  LoadingVehicle,
 } from "../models/Tax.js";
 import ApiFeatures from "../utils/apiFeatures.js";
 
 // 🔹 Utility Function to Select Tax Model Based on Category
-const getTaxModel = (category) => {
-  switch (category) {
-    case "BorderTax":
-      return BorderTax;
-    case "RoadTax":
-      return RoadTax;
-    case "AllIndiaPermit":
-      return AllIndiaPermit;
-    case "AllIndiaTax":
-      return AllIndiaTax;
-    default:
-      return null;
-  }
+const taxModels = {
+  BorderTax,
+  RoadTax,
+  AllIndiaPermit,
+  AllIndiaTax,
+  LoadingVehicle,
 };
+const getTaxModel = (category) => taxModels[category] || null;
 
 // ✅ Create a Tax Entry
 export const createTax = async (req, res) => {
@@ -34,7 +29,7 @@ export const createTax = async (req, res) => {
         .json({ success: false, message: "Invalid tax category" });
     }
 
-    const taxEntry = new TaxModel(taxData);
+    const taxEntry = new TaxModel({ ...taxData, category });
     await taxEntry.save();
 
     res.status(201).json({
@@ -52,10 +47,15 @@ export const createTax = async (req, res) => {
 // ✅ Get All Taxes (Search, Filter, Pagination)
 export const getAllTaxes = async (req, res) => {
   try {
-    const { category, search, sort, perPage, page } = req.query;
-    let taxModels = [BorderTax, RoadTax, AllIndiaPermit, AllIndiaTax];
+    const { category, search, sort, perPage, page, ...filters } = req.query;
+    let taxModels = [
+      BorderTax,
+      RoadTax,
+      AllIndiaPermit,
+      AllIndiaTax,
+      LoadingVehicle,
+    ];
 
-    // If category provided, only fetch that category's data
     if (category) {
       const TaxModel = getTaxModel(category);
       if (!TaxModel) {
@@ -68,55 +68,80 @@ export const getAllTaxes = async (req, res) => {
 
     let taxData = [];
 
-    // 🔹 Fetch data from each model (Without applying filters yet)
+    // 🔹 Fetch data from each model (With Filters)
     for (const model of taxModels) {
-      const data = await model.find().lean(); // Convert Mongoose docs to plain objects
-      taxData = [...taxData, ...data]; // Merge results
-    }
+      let query = model.find();
 
-    // 🔹 Apply Search (Only if `search` query is present)
-    if (search) {
-      const searchRegex = new RegExp(search, "i"); // Case-insensitive regex
-      taxData = taxData.filter(
-        (tax) =>
-          searchRegex.test(tax.taxMode) ||
-          searchRegex.test(tax.mobileNumber) ||
-          searchRegex.test(tax.vehicleNumber) ||
-          searchRegex.test(tax.seatCapacity) ||
-          searchRegex.test(tax.category) ||
-          searchRegex.test(tax.amount) ||
-          searchRegex.test(tax.date)
-      );
-    }
+      // Apply Search
+      if (search) {
+        const searchRegex = new RegExp(search, "i");
+        query = query.or([
+          { vehicleNumber: searchRegex },
+          { mobileNumber: searchRegex },
+          { state: searchRegex },
+          { category: searchRegex },
+          { amount: searchRegex },
+        ]);
+      }
 
-    // 🔹 Apply Sorting (Default: newest first)
-    if (sort) {
-      taxData = taxData.sort((a, b) =>
-        sort.startsWith("-") // Descending
-          ? b[sort.substring(1)] - a[sort.substring(1)]
-          : a[sort] - b[sort]
-      );
-    } else {
-      // Default sorting by createdAt (Descending)
-      taxData = taxData.sort(
-        (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
-      );
-    }
+      // Apply Filters
+      if (filters) {
+        for (let key in filters) {
+          const value = filters[key];
 
-    // 🔹 Apply Pagination
+          if (key.includes("[gte]")) {
+            query = query.where(key.replace("[gte]", "")).gte(value);
+          } else if (key.includes("[lte]")) {
+            query = query.where(key.replace("[lte]", "")).lte(value);
+          } else if (key.includes("[gt]")) {
+            query = query.where(key.replace("[gt]", "")).gt(value);
+          } else if (key.includes("[lt]")) {
+            query = query.where(key.replace("[lt]", "")).lt(value);
+          } else if (
+            ["vehicleNumber", "mobileNumber", "state", "category"].includes(key)
+          ) {
+            // Allow partial match via regex
+            query = query.where(key).regex(new RegExp("^" + value, "i")); // Starts with
+          } else {
+            // Default exact match
+            query = query.where(key).equals(value);
+          }
+        }
+      }
+
+      // Apply Sorting
+      if (sort) {
+        const order = sort.startsWith("-") ? -1 : 1;
+        query = query.sort({ [sort.replace("-", "")]: order });
+      } else {
+        query = query.sort({ createdAt: -1 });
+      }
+
+      // Apply Pagination
+      const resultPerPage = Number(perPage) || 10;
+      const currentPage = Number(page) || 1;
+      const skip = (currentPage - 1) * resultPerPage;
+
+      query = query.limit(resultPerPage).skip(skip);
+      const data = await query.lean();
+      taxData = [...taxData, ...data];
+    }
+    if (taxData.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: "No matching tax records found.",
+      });
+    }
+    // 🔹 Get Total Count
     const totalTaxes = taxData.length;
-    const resultPerPage = Number(perPage) || 10;
-    const currentPage = Number(page) || 1;
-    const startIndex = (currentPage - 1) * resultPerPage;
-    const paginatedData = taxData.slice(startIndex, startIndex + resultPerPage);
 
     res.status(200).json({
       success: true,
-      count: paginatedData.length,
+      count: taxData.length,
       totalTaxes,
-      totalPages: Math.ceil(totalTaxes / resultPerPage),
-      currentPage,
-      taxes: paginatedData,
+      totalPages: Math.ceil(totalTaxes / (Number(perPage) || 10)),
+      // currentPage,
+      taxes: taxData,
     });
   } catch (error) {
     console.error("Error fetching taxes:", error);
@@ -127,7 +152,16 @@ export const getAllTaxes = async (req, res) => {
 // ✅ Get a Tax Entry by ID
 export const getTaxById = async (req, res) => {
   try {
-    const tax = await Tax.findById(req.params.id).lean();
+    const { id, category } = req.params;
+    const TaxModel = getTaxModel(category);
+
+    if (!TaxModel) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Invalid tax category" });
+    }
+
+    const tax = await TaxModel.findById(id).lean();
 
     if (!tax) {
       return res
@@ -177,49 +211,8 @@ export const getTaxById = async (req, res) => {
  * GET /api/taxes?perPage=20&page=2
  *
  */
-
-// ✅ Update a Tax Entry
-// export const updateTax = async (req, res) => {
-//   try {
-//     const updatedTax = await Tax.findByIdAndUpdate(req.params.id, req.body, {
-//       new: true,
-//       runValidators: true,
-//       lean: true,
-//     });
-
-//     if (!updatedTax) {
-//       return res
-//         .status(404)
-//         .json({ success: false, message: "Tax entry not found" });
-//     }
-
-//     res.status(200).json({
-//       success: true,
-//       message: "Tax entry updated successfully",
-//       updatedTax,
-//     });
-//   } catch (error) {
-//     console.error("Error updating tax:", error);
-//     res.status(500).json({ success: false, message: "Internal server error" });
-//   }
-// };
-
-// // ✅ Delete a Tax Entry
-// export const deleteTax = async (req, res) => {
-//   try {
-//     const deletedTax = await Tax.findByIdAndDelete(req.params.id).lean();
-
-//     if (!deletedTax) {
-//       return res
-//         .status(404)
-//         .json({ success: false, message: "Tax entry not found" });
-//     }
-
-//     res
-//       .status(200)
-//       .json({ success: true, message: "Tax entry deleted successfully" });
-//   } catch (error) {
-//     console.error("Error deleting tax:", error);
-//     res.status(500).json({ success: false, message: "Internal server error" });
-//   }
-// };
+// category=BorderTax
+// ?mobileNumber=99
+// ?vehicleNumber=ABC1234
+// ?state=Delhi
+// category=BorderTax&state=Maharashtra
