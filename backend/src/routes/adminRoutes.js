@@ -16,7 +16,12 @@ import {
 import { USER_ROLES } from "../constants/constants.js";
 
 const adminRoutes = express.Router();
-
+// adminRoutes.get(
+//   "/users",
+//   isAuthenticatedUser,
+//   authorizeRoles(USER_ROLES.ADMIN),
+//   searchUsers
+// );
 /**
  * @route   GET /api/v1/admin/managers
  * @desc    Fetch all managers with search, filter, and pagination
