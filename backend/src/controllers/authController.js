@@ -13,13 +13,11 @@ import generateToken from "../utils/generateToken.js";
 export const sendOTPForLogin = asyncHandler(async (req, res, next) => {
   try {
     const { contactNumber } = req.body;
-
     if (!contactNumber) {
       return next(new ErrorHandler("Contact number is required", 400));
     }
 
     const otp = contactNumber === 8307747802 ? "114488" : generateOTP();
-
     const hash = otpHash(otp);
 
     console.log(` Generated OTP: ${otp}`);
@@ -33,7 +31,6 @@ export const sendOTPForLogin = asyncHandler(async (req, res, next) => {
       expiresAt: new Date(Date.now() + 5 * 60 * 1000),
     });
 
-    console.log(" OTP Record Saved:", otpRecord);
     await sendOTP(otp, contactNumber);
 
     res.status(200).json({ success: true, message: "OTP sent successfully" });
@@ -114,15 +111,13 @@ export const registerEmployee = asyncHandler(async (req, res, next) => {
       contactNumber,
     });
 
-    console.log("✅ Manager Registered by Admin:", employee);
-
     res.status(201).json({
       success: true,
       message: "Manager registered successfully",
       employee,
     });
   } catch (error) {
-    console.error("🔥 Error in registerEmployee:", error);
+    console.error("Error in registerEmployee:", error);
     next(new ErrorHandler("Internal Server Error", 500));
   }
 });
@@ -141,15 +136,10 @@ export const loginEmployee = asyncHandler(async (req, res, next) => {
     }).select("+password");
 
     if (!employee) {
-      console.error("🚨 Employee not found:", { email, username });
       return next(new ErrorHandler("Invalid email or password", 400));
     }
 
     if (!employee.password) {
-      console.error(
-        "🚨 Employee password is missing in the database!",
-        employee
-      );
       return next(new ErrorHandler("Invalid email or password", 400));
     }
 
@@ -157,14 +147,14 @@ export const loginEmployee = asyncHandler(async (req, res, next) => {
     if (!isMatch) {
       return next(new ErrorHandler(" Invalid Password", 400));
     }
-    console.log(employee);
+
     const user = employee;
     res.json({
       token: generateToken(user),
       employee,
     });
   } catch (error) {
-    console.error("🔥 Error in loginEmployee:", error);
+    console.error("Error in loginEmployee:", error);
     next(new ErrorHandler("Internal Server Error", 500));
   }
 });

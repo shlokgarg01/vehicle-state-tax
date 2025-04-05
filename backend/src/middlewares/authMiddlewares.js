@@ -6,15 +6,16 @@ import Employee from "../models/Employee.js";
 
 // Middleware to protect routes with JWT authentication
 export const isAuthenticatedUser = asyncHandler(async (req, res, next) => {
-  let token = req.headers.authorization;
+  let token = null
+  if (token === null || token === undefined) {
+    token = req.headers['authorization']
+  }
 
-  if (!token || !token.startsWith("Bearer ")) {
-    return next(new ErrorHandler("Please login to access this resource.", 401));
+  if(!token) {
+    return next(new ErrorHandler("Please login to access this resource.", 401))
   }
 
   try {
-    token = token.split(" ")[1];
-
     const decodedData = jwt.verify(token, process.env.JWT_SECRET);
 
     const user =
@@ -34,6 +35,7 @@ export const isAuthenticatedUser = asyncHandler(async (req, res, next) => {
     return next(new ErrorHandler("Invalid or expired token.", 401));
   }
 });
+
 //  Middleware: Role-based access control
 export const authorizeRoles = (...roles) => {
   return (req, res, next) => {

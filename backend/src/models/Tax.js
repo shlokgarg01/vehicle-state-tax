@@ -22,7 +22,7 @@ const BaseTaxSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: COLLECTION_NAMES.USER,
     },
-    chassisNumber: { type: String },
+    chasisNumber: { type: String },
   },
   { timestamps: true }
 );

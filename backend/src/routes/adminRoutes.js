@@ -18,35 +18,35 @@ const adminRoutes = express.Router();
 adminRoutes.get(
   "/users",
   isAuthenticatedUser,
-  authorizeRoles(USER_ROLES.ADMIN),
+  authorizeRoles([USER_ROLES.ADMIN]),
   searchUsers
 );
 
 adminRoutes.get(
   "/managers",
   isAuthenticatedUser,
-  authorizeRoles(USER_ROLES.ADMIN),
+  authorizeRoles([USER_ROLES.ADMIN]),
   viewManagers
 );
 
 adminRoutes.delete(
   "/user/:id",
   isAuthenticatedUser,
-  authorizeRoles(USER_ROLES.ADMIN),
+  authorizeRoles([USER_ROLES.ADMIN]),
   deleteUser
 );
 
 adminRoutes.delete(
   "/employee/:id",
   isAuthenticatedUser,
-  authorizeRoles(USER_ROLES.ADMIN),
+  authorizeRoles([USER_ROLES.ADMIN]),
   deleteEmployee
 );
 
 adminRoutes.put(
   "/employee/:id",
   isAuthenticatedUser,
-  authorizeRoles(USER_ROLES.ADMIN),
+  authorizeRoles([USER_ROLES.ADMIN]),
   updateEmployee
 );
 

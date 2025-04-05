@@ -19,7 +19,7 @@ authRoutes.post("/login", loginEmployee);
 authRoutes.post(
   "/register",
   isAuthenticatedUser,
-  authorizeRoles(USER_ROLES.ADMIN),
+  authorizeRoles([USER_ROLES.ADMIN]),
   registerEmployee
 );
 

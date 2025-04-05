@@ -15,14 +15,14 @@ const stateRoutes = express.Router();
 stateRoutes.post(
   "/",
   isAuthenticatedUser,
-  authorizeRoles(USER_ROLES.ADMIN),
+  authorizeRoles([USER_ROLES.ADMIN]),
   createState
 );
 stateRoutes.get("/", isAuthenticatedUser, getAllStates);
 stateRoutes.delete(
   "/:id",
   isAuthenticatedUser,
-  authorizeRoles(USER_ROLES.ADMIN),
+  authorizeRoles([USER_ROLES.ADMIN]),
   deleteState
 );
 

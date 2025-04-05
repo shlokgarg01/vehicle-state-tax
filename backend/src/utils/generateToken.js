@@ -4,7 +4,7 @@ const generateToken = (user) => {
   return jwt.sign(
     { userId: user._id, role: user.role, contactNumber: user.contactNumber },
     config.jwtSecret,
-    { expiresIn: config.jwtExpire || "30d" }
+    { expiresIn: config.jwtExpire || "2d" }
   );
 };
 

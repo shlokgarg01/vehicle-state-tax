@@ -1,3 +1,5 @@
+import COLLECTION_NAMES from "./collection";
+
 export const STATUS = {
   ACTIVE: "active",
   INACTIVE: "inactive",
@@ -23,10 +25,11 @@ export const LOADING_VEHICLE_TYPES = {
   MEDIUM: "medium goods vehicle",
   HEAVY: "heavy goods vehicle",
 };
+
 export const taxModels = {
-  BorderTax: "BorderTax",
-  RoadTax: "RoadTax",
-  AllIndiaPermit: "AllIndiaPermit",
-  AllIndiaTax: "AllIndiaTax",
-  LoadingVehicle: "LoadingVehicle",
+  BorderTax: COLLECTION_NAMES.BORDER_TAX,
+  RoadTax: COLLECTION_NAMES.ROAD_TAX,
+  AllIndiaPermit: COLLECTION_NAMES.ALL_INDIA_PERMIT,
+  AllIndiaTax: COLLECTION_NAMES.ALL_INDIA_TAX,
+  LoadingVehicle: COLLECTION_NAMES.LOADING_VEHICLE,
 };
