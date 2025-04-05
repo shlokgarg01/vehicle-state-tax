@@ -1,7 +1,7 @@
 import mongoose from "mongoose";
 
 const signupOTPSchema = new mongoose.Schema({
-  contactNumber: { type: String, required: true },
+  contactNumber: { type: Number, required: true },
   otpHash: { type: String, required: true },
   expiresAt: { type: Date, required: true },
   attempts: {
