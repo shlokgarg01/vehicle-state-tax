@@ -7,7 +7,7 @@ export const generateOTP = () => {
 
 // Create hash of OTP for secure storage
 export const otpHash = (otp) => {
-  return crypto.createHash("sha256").update(otp).digest("hex");
+  return String(crypto.createHash("sha256").update(otp).digest("hex"));
 };
 
 // Mock SMS sending function
