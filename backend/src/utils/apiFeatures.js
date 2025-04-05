@@ -7,9 +7,23 @@ class ApiFeatures {
   search(fields = []) {
     if (this.queryStr.search && fields.length > 0) {
       const keyword = this.queryStr.search.trim();
-      const searchConditions = fields.map((field) => ({
-        [field]: { $regex: keyword, $options: "i" },
-      }));
+
+      const searchConditions = fields.map((field) => {
+        if (["string", "text"].includes(typeof this.queryStr[field])) {
+          return { [field]: { $regex: keyword, $options: "i" } };
+        }
+
+        // Handle number fields as string using $expr + $regexMatch
+        return {
+          $expr: {
+            $regexMatch: {
+              input: { $toString: `$${field}` },
+              regex: keyword,
+              options: "i",
+            },
+          },
+        };
+      });
 
       this.query = this.query.find({ $or: searchConditions });
     }
@@ -18,29 +32,38 @@ class ApiFeatures {
 
   filter() {
     const queryCopy = { ...this.queryStr };
-
     ["search", "page", "perPage"].forEach((key) => delete queryCopy[key]);
 
-    let queryStr = JSON.stringify(queryCopy).replace(
-      /\b(gt|gte|lt|lte)\b/g,
-      (key) => `$${key}`
-    );
+    const mongoFilter = {};
 
-    try {
-      this.query = this.query.find(JSON.parse(queryStr));
-    } catch (error) {
-      console.error(" Filter Parsing Error:", error);
-    }
+    Object.entries(queryCopy).forEach(([key, value]) => {
+      // Handle JSON operators like ?age[gte]=20
+      if (typeof value === "object") {
+        mongoFilter[key] = {};
+        Object.entries(value).forEach(([op, val]) => {
+          mongoFilter[key][`$${op}`] = val;
+        });
+      }
+      // Apply partial match for strings (e.g., username=j → $regex)
+      else if (typeof value === "string" && isNaN(value)) {
+        mongoFilter[key] = { $regex: value.trim(), $options: "i" };
+      }
+      // Apply exact match for numbers
+      else {
+        mongoFilter[key] = value;
+      }
+    });
 
+    this.query = this.query.find(mongoFilter);
     return this;
   }
 
-  pagination(resultPerPage) {
+  pagination(resultPerPage = 10) {
     const currentPage = Number(this.queryStr.page) || 1;
     const skip = resultPerPage * (currentPage - 1);
+
     this.query = this.query.limit(resultPerPage).skip(skip);
     return this;
   }
 }
-
 export default ApiFeatures;

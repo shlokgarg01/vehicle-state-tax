@@ -34,7 +34,7 @@ export const isAuthenticatedUser = asyncHandler(async (req, res, next) => {
     return next(new ErrorHandler("Invalid or expired token.", 401));
   }
 });
-
+//  Middleware: Role-based access control
 export const authorizeRoles = (...roles) => {
   return (req, res, next) => {
     if (!req.user || !roles.includes(req.user.role)) {

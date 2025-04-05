@@ -2,11 +2,10 @@ import User from "../models/User.js";
 import asyncHandler from "express-async-handler";
 import ApiFeatures from "../utils/apiFeatures.js";
 import Employee from "../models/Employee.js";
-import { ErrorHandler } from "../utils/errorHandlerUtils.js";
-import bcrypt from "bcryptjs";
 import { USER_ROLES } from "../constants/constants.js";
 
-
+// search users
+// search contact with exact Number
 export const searchUsers = asyncHandler(async (req, res) => {
   try {
     const resultPerPage = Number(req.query.perPage) || 10;
@@ -24,28 +23,34 @@ export const searchUsers = asyncHandler(async (req, res) => {
       users,
     });
   } catch (error) {
-    console.error("🔥 Error in searchUsers:", error);
+    console.error(" Error in searchUsers:", error);
     res.status(500).json({ success: false, message: "Internal Server Error" });
   }
 });
 
-
+// view managers
 export const viewManagers = asyncHandler(async (req, res) => {
   try {
     const resultPerPage = Number(req.query.perPage) || 10;
-    const role = USER_ROLES.MANAGER;
-    let apiFeatures = new ApiFeatures(
-      Employee.find({ role }).select("-password"),
-      req.query
-    )
+
+    const baseQuery = Employee.find().select("-password");
+
+    const apiFeatures = new ApiFeatures(baseQuery, req.query)
       .search(["username", "email", "contactNumber"])
       .filter();
 
-    const totalManagers = await Employee.countDocuments(
-      apiFeatures.query.getFilter()
-    );
-    apiFeatures = apiFeatures.pagination(resultPerPage);
-    const managers = await apiFeatures.query;
+    // Get filter object **after search + filter applied**
+    const filter = apiFeatures.query.getFilter();
+
+    // Pagination applied last
+    apiFeatures.pagination(resultPerPage);
+
+    const [managers, totalManagers] = await Promise.all([
+      apiFeatures.query,
+      Employee.countDocuments(filter),
+    ]);
+
+    console.log("Mongo Query:", filter);
 
     res.status(200).json({
       success: true,
@@ -60,7 +65,7 @@ export const viewManagers = asyncHandler(async (req, res) => {
   }
 });
 
-
+// delete user
 export const deleteUser = asyncHandler(async (req, res) => {
   const { id } = req.params;
   const user = await User.findById(id);
@@ -77,7 +82,7 @@ export const deleteUser = asyncHandler(async (req, res) => {
   });
 });
 
-
+// delete employee
 export const deleteEmployee = asyncHandler(async (req, res) => {
   const { id } = req.params;
   const employee = await Employee.findById(id);
@@ -94,84 +99,41 @@ export const deleteEmployee = asyncHandler(async (req, res) => {
   res.status(200).json({ message: "Employee deleted successfully" });
 });
 
-// /**
-//  * @description Update user details (only name, email, and role)
-//  * @route PUT /user/:id
-//  * @access Admin
-//  */
-// export const updateUser = asyncHandler(async (req, res) => {
-//   const { id } = req.params;
-//   const { name, email } = req.body;
-
-//   const user = await User.findById(id);
-//   if (!user) {
-//     res.status(404);
-//     throw new Error("User not found");
-//   }
-//   if (user.role === "admin" && req.user.role !== "admin") {
-//     res.status(403);
-//     throw new Error("Cannot modify another admin");
-//   }
-
-//   user.name = name || user.name;
-//   user.email = email || user.email;
-
-//   await user.save();
-//   res.status(200).json({ message: "User updated successfully", user });
-// });
-
-
+// update employee
 export const updateEmployee = asyncHandler(async (req, res) => {
   const { id } = req.params;
   const { username, email, password } = req.body;
 
-  const employee = await Employee.findById(id);
+  const employee = await Employee.findById(id).select("+password");
   if (!employee) {
     res.status(404);
     throw new Error("Employee not found");
   }
-  if (
-    employee.role === USER_ROLES.ADMIN &&
-    req.user.employee !== USER_ROLES.ADMIN
-  ) {
+
+  // Restrict admin from editing another admin
+  const isSelfUpdate = req.user._id.toString() === employee._id.toString();
+  const isAdminEditingAdmin =
+    employee.role === USER_ROLES.ADMIN && !isSelfUpdate;
+
+  if (isAdminEditingAdmin && req.user.role !== USER_ROLES.ADMIN) {
     res.status(403);
-    throw new Error("Cannot modify another admin");
+    throw new Error("You are not allowed to modify another admin");
   }
-  employee.username = username || employee.username;
-  employee.email = email || employee.email;
+
+  if (username) employee.username = username;
+  if (email) employee.email = email;
+  if (password) employee.password = password; // Will be hashed via pre-save hook
 
   await employee.save();
-  res.status(200).json({ message: "Employee updated successfully", employee });
-});
 
-export const changeManagerPassword = asyncHandler(async (req, res, next) => {
-  try {
-    const { managerId } = req.params;
-    const { newPassword } = req.body;
-
-    if (req.user.role !== USER_ROLES.ADMIN) {
-      return next(
-        new ErrorHandler("Unauthorized: Only admins can change passwords", 403)
-      );
-    }
-
-    const manager = await Employee.findById(managerId);
-    if (!manager || manager.role !== USER_ROLES.MANAGER) {
-      return next(new ErrorHandler("Manager not found", 404));
-    }
-
-    const salt = await bcrypt.genSalt(10);
-    const hashedPassword = await bcrypt.hash(newPassword, salt);
-
-    manager.password = hashedPassword;
-    await manager.save();
-
-    res.status(200).json({
-      success: true,
-      message: "Manager's password updated successfully",
-    });
-  } catch (error) {
-    console.error("🔥 Error changing manager password:", error);
-    next(new ErrorHandler("Internal Server Error", 500));
-  }
+  res.status(200).json({
+    message: "Employee updated successfully",
+    employee: {
+      _id: employee._id,
+      username: employee.username,
+      email: employee.email,
+      role: employee.role,
+      status: employee.status,
+    },
+  });
 });
