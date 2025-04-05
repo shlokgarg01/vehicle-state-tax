@@ -15,12 +15,12 @@ const authRoutes = express.Router();
 
 authRoutes.post("/verify-otp", authenticateViaOTP);
 authRoutes.post("/send-otp", sendOTPForLogin);
+authRoutes.post("/login", loginEmployee);
 authRoutes.post(
   "/register",
   isAuthenticatedUser,
   authorizeRoles(USER_ROLES.ADMIN),
   registerEmployee
 );
-authRoutes.post("/login", loginEmployee);
 
 export default authRoutes;
