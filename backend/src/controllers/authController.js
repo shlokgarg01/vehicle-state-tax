@@ -18,11 +18,8 @@ export const sendOTPForLogin = asyncHandler(async (req, res, next) => {
       return next(new ErrorHandler("Contact number is required", 400));
     }
 
-<<<<<<< HEAD
-    const otp = contactNumber === "8307747802" ? "114488" : generateOTP();
-=======
     const otp = contactNumber === 8307747802 ? "114488" : generateOTP();
->>>>>>> 84e83dcf3781c7c7405592bd847376d184a854bc
+
     const hash = otpHash(otp);
 
     console.log(`🔢 Generated OTP: ${otp}`);
@@ -59,11 +56,16 @@ export const authenticateViaOTP = asyncHandler(async (req, res, next) => {
 
     const otpRecord = await OTP.findOne({ contactNumber });
     if (!otpRecord) {
-      return next(new ErrorHandler("No OTP found. Please try sending the OTP again.", 400));
-    } if (otpRecord.otpHash !== hash) {
+      return next(
+        new ErrorHandler("No OTP found. Please try sending the OTP again.", 400)
+      );
+    }
+    if (otpRecord.otpHash !== hash) {
       return next(new ErrorHandler("Incorrect OTP. Please try again.", 400));
     } else if (otpRecord.expiresAt < new Date()) {
-      return next(new ErrorHandler("OTP has expired. Please request a new OTP.", 400));
+      return next(
+        new ErrorHandler("OTP has expired. Please request a new OTP.", 400)
+      );
     }
 
     await OTP.deleteMany({ contactNumber });
