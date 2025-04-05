@@ -6,7 +6,6 @@ export const STATUS = {
 export const USER_ROLES = {
   ADMIN: "admin",
   MANAGER: "manager",
-  //   USER: "user",
 };
 
 export const SEAT_CAPACITY = {};
@@ -19,8 +18,15 @@ export const TAX_MODES = {
   CUSTOM: "custom",
 };
 
-export const VEHICLE_TYPES = {
+export const LOADING_VEHICLE_TYPES = {
   LIGHT: "light goods vehicle",
   MEDIUM: "medium goods vehicle",
   HEAVY: "heavy goods vehicle",
+};
+export const taxModels = {
+  BorderTax: "BorderTax",
+  RoadTax: "RoadTax",
+  AllIndiaPermit: "AllIndiaPermit",
+  AllIndiaTax: "AllIndiaTax",
+  LoadingVehicle: "LoadingVehicle",
 };

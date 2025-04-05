@@ -4,7 +4,7 @@ import mongoose from "mongoose";
 import cloudinary from "../config/cloudinary.js";
 import fs from "fs";
 // Create a new banner
-const createBanner = asyncHandler(async (req, res) => {
+export const createBanner = asyncHandler(async (req, res) => {
   const { title, description } = req.body;
   console.log(req.file);
   if (!req.file || !req.file.path) {
@@ -12,33 +12,32 @@ const createBanner = asyncHandler(async (req, res) => {
     throw new Error("Image upload failed");
   }
 
-  // Upload to Cloudinary
   const cloudinaryResult = await cloudinary.uploader.upload(req.file.path, {
     folder: "banners",
     transformation: [{ width: 800, height: 400, crop: "limit" }],
   });
   console.log(cloudinaryResult);
 
-  // Optional: Delete temp file from local storage
   fs.unlinkSync(req.file.path);
 
   const newBanner = new Banner({
     title,
-    imageUrl: cloudinaryResult.secure_url, // Save Cloudinary image URL
+    imageUrl: cloudinaryResult.secure_url,
     description,
   });
 
   const banner = await newBanner.save();
   res.status(201).json(banner);
 });
+
 // Get all banners
-const getBanners = asyncHandler(async (req, res) => {
+export const getBanners = asyncHandler(async (req, res) => {
   const banners = await Banner.find();
   res.json(banners);
 });
 
 // Get a single banner by ID
-const getBannerById = asyncHandler(async (req, res) => {
+export const getBannerById = asyncHandler(async (req, res) => {
   const banner = await Banner.findById(req.params.id);
 
   if (!banner) {
@@ -50,7 +49,7 @@ const getBannerById = asyncHandler(async (req, res) => {
 });
 
 // Update a banner
-const updateBanner = asyncHandler(async (req, res) => {
+export const updateBanner = asyncHandler(async (req, res) => {
   const { title, imageUrl, description, status } = req.body;
 
   const banner = await Banner.findById(req.params.id);
@@ -71,7 +70,7 @@ const updateBanner = asyncHandler(async (req, res) => {
 });
 
 // Delete a banner
-const deleteBanner = asyncHandler(async (req, res) => {
+export const deleteBanner = asyncHandler(async (req, res) => {
   const { id } = req.params;
 
   if (!mongoose.Types.ObjectId.isValid(id)) {
@@ -90,5 +89,3 @@ const deleteBanner = asyncHandler(async (req, res) => {
 
   res.json({ message: "Banner deleted successfully" });
 });
-
-export { createBanner, getBanners, getBannerById, updateBanner, deleteBanner };

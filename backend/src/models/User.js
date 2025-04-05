@@ -1,37 +1,26 @@
 import mongoose from "mongoose";
 import bcrypt from "bcryptjs";
 import mongooseDelete from "mongoose-delete";
+import { INDIAN_PHONE_REGEX } from "../helpers/validators.js";
 
 const Schema = mongoose.Schema;
 
 const userSchema = new Schema({
   contactNumber: {
-    type: String,
+    type: Number,
     required: [true, "Please enter your Contact Number."],
     unique: true,
     validate: {
-      validator: function (number) {
-        return /^[1-9][0-9]{9}$/g.test(number);
-      },
+      validator: (val) => INDIAN_PHONE_REGEX.test(val),
       message: "Provided Contact Number is invalid.",
     },
   },
 });
 
-// 🔹 Hash Password Before Saving
-userSchema.pre("save", async function (next) {
-  if (!this.isModified("password")) return next();
-  this.password = await bcrypt.hash(this.password, 10);
-  next();
+userSchema.plugin(mongooseDelete, {
+  overrideMethods: "all",
+  deletedAt: true,
 });
-
-// 🔹 Compare Password
-userSchema.methods.matchPassword = async function (enteredPassword) {
-  return await bcrypt.compare(enteredPassword, this.password);
-};
-
-// 🔹 Soft Delete Plugin
-userSchema.plugin(mongooseDelete, { overrideMethods: "all", deletedAt: true });
 
 const User = mongoose.model("User", userSchema);
 export default User;

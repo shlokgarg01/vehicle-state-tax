@@ -16,11 +16,9 @@ class ApiFeatures {
     return this;
   }
 
-  // 🎯 FILTER FUNCTION (Handles filters like gt, gte, lt, lte)
   filter() {
     const queryCopy = { ...this.queryStr };
 
-    // ❌ Fix: Delete "search" instead of "keyword"
     ["search", "page", "perPage"].forEach((key) => delete queryCopy[key]);
 
     let queryStr = JSON.stringify(queryCopy).replace(
@@ -31,7 +29,7 @@ class ApiFeatures {
     try {
       this.query = this.query.find(JSON.parse(queryStr));
     } catch (error) {
-      console.error("🚨 Filter Parsing Error:", error);
+      console.error(" Filter Parsing Error:", error);
     }
 
     return this;

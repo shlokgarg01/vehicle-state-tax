@@ -3,7 +3,6 @@ import multer from "multer";
 import path from "path";
 import fs from "fs";
 
-// Temp local storage
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
     const uploadPath = "uploads/";

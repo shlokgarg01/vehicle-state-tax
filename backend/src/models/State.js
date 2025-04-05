@@ -7,6 +7,7 @@ const stateSchema = new mongoose.Schema(
       required: true,
       unique: true,
       trim: true,
+      lowercase: true,
     },
     code: {
       type: String,
@@ -18,3 +19,5 @@ const stateSchema = new mongoose.Schema(
 
 const State = mongoose.model("State", stateSchema);
 export default State;
+// create and search update
+// stae-- > tax;

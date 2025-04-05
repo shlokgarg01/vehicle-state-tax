@@ -1,19 +1,21 @@
 import mongoose from "mongoose";
+import { IMAGE_EXT_REGEX } from "../helpers/validators.js";
 
 const bannerSchema = new mongoose.Schema(
   {
     title: { type: String, required: true, default: "" },
-    imageUrl: { type: String, required: true }, // URL of the banner image
-    description: { type: String },
-    status: {
+    imageUrl: {
       type: String,
-      enum: ["active", "inactive"],
-      default: "active",
-      default: "",
+      required: true,
+      validate: {
+        validator: (url) => IMAGE_EXT_REGEX.test(url),
+        message: "Invalid image or PDF file URL",
+      },
     },
+    description: { type: String },
   },
   {
-    timestamps: true, // Automatically add createdAt and updatedAt fields
+    timestamps: true,
   }
 );
 

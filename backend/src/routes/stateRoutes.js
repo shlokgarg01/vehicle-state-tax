@@ -12,7 +12,6 @@ import { USER_ROLES } from "../constants/constants.js";
 
 const stateRoutes = express.Router();
 
-// Admin-only routes
 stateRoutes.post(
   "/",
   isAuthenticatedUser,

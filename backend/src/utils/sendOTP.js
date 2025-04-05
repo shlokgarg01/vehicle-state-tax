@@ -1,26 +1,18 @@
 import axios from "axios";
 import dotenv from "dotenv";
-
+import { OTP_REGEX, INDIAN_PHONE_REGEX } from "./helpers/validators.js";
 dotenv.config();
 
-/**
- * Send OTP via MessageIndia SMS Gateway
- * @param {string} otp - The 6-digit OTP to send
- * @param {string} contactNumber - Recipient's phone number (without country code)
- * @returns {Promise<boolean>} - Returns true if SMS was sent successfully
- */
 export const sendOTP = async (otp, contactNumber) => {
   try {
-    // Validate inputs
-    if (!/^\d{6}$/.test(otp)) {
+    if (!OTP_REGEX.test(otp)) {
       throw new Error("Invalid OTP format");
     }
 
-    if (!/^[1-9][0-9]{9}$/.test(contactNumber)) {
+    if (!INDIAN_PHONE_REGEX.test(contactNumber)) {
       throw new Error("Invalid Indian phone number format");
     }
 
-    // Construct the SMS URL
     const url = new URL("http://sms.messageindia.in/v2/sendSMS");
     const params = {
       username: process.env.SMS_USERNAME,
@@ -31,15 +23,12 @@ export const sendOTP = async (otp, contactNumber) => {
       apikey: process.env.SMS_APIKEY,
     };
 
-    // Add parameters to URL
     Object.entries(params).forEach(([key, value]) => {
       url.searchParams.append(key, value);
     });
 
-    // Send the SMS
     const response = await axios.get(url.toString());
 
-    // Check response (adapt based on MessageIndia's actual response format)
     if (response.data && response.data.status === "success") {
       console.log(`OTP sent to ${contactNumber}`);
       return true;

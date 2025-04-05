@@ -7,7 +7,7 @@ const signupOTPSchema = new mongoose.Schema({
   attempts: {
     type: Number,
     default: 0,
-    max: 5,
+    max: 3,
   },
 });
 

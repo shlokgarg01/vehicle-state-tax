@@ -21,20 +21,23 @@ bannerRoutes.post(
   authorizeRoles("admin"),
   upload.single("image"),
   createBanner
-); // Create a new banner
+);
+// Create a new banner
 bannerRoutes.get("/", getBanners); // Get all banners
 bannerRoutes.get("/:id", getBannerById); // Get a banner by ID
+// Update a banner by ID
 bannerRoutes.put(
   "/:id",
   isAuthenticatedUser,
   authorizeRoles("admin"),
   updateBanner
-); // Update a banner by ID
+);
+// Delete a banner by ID
 bannerRoutes.delete(
   "/:id",
   isAuthenticatedUser,
   authorizeRoles("admin"),
   deleteBanner
-); // Delete a banner by ID
+);
 
 export default bannerRoutes;

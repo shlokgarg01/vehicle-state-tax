@@ -8,19 +8,15 @@ import Employee from "../models/Employee.js";
 export const isAuthenticatedUser = asyncHandler(async (req, res, next) => {
   let token = req.headers.authorization;
 
-  // Check if token exists and starts with "Bearer "
   if (!token || !token.startsWith("Bearer ")) {
     return next(new ErrorHandler("Please login to access this resource.", 401));
   }
 
   try {
-    // Extract token (remove "Bearer ")
     token = token.split(" ")[1];
 
-    // Verify token
     const decodedData = jwt.verify(token, process.env.JWT_SECRET);
 
-    // Find user from DB
     const user =
       (await User.findById(decodedData.userId)) ||
       (await Employee.findById(decodedData.userId));
@@ -31,7 +27,6 @@ export const isAuthenticatedUser = asyncHandler(async (req, res, next) => {
       );
     }
 
-    // Attach user to request object
     req.user = user;
     req.role = decodedData.role;
     next();
@@ -39,6 +34,7 @@ export const isAuthenticatedUser = asyncHandler(async (req, res, next) => {
     return next(new ErrorHandler("Invalid or expired token.", 401));
   }
 });
+
 export const authorizeRoles = (...roles) => {
   return (req, res, next) => {
     if (!req.user || !roles.includes(req.user.role)) {
@@ -48,7 +44,3 @@ export const authorizeRoles = (...roles) => {
     next();
   };
 };
-
-// change --> single for function
-
-// export { authorizeRoles };

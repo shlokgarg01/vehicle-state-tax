@@ -1,3 +1,4 @@
+import { taxModels } from "../constants/constants.js";
 import State from "../models/State.js";
 import {
   BorderTax,
@@ -8,20 +9,12 @@ import {
 } from "../models/Tax.js";
 import ApiFeatures from "../utils/apiFeatures.js";
 
-// 🔹 Utility Function to Select Tax Model Based on Category
-const taxModels = {
-  BorderTax,
-  RoadTax,
-  AllIndiaPermit,
-  AllIndiaTax,
-  LoadingVehicle,
-};
 const getTaxModel = (category) => taxModels[category] || null;
 
 // ✅ Create a Tax Entry
 export const createTax = async (req, res) => {
   try {
-    const { category, state, ...taxData } = req.body;
+    const { category, ...taxData } = req.body;
     const TaxModel = getTaxModel(category);
 
     if (!TaxModel) {
@@ -30,40 +23,21 @@ export const createTax = async (req, res) => {
         .json({ success: false, message: "Invalid tax category" });
     }
 
-    let stateId = null;
-    if (state) {
-      const existingState = await State.findOne({ name: state.trim() });
-      if (!existingState) {
-        return res.status(400).json({
-          success: false,
-          message: "Invalid state. Please select a valid state.",
-        });
-      }
-      stateId = existingState._id; // get ObjectId of the state
-    }
-
     const userId = req.user?._id || req.user?.id;
 
     const taxEntry = new TaxModel({
       ...taxData,
       category,
       user_id: userId,
-      ...(stateId && { state: stateId }), // only add state if it exists
     });
 
-    // await taxEntry.save();
     const savedEntry = await taxEntry.save();
 
-    // Populate the 'state' field with its name
-    const populatedEntry = await TaxModel.findById(savedEntry._id)
-      .populate("state", "name")
-      .populate("seatType", "label");
+    const populatedEntry = await TaxModel.findById(savedEntry._id);
     res.status(201).json({
       success: true,
       taxEntry: {
         ...populatedEntry.toObject(),
-        state: populatedEntry.state?.name,
-        seatType: populatedEntry.seatType?.label, // 👈 optional: simplify in response
       },
     });
   } catch (error) {
@@ -73,18 +47,13 @@ export const createTax = async (req, res) => {
 };
 
 // ✅ Get All Taxes (With Filters, Search, Pagination)
-// ✅ Get All Taxes (Search, Filter, Pagination)
+
 export const getAllTaxes = async (req, res) => {
   try {
-    const { category, search, sort, perPage, page, ...filters } = req.query;
-    let taxModels = [
-      BorderTax,
-      RoadTax,
-      AllIndiaPermit,
-      AllIndiaTax,
-      LoadingVehicle,
-    ];
+    const { category, perPage, page } = req.query;
+    let taxModels = [];
 
+    // If category provided, get only that model
     if (category) {
       const TaxModel = getTaxModel(category);
       if (!TaxModel) {
@@ -93,83 +62,51 @@ export const getAllTaxes = async (req, res) => {
           .json({ success: false, message: "Invalid tax category" });
       }
       taxModels = [TaxModel];
+    } else {
+      // Fetch from all models
+      taxModels = [
+        BorderTax,
+        RoadTax,
+        AllIndiaPermit,
+        AllIndiaTax,
+        LoadingVehicle,
+      ];
     }
 
     let taxData = [];
 
-    // 🔹 Fetch data from each model (With Filters)
     for (const model of taxModels) {
-      let query = model.find();
+      const query = model.find();
+      const apiFeature = new ApiFeatures(query, req.query)
+        .search([
+          "vehicleNumber",
+          "mobileNumber",
+          "state",
+          "category",
+          "amount",
+        ])
+        .filter()
+        .pagination(Number(perPage) || 10);
 
-      // Apply Search
-      if (search) {
-        const searchRegex = new RegExp(search, "i");
-        query = query.or([
-          { vehicleNumber: searchRegex },
-          { mobileNumber: searchRegex },
-          { state: searchRegex },
-          { category: searchRegex },
-          { amount: searchRegex },
-        ]);
-      }
-
-      // Apply Filters
-      if (filters) {
-        for (let key in filters) {
-          const value = filters[key];
-
-          if (key.includes("[gte]")) {
-            query = query.where(key.replace("[gte]", "")).gte(value);
-          } else if (key.includes("[lte]")) {
-            query = query.where(key.replace("[lte]", "")).lte(value);
-          } else if (key.includes("[gt]")) {
-            query = query.where(key.replace("[gt]", "")).gt(value);
-          } else if (key.includes("[lt]")) {
-            query = query.where(key.replace("[lt]", "")).lt(value);
-          } else if (
-            ["vehicleNumber", "mobileNumber", "state", "category"].includes(key)
-          ) {
-            // Allow partial match via regex
-            query = query.where(key).regex(new RegExp("^" + value, "i")); // Starts with
-          } else {
-            // Default exact match
-            query = query.where(key).equals(value);
-          }
-        }
-      }
-
-      // Apply Sorting
-      if (sort) {
-        const order = sort.startsWith("-") ? -1 : 1;
-        query = query.sort({ [sort.replace("-", "")]: order });
-      } else {
-        query = query.sort({ createdAt: -1 });
-      }
-
-      // Apply Pagination
-      const resultPerPage = Number(perPage) || 10;
-      const currentPage = Number(page) || 1;
-      const skip = (currentPage - 1) * resultPerPage;
-
-      query = query.limit(resultPerPage).skip(skip);
-      const data = await query.lean();
+      const data = await apiFeature.query.lean();
       taxData = [...taxData, ...data];
     }
+
     if (taxData.length === 0) {
       return res.status(404).json({
         success: false,
         message: "No matching tax records found.",
       });
     }
-    // 🔹 Get Total Count
+
     const totalTaxes = taxData.length;
+    const totalPages = Math.ceil(totalTaxes / (Number(perPage) || 10));
 
     res.status(200).json({
       success: true,
-      count: taxData.length,
-      totalTaxes,
-      totalPages: Math.ceil(totalTaxes / (Number(perPage) || 10)),
-      // currentPage,
+      count: totalTaxes,
+      totalPages,
+      currentPage: Number(page) || 1,
       taxes: taxData,
     });
   } catch (error) {
@@ -198,7 +135,9 @@ export const getTaxById = async (req, res) => {
         .json({ success: false, message: "Tax entry not found" });
     }
 
-    res.status(200).json({ success: true, tax });
+    res
+      .status(200)
+      .json({ success: true, tax, message: "Tax entry fetched successfully" });
   } catch (error) {
     console.error("Error fetching tax by ID:", error);
     res.status(500).json({ success: false, message: "Internal server error" });
@@ -207,7 +146,7 @@ export const getTaxById = async (req, res) => {
 
 export const getUserTaxHistory = async (req, res) => {
   try {
-    const userId = req.user?._id || req.user?.id || req.params.userId; // Get user ID from request
+    const userId = req.user?._id;
 
     if (!userId) {
       return res.status(401).json({ success: false, message: "Unauthorized" });
@@ -247,8 +186,7 @@ export const getUserTaxHistory = async (req, res) => {
 export const getTaxesByStatus = async (req, res) => {
   try {
     const { category } = req.params;
-    const { is_completed } = req.query; // "true" or "false" string
-
+    const { is_completed } = req.query;
     const TaxModel = getTaxModel(category);
     if (!TaxModel) {
       return res
@@ -263,7 +201,7 @@ export const getTaxesByStatus = async (req, res) => {
       });
     }
 
-    const isCompleted = is_completed === "true"; // Convert to boolean
+    const isCompleted = is_completed === "true";
 
     const taxes = await TaxModel.find({ is_completed: isCompleted }).sort({
       createdAt: -1,
@@ -281,9 +219,3 @@ export const getTaxesByStatus = async (req, res) => {
     res.status(500).json({ success: false, message: "Internal server error" });
   }
 };
-
-// category=BorderTax
-// ?mobileNumber=99
-// ?vehicleNumber=ABC1234
-// ?state=Delhi
-// category=BorderTax&state=Maharashtra

@@ -6,7 +6,7 @@ import {
   deleteUser,
   searchUsers,
   updateEmployee,
-  updateUser,
+  // updateUser,
   viewManagers,
 } from "../controllers/adminController.js";
 import {
