@@ -9,7 +9,7 @@ import bcrypt from "bcryptjs";
 import User from "../models/User.js";
 import generateToken from "../utils/generateToken.js";
 
-// 🟢 Send OTP for login (no registration required)
+//  Send OTP for login (no registration required)
 export const sendOTPForLogin = asyncHandler(async (req, res, next) => {
   try {
     const { contactNumber } = req.body;
@@ -22,8 +22,8 @@ export const sendOTPForLogin = asyncHandler(async (req, res, next) => {
 
     const hash = otpHash(otp);
 
-    console.log(`🔢 Generated OTP: ${otp}`);
-    console.log(`🔑 Hashed OTP: ${hash}`);
+    console.log(` Generated OTP: ${otp}`);
+    console.log(` Hashed OTP: ${hash}`); // remove this in production
 
     await OTP.deleteMany({ contactNumber });
 
@@ -33,17 +33,17 @@ export const sendOTPForLogin = asyncHandler(async (req, res, next) => {
       expiresAt: new Date(Date.now() + 5 * 60 * 1000),
     });
 
-    console.log("✅ OTP Record Saved:", otpRecord);
+    console.log(" OTP Record Saved:", otpRecord);
     await sendOTP(otp, contactNumber);
 
     res.status(200).json({ success: true, message: "OTP sent successfully" });
   } catch (error) {
-    console.error("🔥 Error in sendOTPForLogin:", error);
+    console.error(" Error in sendOTPForLogin:", error);
     next(new ErrorHandler("Internal Server Error", 500));
   }
 });
 
-// 🟢 Verify OTP and login
+//  Verify OTP and login
 export const authenticateViaOTP = asyncHandler(async (req, res, next) => {
   try {
     const { contactNumber, otp } = req.body;
@@ -76,7 +76,7 @@ export const authenticateViaOTP = asyncHandler(async (req, res, next) => {
     }
 
     const token = generateToken(user);
-    console.log("✅ Generated JWT Token:", token);
+    console.log(" Generated JWT Token:", token);
 
     res.status(200).json({
       success: true,
@@ -85,12 +85,12 @@ export const authenticateViaOTP = asyncHandler(async (req, res, next) => {
       user,
     });
   } catch (error) {
-    console.error("🔥 Error in authenticateViaOTP:", error);
+    console.error(" Error in authenticateViaOTP:", error);
     next(new ErrorHandler("Internal Server Error", 500));
   }
 });
 
-// 🟢 Register a new employee
+//  Register a new employee
 export const registerEmployee = asyncHandler(async (req, res, next) => {
   try {
     const { username, email, password, contactNumber } = req.body;
@@ -127,7 +127,7 @@ export const registerEmployee = asyncHandler(async (req, res, next) => {
   }
 });
 
-// 🟢 Employee Login
+//  Employee Login
 export const loginEmployee = asyncHandler(async (req, res, next) => {
   try {
     const { email, password, username } = req.body;
@@ -157,9 +157,10 @@ export const loginEmployee = asyncHandler(async (req, res, next) => {
     if (!isMatch) {
       return next(new ErrorHandler(" Invalid Password", 400));
     }
-
+    console.log(employee);
+    const user = employee;
     res.json({
-      token: generateToken(employee._id),
+      token: generateToken(user),
       employee,
     });
   } catch (error) {
