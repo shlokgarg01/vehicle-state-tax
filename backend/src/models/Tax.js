@@ -5,7 +5,12 @@ const BaseTaxSchema = new mongoose.Schema(
   {
     vehicleNumber: { type: String, required: true }, //
     mobileNumber: { type: String, required: true }, //
-    seatCapacity: { type: Number }, //  (optional)
+    seatCapacity: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "SeatType",
+      required: false, // or true, depending on your need
+    },
+
     taxMode: {
       type: String,
       enum: Object.values(TAX_MODES),
@@ -17,19 +22,30 @@ const BaseTaxSchema = new mongoose.Schema(
     is_completed: { type: Boolean, default: false }, //
     order_id: { type: String, default: "" }, //
     payment_id: { type: String, default: "" }, //
+    user_id: { type: mongoose.Schema.Types.ObjectId, ref: "User" }, //
   },
   { timestamps: true }
 );
 // export default BaseTaxSchema;
 const BorderTaxSchema = new mongoose.Schema({
   ...BaseTaxSchema.obj, // Inherit s
-  state: { type: String, required: true }, //
+  state: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "State",
+    required: true,
+  },
+
   borderCity: { type: String, required: true }, //
   taxUptoDate: { type: Date, required: true }, //
 });
 const BorderTax = mongoose.model("BorderTax", BorderTaxSchema);
 const LoadingVehicleTaxSchema = new mongoose.Schema({
-  state: { type: String, required: true },
+  state: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "State",
+    required: true,
+  },
+
   vehicleNumber: { type: String, required: true }, //
   mobileNumber: { type: String, required: true }, //
 

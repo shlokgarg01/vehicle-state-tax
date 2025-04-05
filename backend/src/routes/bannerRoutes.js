@@ -10,6 +10,7 @@ import {
   updateBanner,
   deleteBanner,
 } from "../controllers/bannerController.js";
+import upload from "../middlewares/Upload.js";
 
 const bannerRoutes = express.Router();
 
@@ -18,6 +19,7 @@ bannerRoutes.post(
   "/create",
   isAuthenticatedUser,
   authorizeRoles("admin"),
+  upload.single("image"),
   createBanner
 ); // Create a new banner
 bannerRoutes.get("/", getBanners); // Get all banners

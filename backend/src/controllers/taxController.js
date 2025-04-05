@@ -1,3 +1,4 @@
+import State from "../models/State.js";
 import {
   BorderTax,
   RoadTax,
@@ -20,7 +21,7 @@ const getTaxModel = (category) => taxModels[category] || null;
 // ✅ Create a Tax Entry
 export const createTax = async (req, res) => {
   try {
-    const { category, ...taxData } = req.body;
+    const { category, state, ...taxData } = req.body;
     const TaxModel = getTaxModel(category);
 
     if (!TaxModel) {
@@ -29,13 +30,41 @@ export const createTax = async (req, res) => {
         .json({ success: false, message: "Invalid tax category" });
     }
 
-    const taxEntry = new TaxModel({ ...taxData, category });
-    await taxEntry.save();
+    let stateId = null;
+    if (state) {
+      const existingState = await State.findOne({ name: state.trim() });
+      if (!existingState) {
+        return res.status(400).json({
+          success: false,
+          message: "Invalid state. Please select a valid state.",
+        });
+      }
+      stateId = existingState._id; // get ObjectId of the state
+    }
 
+    const userId = req.user?._id || req.user?.id;
+
+    const taxEntry = new TaxModel({
+      ...taxData,
+      category,
+      user_id: userId,
+      ...(stateId && { state: stateId }), // only add state if it exists
+    });
+
+    // await taxEntry.save();
+    const savedEntry = await taxEntry.save();
+
+    // Populate the 'state' field with its name
+    const populatedEntry = await TaxModel.findById(savedEntry._id)
+      .populate("state", "name")
+      .populate("seatType", "label");
     res.status(201).json({
       success: true,
-      message: "Tax entry created successfully",
-      taxEntry,
+      taxEntry: {
+        ...populatedEntry.toObject(),
+        state: populatedEntry.state?.name,
+        seatType: populatedEntry.seatType?.label, // 👈 optional: simplify in response
+      },
     });
   } catch (error) {
     console.error("Error creating tax:", error);
@@ -175,42 +204,84 @@ export const getTaxById = async (req, res) => {
     res.status(500).json({ success: false, message: "Internal server error" });
   }
 };
-/**
- * @route   GET /api/taxes
- * @desc    Fetch all taxes with search, filter, and pagination functionality.
- * @query   {string} [search] - Search for text fields (vehicleNumber, mobileNumber, state, category, etc.).
- * @query   {string} [category] - Filter by tax category (BorderTax, RoadTax, AllIndiaPermit, AllIndiaTax).
- * @query   {number} [amount] - Exact amount filter (e.g., ?amount=5000).
- * @query   {number} [amount[gte]] - Filter taxes where amount is greater than or equal (e.g., ?amount[gte]=1000).
- * @query   {number} [amount[lte]] - Filter taxes where amount is less than or equal (e.g., ?amount[lte]=5000).
- * @query   {number} [seatCapacity] - Exact seat capacity filter.
- * @query   {number} [seatCapacity[gt]] - Filter seat capacity greater than a number.Ws
- * @query   {string} [createdAt[gte]] - Fetch taxes created after a specific date (format: YYYY-MM-DD).
- * @query   {string} [createdAt[lte]] - Fetch taxes created before a specific date.
- * @query   {number} [perPage] - Number of results per page for pagination (default: 10).
- * @query   {number} [page] - Page number for pagination (default: 1).
- * @returns {Object} JSON response with paginated tax records.
- *
- * @example
- * // Search taxes by vehicle number or mobile number
- * GET /api/taxes?search=ABC1234
- *
- * // Filter by category
- * GET /api/taxes?category=RoadTax
- *
- * // Get taxes within an amount range
- * GET /api/taxes?amount[gte]=2000&amount[lte]=7000
- *
- * // Get only paid taxes
- * GET /api/taxes?isPaid=true
- *
- * // Fetch records created after January 1, 2024
- * GET /api/taxes?createdAt[gte]=2024-01-01
- *
- * // Pagination Example (fetch 20 results on page 2)
- * GET /api/taxes?perPage=20&page=2
- *
- */
+
+export const getUserTaxHistory = async (req, res) => {
+  try {
+    const userId = req.user?._id || req.user?.id || req.params.userId; // Get user ID from request
+
+    if (!userId) {
+      return res.status(401).json({ success: false, message: "Unauthorized" });
+    }
+
+    // Query all tax collections
+    const [borderTaxes, roadTaxes, aipTaxes, aiTaxes, loadingVehicles] =
+      await Promise.all([
+        BorderTax.find({ user_id: userId })
+          .populate("state")
+          .sort({ createdAt: -1 }),
+        RoadTax.find({ user_id: userId })
+          .populate("state")
+          .sort({ createdAt: -1 }),
+        AllIndiaPermit.find({ user_id: userId }).sort({ createdAt: -1 }),
+        AllIndiaTax.find({ user_id: userId }).sort({ createdAt: -1 }),
+        LoadingVehicle.find({ user_id: userId }).sort({ createdAt: -1 }),
+      ]);
+
+    res.status(200).json({
+      success: true,
+      message: "User tax history fetched successfully",
+      data: {
+        borderTaxes,
+        roadTaxes,
+        allIndiaPermits: aipTaxes,
+        allIndiaTaxes: aiTaxes,
+        loadingVehicles,
+      },
+    });
+  } catch (error) {
+    console.error("Error fetching user tax history:", error);
+    res.status(500).json({ success: false, message: "Internal server error" });
+  }
+};
+// ✅ Get Taxes by Completion Status (Completed or New)
+export const getTaxesByStatus = async (req, res) => {
+  try {
+    const { category } = req.params;
+    const { is_completed } = req.query; // "true" or "false" string
+
+    const TaxModel = getTaxModel(category);
+    if (!TaxModel) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Invalid tax category" });
+    }
+
+    if (!["true", "false"].includes(is_completed)) {
+      return res.status(400).json({
+        success: false,
+        message: "Query param 'is_completed' must be 'true' or 'false'",
+      });
+    }
+
+    const isCompleted = is_completed === "true"; // Convert to boolean
+
+    const taxes = await TaxModel.find({ is_completed: isCompleted }).sort({
+      createdAt: -1,
+    });
+
+    res.status(200).json({
+      success: true,
+      count: taxes.length,
+      category,
+      is_completed: isCompleted,
+      taxes,
+    });
+  } catch (error) {
+    console.error("Error fetching taxes by status:", error);
+    res.status(500).json({ success: false, message: "Internal server error" });
+  }
+};
+
 // category=BorderTax
 // ?mobileNumber=99
 // ?vehicleNumber=ABC1234

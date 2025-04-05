@@ -1,22 +1,36 @@
 import asyncHandler from "express-async-handler";
 import Banner from "../models/Banner.js";
 import mongoose from "mongoose";
-
+import cloudinary from "../config/cloudinary.js";
+import fs from "fs";
 // Create a new banner
 const createBanner = asyncHandler(async (req, res) => {
-  const { title, imageUrl, description, status } = req.body;
+  const { title, description } = req.body;
+  console.log(req.file);
+  if (!req.file || !req.file.path) {
+    res.status(400);
+    throw new Error("Image upload failed");
+  }
+
+  // Upload to Cloudinary
+  const cloudinaryResult = await cloudinary.uploader.upload(req.file.path, {
+    folder: "banners",
+    transformation: [{ width: 800, height: 400, crop: "limit" }],
+  });
+  console.log(cloudinaryResult);
+
+  // Optional: Delete temp file from local storage
+  fs.unlinkSync(req.file.path);
 
   const newBanner = new Banner({
     title,
-    imageUrl,
+    imageUrl: cloudinaryResult.secure_url, // Save Cloudinary image URL
     description,
-    status,
   });
 
   const banner = await newBanner.save();
   res.status(201).json(banner);
 });
-
 // Get all banners
 const getBanners = asyncHandler(async (req, res) => {
   const banners = await Banner.find();
