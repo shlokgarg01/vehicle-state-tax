@@ -1,5 +1,3 @@
-import COLLECTION_NAMES from "./collection.js";
-
 export const STATUS = {
   ACTIVE: "active",
   INACTIVE: "inactive",
@@ -30,18 +28,32 @@ export const LOADING_VEHICLE_TYPES = {
   MEDIUM: "medium goods vehicle",
   HEAVY: "heavy goods vehicle",
 };
-export const TAX_MODELS = {
-  BorderTax: COLLECTION_NAMES.BORDER_TAX,
-  RoadTax: COLLECTION_NAMES.ROAD_TAX,
-  AllIndiaPermit: COLLECTION_NAMES.ALL_INDIA_PERMIT,
-  AllIndiaTax: COLLECTION_NAMES.ALL_INDIA_TAX,
-  LoadingVehicle: COLLECTION_NAMES.LOADING_VEHICLE,
-};
 
 export const MODES = {
-  ROAD_TAX: "roadTax",
-  BORDER_TAX: "borderTax",
-  LOADING_VEHICLE: "loadingVehicle",
-  ALL_INDIA: "allIndia", // used in Prices
-  LOADING_VEHICLE: "loadingVeh", // used in Prices
+  ROAD_TAX: "border_tax",
+  BORDER_TAX: "road_tax",
+  ALL_INDIA_PERMIT: "all_india_permit",
+  ALL_INDIA_TAX: "all_india_tax",
+  LOADING_VEHICLE: "loading_vehicle",
 };
+
+export const CONSTANTS = {
+  ORDER_STATUS: {
+    CREATED: "created",
+    CONFIRMED: "confirmed",
+    CLOSED: "closed",
+    CANCELLED: "cancelled",
+  },
+  PAYMENT: {
+    TRANSACTION_STATUS: {
+      SUCCESS: "SUCCESS"
+    }
+  },
+  TAX_CATEGORIES: {
+    ROAD_TAX: "border_tax",
+    BORDER_TAX: "road_tax",
+    ALL_INDIA_PERMIT: "all_india_permit",
+    ALL_INDIA_TAX: "all_india_tax",
+    LOADING_VEHICLE: "loading_vehicle",
+  }
+}

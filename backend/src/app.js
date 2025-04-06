@@ -1,5 +1,4 @@
 import express from "express";
-import dotenv from "dotenv";
 import connectDB from "./config/db.js";
 import errorHandler from "./middlewares/errorMiddleware.js";
 import fileUpload from "express-fileupload";
@@ -7,6 +6,7 @@ import cookieParser from "cookie-parser";
 import config from "./config/config.js";
 import cors from "cors";
 import router from "./routes/index.js";
+import './jobs/taxJobs.js'
 
 const app = express();
 
@@ -24,6 +24,12 @@ app.use(
   })
 );
 
+// Server Status Check API
+app.get("/ping", (_, res) => {
+  res.status(200).json({
+    message:"Server is running."
+  })
+})
 // Routes
 app.use("/api/v1", router);
 app.use(errorHandler);

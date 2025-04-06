@@ -2,6 +2,7 @@ import dotenv from "dotenv";
 dotenv.config();
 
 const config = {
+  backendUrl: process.env.BACKEND_URL,
   port: process.env.PORT || 5000,
   mongoURI: process.env.MONGO_URI,
   jwtSecret: process.env.JWT_SECRET,
@@ -10,10 +11,16 @@ const config = {
   cors_origin: process.env.CORS_ORIGIN,
   sms: {
     username: process.env.SMS_USERNAME,
-    sendername: process.env.SMS_SENDERNAME,
-    apikey: process.env.SMS_APIKEY,
+    senderName: process.env.SMS_SENDER_NAME,
+    apiKey: process.env.SMS_API_KEY,
   },
   nodeEnv: process.env.NODE_ENV || "development",
+  payment: {
+    URL: process.env.PAYMENT_URL,
+    mid: process.env.PAYMENT_MID,
+    authToken: process.env.PAYMENT_AUTH_TOKEN,
+    statusCheckUrl: process.env.PAYMENT_STATUS_CHECK_URL,
+  }
 };
 
 export default config;
