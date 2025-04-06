@@ -31,16 +31,17 @@ export const LOADING_VEHICLE_TYPES = {
   HEAVY: "heavy goods vehicle",
 };
 export const TAX_MODELS = {
-  BorderTax: "BorderTax",
-  RoadTax: "RoadTax",
-  AllIndiaPermit: "AllIndiaPermit",
-  AllIndiaTax: "AllIndiaTax",
-  LoadingVehicle: "LoadingVehicle",
+  BorderTax: COLLECTION_NAMES.BORDER_TAX,
+  RoadTax: COLLECTION_NAMES.ROAD_TAX,
+  AllIndiaPermit: COLLECTION_NAMES.ALL_INDIA_PERMIT,
+  AllIndiaTax: COLLECTION_NAMES.ALL_INDIA_TAX,
+  LoadingVehicle: COLLECTION_NAMES.LOADING_VEHICLE,
 };
 
 export const MODES = {
-  ROAD: "road",
-  BORDER: "border",
+  ROAD_TAX: "roadTax",
+  BORDER_TAX: "borderTax",
+  LOADING_VEHICLE: "loadingVehicle",
   ALL_INDIA: "allIndia", // used in Prices
   LOADING_VEHICLE: "loadingVeh", // used in Prices
 };

@@ -1,4 +1,4 @@
-import { taxModels } from "../constants/constants.js";
+import { TAX_MODELS } from "../constants/constants.js";
 import {
   BorderTax,
   RoadTax,
@@ -8,7 +8,7 @@ import {
 } from "../models/Tax.js";
 import ApiFeatures from "../utils/apiFeatures.js";
 
-const getTaxModel = (category) => taxModels[category] || null;
+const getTaxModel = (category) => TAX_MODELS[category] || null;
 
 // Create a Tax Entry
 export const createTax = async (req, res) => {

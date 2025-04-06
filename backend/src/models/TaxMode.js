@@ -12,7 +12,7 @@ const taxModeSchema = new mongoose.Schema(
     },
     mode: {
       type: String,
-      enum: [MODES.ROAD, MODES.BORDER],
+      enum: Object.values(MODES),
       required: true,
     },
     taxMode: {
