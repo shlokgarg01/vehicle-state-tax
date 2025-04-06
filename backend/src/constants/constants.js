@@ -1,4 +1,4 @@
-import COLLECTION_NAMES from "./collection";
+import COLLECTION_NAMES from "./collection.js";
 
 export const STATUS = {
   ACTIVE: "active",

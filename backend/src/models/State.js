@@ -1,6 +1,6 @@
 import mongoose from "mongoose";
-import COLLECTION_NAMES from "../constants/collection";
-import { MODES } from "../constants/constants";
+import COLLECTION_NAMES from "../constants/collection.js";
+import { MODES } from "../constants/constants.js";
 import MongooseDelete from "mongoose-delete";
 const stateSchema = new mongoose.Schema(
   {
