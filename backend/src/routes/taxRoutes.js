@@ -3,7 +3,6 @@ import {
   createTax,
   getAllTaxes,
   getTaxById,
-  getTaxesByStatus,
   getUserTaxHistory,
 } from "../controllers/taxController.js";
 import { isAuthenticatedUser } from "../middlewares/authMiddlewares.js";
@@ -14,6 +13,5 @@ taxRoutes.post("/new", isAuthenticatedUser, createTax); // Create a tax entry
 taxRoutes.get("/", getAllTaxes); // Get all tax records
 taxRoutes.get("/:id", isAuthenticatedUser, getTaxById); // Get tax by ID
 taxRoutes.get("/history/:userId", isAuthenticatedUser, getUserTaxHistory);
-taxRoutes.get("/status/:category", getTaxesByStatus);
 
 export default taxRoutes;

@@ -2,6 +2,7 @@ import mongoose from "mongoose";
 import bcrypt from "bcryptjs";
 import mongooseDelete from "mongoose-delete";
 import { INDIAN_PHONE_REGEX } from "../helpers/validators.js";
+import COLLECTION_NAMES from "../constants/collection.js";
 
 const Schema = mongoose.Schema;
 
@@ -22,5 +23,5 @@ userSchema.plugin(mongooseDelete, {
   deletedAt: true,
 });
 
-const User = mongoose.model("User", userSchema);
+const User = mongoose.model(COLLECTION_NAMES.USER, userSchema);
 export default User;
