@@ -16,10 +16,9 @@ const config = {
   },
   nodeEnv: process.env.NODE_ENV || "development",
   payment: {
-    URL: process.env.PAYMENT_URL,
+    baseUrl: process.env.PAYMENT_URL,
     mid: process.env.PAYMENT_MID,
-    authToken: process.env.PAYMENT_AUTH_TOKEN,
-    statusCheckUrl: process.env.PAYMENT_STATUS_CHECK_URL,
+    password: process.env.PAYMENT_PASSWORD,
   }
 };
 

@@ -3,6 +3,7 @@ import config from "../config/config.js";
 import { ErrorHandler } from "../utils/errorHandlerUtils.js";
 import { CONSTANTS } from "../constants/constants.js";
 import Tax from '../models/Tax.js';
+import ConstantsManager from "./constantsManager.js";
 
 class TaxManager {
   constructor() {}
@@ -19,7 +20,9 @@ class TaxManager {
   };
 
   static createPaymentLink = async (orderId, amount, mobileNumber) => {
-    const url = config.payment.URL;
+    let token = await ConstantsManager.getValidPaymentGatewayToken();
+    const url = config.payment.baseUrl + '/createPaymentPage';
+
     let response = await axios.post(
       url,
       {
@@ -32,7 +35,7 @@ class TaxManager {
         redirect_URL: `${config.backendUrl}/api/v1/tax/paymentRedirect`,
         failed_URL: "",
       },
-      { headers: { token: config.payment.authToken } }
+      { headers: { token } }
     );
   
     if (response.data.status) {
@@ -43,14 +46,16 @@ class TaxManager {
   };
 
   static getPaymentStatus = async (orderId) => {
-    const url = config.payment.statusCheckUrl;
+    let token = await ConstantsManager.getValidPaymentGatewayToken();
+    const url = config.payment.baseUrl + '/checkPaymentStatus';
+
     let response = await axios.post(
       url,
       {
         mid: config.payment.mid,
         merchantReferenceId: orderId
       },
-      { headers: { "Content-Type": "application/json", token: config.payment.authToken } }
+      { headers: { "Content-Type": "application/json", token } }
     );
 
     if (response.data.status) {

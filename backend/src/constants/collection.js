@@ -1,5 +1,3 @@
-
-
 const COLLECTION_NAMES = {
   USER: "User",
   TAX: "tax",
@@ -7,6 +5,7 @@ const COLLECTION_NAMES = {
   STATE: "State",
   PRICE: "Price",
   TAX_MODE: "TaxMode",
+  CONSTANTS: "Constants"
 };
 
 export default COLLECTION_NAMES;
