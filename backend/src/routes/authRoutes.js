@@ -1,6 +1,7 @@
 import express from "express";
 import {
   authenticateViaOTP,
+  getUserDetails,
   loginEmployee,
   registerEmployee,
   sendOTPForLogin,
@@ -15,6 +16,8 @@ const authRoutes = express.Router();
 
 authRoutes.post("/verify-otp", authenticateViaOTP);
 authRoutes.post("/send-otp", sendOTPForLogin);
+authRoutes.get('/me', isAuthenticatedUser, getUserDetails) // API to get the logged-in user details
+
 authRoutes.post("/login", loginEmployee);
 authRoutes.post(
   "/register",

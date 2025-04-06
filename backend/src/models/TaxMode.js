@@ -1,5 +1,5 @@
 import mongoose from "mongoose";
-import COLLECTION_NAMES from "../constants/collection";
+import COLLECTION_NAMES from "../constants/collection.js";
 import { MODES, STATUS, TAX_MODES } from "../constants/constants";
 import MongooseDelete from "mongoose-delete";
 
@@ -28,9 +28,11 @@ const taxModeSchema = new mongoose.Schema(
   },
   { timestamps: true }
 );
+
 taxModeSchema.plugin(MongooseDelete, {
   deletedAt: true,
   overrideMethods: "all", // Makes .find() ignore deleted docs by default
 });
+mongoose.set("debug", true);
 
 export default mongoose.model(COLLECTION_NAMES.TAX_MODE, taxModeSchema);

@@ -46,8 +46,11 @@ const priceSchema = new mongoose.Schema(
   },
   { timestamps: true }
 );
+
 priceSchema.plugin(MongooseDelete, {
   deletedAt: true,
   overrideMethods: "all", // Makes .find() ignore deleted docs by default
 });
+mongoose.set("debug", true);
+
 export default mongoose.model(COLLECTION_NAMES.PRICE, priceSchema);

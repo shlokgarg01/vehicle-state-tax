@@ -158,3 +158,14 @@ export const loginEmployee = asyncHandler(async (req, res, next) => {
     next(new ErrorHandler("Internal Server Error", 500));
   }
 });
+
+export const getUserDetails = asyncHandler(async (req, res, next) => {
+  let userId = req.user.id
+  const user = await User.findById(userId) || await Employee.findById(userId);
+
+  res.status(200).json({
+    success: true,
+    message: "User details fetched successfully",
+    user,
+  });
+});

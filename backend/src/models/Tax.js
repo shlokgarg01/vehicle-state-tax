@@ -5,7 +5,7 @@ import COLLECTION_NAMES from "../constants/collection.js";
 const BaseTaxSchema = new mongoose.Schema(
   {
     vehicleNumber: { type: String, required: true },
-    mobileNumber: { type: String, required: true },
+    mobileNumber: { type: Number, required: true },
     seatCapacity: { type: String },
     taxMode: {
       type: String,
@@ -27,19 +27,20 @@ const BaseTaxSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-const BorderTaxSchema = new mongoose.Schema({
+const BorderTaxSchema = BaseTaxSchema.clone();
+BorderTaxSchema.add({
   ...BaseTaxSchema.obj,
   state: { type: String, required: true, lowercase: true },
   border: { type: String, required: true },
   endDate: { type: Date },
 });
 
-const BorderTax = mongoose.model(COLLECTION_NAMES.BORDER_TAX, BorderTaxSchema);
 
-const LoadingVehicleTaxSchema = new mongoose.Schema({
+const LoadingVehicleTaxSchema = BaseTaxSchema.clone();
+LoadingVehicleTaxSchema.add({
   ...BaseTaxSchema.obj,
   state: { type: String, required: true, lowercase: true },
-
+  
   border: { type: String, required: true },
   vehicleType: {
     type: String,
@@ -49,33 +50,17 @@ const LoadingVehicleTaxSchema = new mongoose.Schema({
   weight: { type: Number, required: true },
 });
 
-const LoadingVehicle = mongoose.model(
-  COLLECTION_NAMES.LOADING_VEHICLE,
-  LoadingVehicleTaxSchema
-);
 
-const RoadTaxSchema = new mongoose.Schema({
-  ...BaseTaxSchema.obj,
-});
+const RoadTaxSchema = BaseTaxSchema.clone();
+const AllIndiaPermitSchema = BaseTaxSchema.clone();
+const AllIndiaTaxSchema = BaseTaxSchema.clone();
 
+mongoose.set("debug", true);
+
+const LoadingVehicle = mongoose.model( COLLECTION_NAMES.LOADING_VEHICLE, LoadingVehicleTaxSchema );
 const RoadTax = mongoose.model(COLLECTION_NAMES.ROAD_TAX, RoadTaxSchema);
-
-const AllIndiaPermitSchema = new mongoose.Schema({
-  ...BaseTaxSchema.obj,
-});
-
-const AllIndiaPermit = mongoose.model(
-  COLLECTION_NAMES.ALL_INDIA_PERMIT,
-  AllIndiaPermitSchema
-);
-
-const AllIndiaTaxSchema = new mongoose.Schema({
-  ...BaseTaxSchema.obj,
-});
-
-const AllIndiaTax = mongoose.model(
-  COLLECTION_NAMES.ALL_INDIA_TAX,
-  AllIndiaTaxSchema
-);
+const AllIndiaTax = mongoose.model( COLLECTION_NAMES.ALL_INDIA_TAX, AllIndiaTaxSchema );
+const AllIndiaPermit = mongoose.model( COLLECTION_NAMES.ALL_INDIA_PERMIT, AllIndiaPermitSchema );
+const BorderTax = mongoose.model(COLLECTION_NAMES.BORDER_TAX, BorderTaxSchema);
 
 export { BorderTax, RoadTax, AllIndiaPermit, AllIndiaTax, LoadingVehicle };

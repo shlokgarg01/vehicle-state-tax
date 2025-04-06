@@ -1,3 +1,4 @@
+import mongoose from "mongoose";
 import { TAX_MODELS } from "../constants/constants.js";
 import {
   BorderTax,
@@ -8,7 +9,7 @@ import {
 } from "../models/Tax.js";
 import ApiFeatures from "../utils/apiFeatures.js";
 
-const getTaxModel = (category) => TAX_MODELS[category] || null;
+const getTaxModel = (category) => mongoose.model(TAX_MODELS[category]) || null;
 
 // Create a Tax Entry
 export const createTax = async (req, res) => {
@@ -33,9 +34,7 @@ export const createTax = async (req, res) => {
     const populatedEntry = await TaxModel.findById(taxEntry._id);
     res.status(201).json({
       success: true,
-      taxEntry: {
-        ...populatedEntry.toObject(),
-      },
+      taxEntry: populatedEntry,
     });
   } catch (error) {
     console.error("Error creating tax:", error);
