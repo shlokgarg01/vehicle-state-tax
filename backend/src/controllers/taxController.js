@@ -2,6 +2,8 @@ import Tax from "../models/Tax.js";
 import ApiFeatures from "../utils/apiFeatures.js";
 import TaxManager from "../managers/taxManager.js";
 import { CONSTANTS } from "../constants/constants.js";
+import catchAsyncErrors from '../middlewares/catchAsyncErrors.js'
+import { uploadFile } from "../helpers/uploadHelpers.js";
 
 // Create a Tax Entry
 export const createTax = async (req, res) => {
@@ -154,16 +156,23 @@ export const paymentStatusCheck = async (req, res) => {
   }
 };
 
-// 1743955948850, 1743953168962, 1743948571467, 1743940040950 - fail
-// 1743955519312, 1743956145604, 1743949648549, 1743948442748 - success
+export const uploadTax = catchAsyncErrors(async (req, res) => {
+  const fileData = req.files?.file;
+  const orderId = req.body.orderId
+  if (!fileData) return res.status(400).json({ success: false,  message: 'No file uploaded' });
+  if (!orderId) return res.status(400).json({ success: false,  message: 'Order Id is required' });
 
-
-
-// NOT USED YET
-// 1743937994685, 1743930495310, 1743897729530, 1743902989119 - fail
-// 1743939191420, 1743938613959, 1743938333824, 1743938085027 - success
-
-
-
-// CREATED via App
-// 1743960614887
+  const uploadResponse = await uploadFile(fileData, 'file')
+  let tax = {}
+  if (uploadResponse.isUploaded) {
+    tax = await TaxManager.updateTaxByOrderId(orderId, { fileUrl: uploadResponse.url, isCompleted: true, status: CONSTANTS.ORDER_STATUS.CLOSED })
+  }
+  res.status(uploadResponse.isUploaded ? 200 : 400).json({
+    success: uploadResponse.isUploaded,
+    message: uploadResponse.message,
+    data: {
+      url: uploadResponse.url,
+      tax
+    }
+  })
+});

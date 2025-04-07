@@ -1,6 +1,6 @@
 import mongoose from "mongoose";
 import bcrypt from "bcryptjs";
-import { USER_ROLES, STATUS } from "../constants/constants.js";
+import { CONSTANTS, STATUS } from "../constants/constants.js";
 import mongooseDelete from "mongoose-delete";
 import validator from "validator";
 import { INDIAN_PHONE_REGEX } from "../helpers/validators.js";
@@ -22,7 +22,6 @@ const employeeSchema = new Schema(
     },
     email: {
       type: String,
-      unique: true,
       sparse: true,
       trim: true,
       validate: {
@@ -32,7 +31,6 @@ const employeeSchema = new Schema(
     },
     contactNumber: {
       type: String,
-      unique: true,
       validate: {
         validator: (val) => INDIAN_PHONE_REGEX.test(val),
         message: "Provided Contact Number is invalid.",
@@ -45,8 +43,8 @@ const employeeSchema = new Schema(
     },
     role: {
       type: String,
-      enum: Object.values(USER_ROLES),
-      default: USER_ROLES.MANAGER,
+      enum: Object.values(CONSTANTS.USER_ROLES),
+      default: CONSTANTS.USER_ROLES.MANAGER,
     },
     status: {
       type: String,

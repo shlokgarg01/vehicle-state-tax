@@ -6,7 +6,7 @@ import {
   registerEmployee,
   sendOTPForLogin,
 } from "../controllers/authController.js";
-import { USER_ROLES } from "../constants/constants.js";
+import { CONSTANTS } from "../constants/constants.js";
 import {
   authorizeRoles,
   isAuthenticatedUser,
@@ -22,7 +22,7 @@ authRoutes.post("/login", loginEmployee);
 authRoutes.post(
   "/register",
   isAuthenticatedUser,
-  authorizeRoles([USER_ROLES.ADMIN]),
+  authorizeRoles([CONSTANTS.USER_ROLES.ADMIN]),
   registerEmployee
 );
 

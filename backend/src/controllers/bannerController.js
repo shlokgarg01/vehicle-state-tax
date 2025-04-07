@@ -1,7 +1,7 @@
 import asyncHandler from "express-async-handler";
 import Banner from "../models/Banner.js";
 import mongoose from "mongoose";
-import cloudinary from "../config/cloudinary.js";
+// import cloudinary from "../config/cloudinary.js";
 import fs from "fs";
 // Create a new banner
 export const createBanner = asyncHandler(async (req, res) => {
@@ -12,17 +12,17 @@ export const createBanner = asyncHandler(async (req, res) => {
     throw new Error("Image upload failed");
   }
 
-  const cloudinaryResult = await cloudinary.uploader.upload(req.file.path, {
-    folder: "banners",
-    transformation: [{ width: 800, height: 400, crop: "limit" }],
-  });
-  console.log(cloudinaryResult);
+  // const cloudinaryResult = await cloudinary.uploader.upload(req.file.path, {
+  //   folder: "banners",
+  //   transformation: [{ width: 800, height: 400, crop: "limit" }],
+  // });
+  // console.log(cloudinaryResult);
 
   fs.unlinkSync(req.file.path);
 
   const newBanner = new Banner({
     title,
-    imageUrl: cloudinaryResult.secure_url,
+    // imageUrl: cloudinaryResult.secure_url,
     description,
   });
 

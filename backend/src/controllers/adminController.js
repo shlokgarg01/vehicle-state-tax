@@ -2,7 +2,7 @@ import User from "../models/User.js";
 import asyncHandler from "express-async-handler";
 import ApiFeatures from "../utils/apiFeatures.js";
 import Employee from "../models/Employee.js";
-import { USER_ROLES } from "../constants/constants.js";
+import { CONSTANTS } from "../constants/constants.js";
 
 // search users
 // search contact with exact Number
@@ -87,7 +87,7 @@ export const deleteEmployee = asyncHandler(async (req, res) => {
     res.status(404);
     throw new Error("Employee not found");
   }
-  if (employee.role === USER_ROLES.ADMIN) {
+  if (employee.role === CONSTANTS.USER_ROLES.ADMIN) {
     res.status(403);
     throw new Error("Admin cannot delete themselves");
   }
@@ -109,9 +109,9 @@ export const updateEmployee = asyncHandler(async (req, res) => {
   // Restrict admin from editing another admin
   const isSelfUpdate = req.user._id.toString() === employee._id.toString();
   const isAdminEditingAdmin =
-    employee.role === USER_ROLES.ADMIN && !isSelfUpdate;
+    employee.role === CONSTANTS.USER_ROLES.ADMIN && !isSelfUpdate;
 
-  if (isAdminEditingAdmin && req.user.role !== USER_ROLES.ADMIN) {
+  if (isAdminEditingAdmin && req.user.role !== CONSTANTS.USER_ROLES.ADMIN) {
     res.status(403);
     throw new Error("You are not allowed to modify another admin");
   }

@@ -5,10 +5,11 @@ const config = {
   backendUrl: process.env.BACKEND_URL,
   port: process.env.PORT || 5000,
   mongoURI: process.env.MONGO_URI,
-  jwtSecret: process.env.JWT_SECRET,
-  jwtExpire: process.env.JWT_EXPIRE,
-  jwtCookieExpire: process.env.JWT_COOKIE_EXPIRE,
   cors_origin: process.env.CORS_ORIGIN,
+  JWT: {
+    secret: process.env.JWT_SECRET,
+    expire: process.env.JWT_EXPIRE,
+  },
   sms: {
     username: process.env.SMS_USERNAME,
     senderName: process.env.SMS_SENDER_NAME,
@@ -19,6 +20,9 @@ const config = {
     baseUrl: process.env.PAYMENT_URL,
     mid: process.env.PAYMENT_MID,
     password: process.env.PAYMENT_PASSWORD,
+  },
+  firebase: {
+    bucketName: process.env.FIREBASE_STORAGE_BUCKET_NAME
   }
 };
 

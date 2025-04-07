@@ -15,7 +15,8 @@ connectDB();
 
 // Middleware
 app.use(express.json());
-app.use(fileUpload());
+app.use(express.urlencoded({ extended: false }))
+app.use(fileUpload())
 app.use(cookieParser());
 app.use(
   cors({
