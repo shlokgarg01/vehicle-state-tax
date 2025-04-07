@@ -87,7 +87,7 @@ export const deleteEmployee = asyncHandler(async (req, res) => {
     res.status(404);
     throw new Error("Employee not found");
   }
-  if (employee.role === USER_ROLES.ADMIN) {
+  if (employee.role === CONSTANTS.USER_ROLES.ADMIN) {
     res.status(403);
     throw new Error("Admin cannot delete themselves");
   }

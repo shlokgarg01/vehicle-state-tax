@@ -15,7 +15,7 @@ const stateRoutes = express.Router();
 stateRoutes.post(
   "/",
   isAuthenticatedUser,
-  authorizeRoles(CONSTANTS.USER_ROLES.ADMIN),
+  authorizeRoles([CONSTANTS.USER_ROLES.ADMIN]),
   createState
 );
 stateRoutes.get(
@@ -23,13 +23,6 @@ stateRoutes.get(
   isAuthenticatedUser,
   authorizeRoles(CONSTANTS.USER_ROLES.ADMIN),
   getAllStates
-);
-
-stateRoutes.put(
-  "/:id",
-  isAuthenticatedUser,
-  authorizeRoles(CONSTANTS.USER_ROLES.ADMIN),
-  updateState
 );
 
 export default stateRoutes;

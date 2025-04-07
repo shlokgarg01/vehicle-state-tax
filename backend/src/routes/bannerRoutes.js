@@ -1,42 +1,21 @@
 import express from "express";
-import {
-  isAuthenticatedUser,
-  authorizeRoles,
-} from "../middlewares/authMiddlewares.js"; // Assuming admin and protect middleware
-import {
-  createBanner,
-  getBanners,
-  getBannerById,
-  updateBanner,
-  deleteBanner,
-} from "../controllers/bannerController.js";
-import upload from "../middlewares/Upload.js";
+import { isAuthenticatedUser, authorizeRoles } from "../middlewares/authMiddlewares.js";
+import { createBanner, getBanners, deleteBanner } from "../controllers/bannerController.js";
+import { CONSTANTS } from "../constants/constants.js";
 
 const bannerRoutes = express.Router();
 
-// Admin routes
 bannerRoutes.post(
-  "/create",
+  "/new",
   isAuthenticatedUser,
-  authorizeRoles("admin"),
-  upload.single("image"),
+  authorizeRoles([CONSTANTS.USER_ROLES.ADMIN]),
   createBanner
 );
-// Create a new banner
-bannerRoutes.get("/", getBanners); // Get all banners
-bannerRoutes.get("/:id", getBannerById); // Get a banner by ID
-// Update a banner by ID
-bannerRoutes.put(
-  "/:id",
-  isAuthenticatedUser,
-  authorizeRoles("admin"),
-  updateBanner
-);
-// Delete a banner by ID
+bannerRoutes.get("/all", isAuthenticatedUser, getBanners);
 bannerRoutes.delete(
-  "/:id",
+  "/delete/:id",
   isAuthenticatedUser,
-  authorizeRoles("admin"),
+  authorizeRoles([CONSTANTS.USER_ROLES.ADMIN]),
   deleteBanner
 );
 

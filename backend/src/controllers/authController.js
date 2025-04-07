@@ -21,7 +21,6 @@ export const sendOTPForLogin = asyncHandler(async (req, res, next) => {
     const hash = otpHash(otp);
 
     console.log(` Generated OTP: ${otp}`);
-    console.log(` Hashed OTP: ${hash}`); // remove this in production
 
     await OTP.deleteMany({ contactNumber });
 
@@ -92,14 +91,11 @@ export const registerEmployee = asyncHandler(async (req, res, next) => {
   try {
     const { username, email, password, contactNumber } = req.body;
 
-    if (!username || !email || !password) {
-      return next(new ErrorHandler("All fields are required", 400));
+    if (!username || !password) {
+      return next(new ErrorHandler("username and password are required", 400));
     }
 
-    const employeeExists = await Employee.findOne({
-      $or: [{ email }, { contactNumber }, { username }],
-    });
-
+    const employeeExists = await Employee.findOne({ username });
     if (employeeExists) {
       return next(new ErrorHandler("Employee already exists", 400));
     }
@@ -125,22 +121,14 @@ export const registerEmployee = asyncHandler(async (req, res, next) => {
 //  Employee Login
 export const loginEmployee = asyncHandler(async (req, res, next) => {
   try {
-    const { email, password, username } = req.body;
-
-    if (!email && !username) {
-      return next(new ErrorHandler("Email or username is required", 400));
+    const { password, username } = req.body;
+    if (!username || !password) {
+      return next(new ErrorHandler("username and password are required", 400));
     }
 
-    const employee = await Employee.findOne({
-      $or: [{ email }, { username }],
-    }).select("+password");
-
+    const employee = await Employee.findOne({ username }).select("+password");
     if (!employee) {
-      return next(new ErrorHandler("Invalid email or password", 400));
-    }
-
-    if (!employee.password) {
-      return next(new ErrorHandler("Invalid email or password", 400));
+      return next(new ErrorHandler("Invalid username", 400));
     }
 
     const isMatch = await bcrypt.compare(password, employee.password);
