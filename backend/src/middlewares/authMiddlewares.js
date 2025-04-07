@@ -4,6 +4,7 @@ import User from "../models/User.js";
 import { ErrorHandler } from "../utils/errorHandlerUtils.js";
 import Employee from "../models/Employee.js";
 import config from "../config/config.js";
+
 // Middleware to protect routes with JWT authentication
 export const isAuthenticatedUser = asyncHandler(async (req, res, next) => {
   let token = null;
@@ -19,8 +20,7 @@ export const isAuthenticatedUser = asyncHandler(async (req, res, next) => {
   }
 
   try {
-    const decodedData = jwt.verify(token, config.jwtSecret);
-
+    const decodedData = jwt.verify(token, config.JWT.secret);
     const user =
       (await User.findById(decodedData.userId)) ||
       (await Employee.findById(decodedData.userId));
@@ -38,12 +38,15 @@ export const isAuthenticatedUser = asyncHandler(async (req, res, next) => {
   }
 });
 
-//  Middleware: Role-based access control
-export const authorizeRoles = (...roles) => {
+export const authorizeRoles = (roles) => {
   return (req, res, next) => {
-    if (!req.user || !roles.includes(req.user.role)) {
-      res.status(403);
-      throw new Error(`Access denied, required roles: ${roles.join(", ")}`);
+    if (!roles.includes(req.user.role)) {
+      return next(
+        new ErrorHandler(
+          `Role: ${req.user.role} is not allowed to access this resource`,
+          403
+        )
+      );
     }
     next();
   };
