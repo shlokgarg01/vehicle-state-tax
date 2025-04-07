@@ -1,12 +1,11 @@
 import express from "express";
-import {
-  createTax,
-  getAllTaxes,
-  getTaxById,
-  getUserTaxHistory,
-  createTaxAndPaymentURL,
-  paymentStatusCheck
-} from "../controllers/taxController.js";
+import // createTax,
+// getAllTaxes,
+// getTaxById,
+// getUserTaxHistory,
+// createTaxAndPaymentURL,
+// paymentStatusCheck
+"../controllers/taxController.js";
 import { isAuthenticatedUser } from "../middlewares/authMiddlewares.js";
 
 const taxRoutes = express.Router();
@@ -18,7 +17,11 @@ taxRoutes.get("/history/:userId", isAuthenticatedUser, getUserTaxHistory);
 
 // Payment Routes
 taxRoutes.post("/payment_url/", isAuthenticatedUser, createTaxAndPaymentURL);
-taxRoutes.get("/payment_status/:orderId", isAuthenticatedUser, paymentStatusCheck);
+taxRoutes.get(
+  "/payment_status/:orderId",
+  isAuthenticatedUser,
+  paymentStatusCheck
+);
 // taxRoutes.get("/payment_callback/", isAuthenticatedUser, paymentCallback);
 
 export default taxRoutes;

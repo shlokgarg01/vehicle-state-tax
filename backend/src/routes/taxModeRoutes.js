@@ -8,28 +8,28 @@ import {
   isAuthenticatedUser,
   authorizeRoles,
 } from "../middlewares/authMiddlewares.js";
-import { USER_ROLES } from "../constants/constants.js";
+import CONSTANTS from "../constants/constants.js";
 
 const router = express.Router();
 
 router.post(
   "/",
   isAuthenticatedUser,
-  authorizeRoles(USER_ROLES.ADMIN),
+  authorizeRoles(CONSTANTS.USER_ROLES.ADMIN),
   createTaxMode
 );
 
 router.get(
   "/",
   isAuthenticatedUser,
-  authorizeRoles(USER_ROLES.ADMIN),
+  authorizeRoles(CONSTANTS.USER_ROLES.ADMIN),
   getAllTaxModes
 );
 
 router.put(
   "/:id",
   isAuthenticatedUser,
-  authorizeRoles(USER_ROLES.ADMIN),
+  authorizeRoles(CONSTANTS.USER_ROLES.ADMIN),
   updateTaxMode
 );
 

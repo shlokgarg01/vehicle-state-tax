@@ -1,27 +1,27 @@
 import axios from "axios";
 import config from "../config/config.js";
 import { ErrorHandler } from "../utils/errorHandlerUtils.js";
-import { CONSTANTS } from "../constants/constants.js";
-import Tax from '../models/Tax.js';
+import CONSTANTS from "../constants/constants.js";
+import Tax from "../models/Tax.js";
 import ConstantsManager from "./constantsManager.js";
 
 class TaxManager {
   constructor() {}
 
-  static createTaxEntry =  async (userId, taxData) => {
+  static createTaxEntry = async (userId, taxData) => {
     let taxEntry = new Tax({
       ...taxData,
       userId,
     });
     taxEntry = await taxEntry.save();
-  
+
     const populatedEntry = await Tax.findOne({ orderId: taxEntry.orderId });
     return populatedEntry;
   };
 
   static createPaymentLink = async (orderId, amount, mobileNumber) => {
     let token = await ConstantsManager.getValidPaymentGatewayToken();
-    const url = config.payment.baseUrl + '/createPaymentPage';
+    const url = config.payment.baseUrl + "/createPaymentPage";
 
     let response = await axios.post(
       url,
@@ -37,23 +37,26 @@ class TaxManager {
       },
       { headers: { token } }
     );
-  
+
     if (response.data.status) {
       return response.data.data.payPageUrl;
     } else {
-      throw new ErrorHandler(response.data.msg || "Failed to create payment URL", 404);
+      throw new ErrorHandler(
+        response.data.msg || "Failed to create payment URL",
+        404
+      );
     }
   };
 
   static getPaymentStatus = async (orderId) => {
     let token = await ConstantsManager.getValidPaymentGatewayToken();
-    const url = config.payment.baseUrl + '/checkPaymentStatus';
+    const url = config.payment.baseUrl + "/checkPaymentStatus";
 
     let response = await axios.post(
       url,
       {
         mid: config.payment.mid,
-        merchantReferenceId: orderId
+        merchantReferenceId: orderId,
       },
       { headers: { "Content-Type": "application/json", token } }
     );
@@ -61,28 +64,28 @@ class TaxManager {
     if (response.data.status) {
       let transactionStatus = response.data.txnStatus;
       if (transactionStatus === CONSTANTS.PAYMENT.TRANSACTION_STATUS.SUCCESS) {
-        return true
+        return true;
       }
     }
     return false;
-  }
+  };
 
   static getTaxByOrderId = async (orderId) => {
     const tax = await Tax.findOne({ orderId }).lean();
-    if(!tax) throw new ErrorHandler("Tax entry not found", 404);
+    if (!tax) throw new ErrorHandler("Tax entry not found", 404);
     return tax;
-  }
+  };
 
   static updateTaxByOrderId = async (orderId, updateData) => {
     const taxEntry = await Tax.findOneAndUpdate(
       { orderId },
       { $set: updateData },
-      { new: true, runValidators: true } 
+      { new: true, runValidators: true }
     );
 
     if (!taxEntry) throw new ErrorHandler("Tax not found", 404);
     return taxEntry;
-  }
+  };
 
   // This picks orders in created status from last 2 hrs & checks if payment is completed.
   // If payment is completed, update the order status to confirmed.
@@ -95,11 +98,13 @@ class TaxManager {
 
     taxes.forEach(async (tax) => {
       const paymentStatus = await this.getPaymentStatus(tax.orderId);
-      if(paymentStatus) {
-        await this.updateTaxByOrderId(tax.orderId, { status: CONSTANTS.ORDER_STATUS.CONFIRMED });
+      if (paymentStatus) {
+        await this.updateTaxByOrderId(tax.orderId, {
+          status: CONSTANTS.ORDER_STATUS.CONFIRMED,
+        });
       }
-    }) 
-  }
+    });
+  };
 }
 
 export default TaxManager;

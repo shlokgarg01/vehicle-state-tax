@@ -1,5 +1,5 @@
 import mongoose from "mongoose";
-import { TAX_MODES, VEHICLE_TYPES, CONSTANTS } from "../constants/constants.js";
+import CONSTANTS, { TAX_MODES, VEHICLE_TYPES } from "../constants/constants.js";
 import COLLECTION_NAMES from "../constants/collection.js";
 
 const taxSchema = new mongoose.Schema(
