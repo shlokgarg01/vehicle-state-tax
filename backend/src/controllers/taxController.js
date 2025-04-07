@@ -1,7 +1,7 @@
 import Tax from "../models/Tax.js";
 import ApiFeatures from "../utils/apiFeatures.js";
 import TaxManager from "../managers/taxManager.js";
-import { CONSTANTS } from "../constants/constants.js";
+import CONSTANTS from "../constants/constants.js";
 import catchAsyncErrors from '../middlewares/catchAsyncErrors.js'
 import { uploadFile } from "../helpers/uploadHelpers.js";
 

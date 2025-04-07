@@ -1,6 +1,4 @@
 import express from "express";
-import { isAuthenticatedUser } from "../middlewares/authMiddlewares.js";
-
 import {
   createTax,
   getAllTaxes,
