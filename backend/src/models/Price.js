@@ -2,18 +2,16 @@ import mongoose from "mongoose";
 import mongooseDelete from "mongoose-delete";
 import CONSTANTS from "../constants/constants.js";
 import COLLECTION_NAMES from "../constants/collection.js";
-// import { VEHICLE_TYPES } from "../constants/constants.js";
 
 const priceSchema = new mongoose.Schema(
   {
     state: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "State",
-      required: true,
+      ref: COLLECTION_NAMES.STATE,
     },
     mode: {
       type: String,
-      enum: Object.values(CONSTANTS.MODES),
+      enum: Object.values(CONSTANTS.TAX_CATEGORIES),
       required: true,
     },
     taxMode: {
@@ -23,7 +21,6 @@ const priceSchema = new mongoose.Schema(
     },
     seatCapacity: {
       type: String,
-      required: true,
       enum: Object.values(CONSTANTS.SEAT_CAPACITY),
     },
     price1: {

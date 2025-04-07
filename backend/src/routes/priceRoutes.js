@@ -15,21 +15,21 @@ const router = express.Router();
 router.post(
   "/",
   isAuthenticatedUser,
-  authorizeRoles(CONSTANTS.USER_ROLES.ADMIN),
+  authorizeRoles([CONSTANTS.USER_ROLES.ADMIN]),
   createPrice
 );
 
 router.get(
   "/",
   isAuthenticatedUser,
-  authorizeRoles(CONSTANTS.USER_ROLES.ADMIN),
+  authorizeRoles([CONSTANTS.USER_ROLES.ADMIN]),
   getAllPrices
 );
 
 router.put(
   "/:id",
   isAuthenticatedUser,
-  authorizeRoles(CONSTANTS.USER_ROLES.ADMIN),
+  authorizeRoles([CONSTANTS.USER_ROLES.ADMIN]),
   updatePrice
 );
 

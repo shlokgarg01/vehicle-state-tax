@@ -1,8 +1,9 @@
 import TaxMode from "../models/TaxMode.js";
 import asyncHandler from "express-async-handler";
 import CONSTANTS from "../constants/constants.js";
+import ApiFeatures from "../utils/apiFeatures.js";
 
-// ➕ Create TaxMode
+// Create TaxMode
 export const createTaxMode = asyncHandler(async (req, res) => {
   const { state, mode, taxMode, status } = req.body;
 
@@ -10,7 +11,7 @@ export const createTaxMode = asyncHandler(async (req, res) => {
   if (existing) {
     return res.status(400).json({
       success: false,
-      message: "TaxMode with this combination already exists",
+      message: "Tax Mode with these details already exists",
     });
   }
 
@@ -24,32 +25,37 @@ export const createTaxMode = asyncHandler(async (req, res) => {
   res.status(201).json({ success: true, taxMode: newTaxMode });
 });
 
-// 📄 Get All TaxModes
+// Get All TaxModes
 export const getAllTaxModes = asyncHandler(async (req, res) => {
-  const taxModes = await TaxMode.find()
-    .populate("state", "name")
-    .sort({ createdAt: -1 });
+  const { perPage } = req.query;
+  const query = TaxMode.find().populate("state").sort({ createdAt: -1 });
 
-  res.status(200).json({ success: true, taxModes });
+  const apiFeature = new ApiFeatures(query, req.query)
+    .filter()
+    .pagination(Number(perPage) || 10);
+
+  const data = await apiFeature.query.lean();
+  const totalTaxModes = await TaxMode.countDocuments(
+    apiFeature.query.getFilter()
+  );
+
+  res.status(200).json({
+    success: true,
+    totalTaxModes,
+    taxModes: data,
+  });
 });
 
-// ✏️ Update TaxMode
+// Update TaxMode
 export const updateTaxMode = asyncHandler(async (req, res) => {
-  const { state, mode, taxMode, status } = req.body;
-  const taxModeDoc = await TaxMode.findById(req.params.id);
-
-  if (!taxModeDoc) {
-    return res
-      .status(404)
-      .json({ success: false, message: "TaxMode not found" });
+  const existingTaxMode = await TaxMode.findById(req.params.id);
+  if (!existingTaxMode) {
+    return res.status(404).json({ success: false, message: "taxMode not found" });
   }
 
-  // Optional fields update
-  taxModeDoc.state = state || taxModeDoc.state;
-  taxModeDoc.mode = mode || taxModeDoc.mode;
-  taxModeDoc.taxMode = taxMode || taxModeDoc.taxMode;
-  taxModeDoc.status = status || taxModeDoc.status;
+  const updatedTaxMode = await TaxMode.findByIdAndUpdate(req.params.id, req.body, {
+    new: true,
+  });
 
-  const updated = await taxModeDoc.save();
-  res.status(200).json({ success: true, taxMode: updated });
+  res.status(200).json({ success: true, message: "Tax Mode updated", taxMode: updatedTaxMode });
 });
