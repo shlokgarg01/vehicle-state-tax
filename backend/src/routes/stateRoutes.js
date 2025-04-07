@@ -2,13 +2,13 @@ import express from "express";
 import {
   createState,
   getAllStates,
-  deleteState,
+  updateState,
 } from "../controllers/stateController.js";
 import {
   isAuthenticatedUser,
   authorizeRoles,
 } from "../middlewares/authMiddlewares.js";
-import { CONSTANTS } from "../constants/constants.js";
+import CONSTANTS from "../constants/constants.js";
 
 const stateRoutes = express.Router();
 
@@ -18,12 +18,11 @@ stateRoutes.post(
   authorizeRoles([CONSTANTS.USER_ROLES.ADMIN]),
   createState
 );
-stateRoutes.get("/", isAuthenticatedUser, getAllStates);
-stateRoutes.delete(
-  "/:id",
+stateRoutes.get(
+  "/",
   isAuthenticatedUser,
-  authorizeRoles([CONSTANTS.USER_ROLES.ADMIN]),
-  deleteState
+  authorizeRoles(CONSTANTS.USER_ROLES.ADMIN),
+  getAllStates
 );
 
 export default stateRoutes;

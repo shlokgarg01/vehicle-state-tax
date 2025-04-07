@@ -1,0 +1,33 @@
+import mongoose from "mongoose";
+import CONSTANTS from "../constants/constants.js";
+import MongooseDelete from "mongoose-delete";
+
+const StateSchema = new mongoose.Schema(
+  {
+    mode: {
+      type: String,
+      enum: [CONSTANTS.MODES.ROAD, CONSTANTS.MODES.BORDER],
+      required: true,
+    },
+    name: {
+      type: String,
+      required: true,
+      trim: true,
+      unique: true,
+      lowercase: true,
+    },
+    status: {
+      type: String,
+      enum: Object.values(CONSTANTS.STATUS),
+      default: CONSTANTS.STATUS.ACTIVE,
+    },
+  },
+  { timestamps: true }
+);
+
+StateSchema.plugin(MongooseDelete, {
+  deletedAt: true,
+  overrideMethods: "all",
+});
+
+export default mongoose.model("State", StateSchema);

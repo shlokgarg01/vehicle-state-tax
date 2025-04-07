@@ -2,7 +2,7 @@ import User from "../models/User.js";
 import asyncHandler from "express-async-handler";
 import ApiFeatures from "../utils/apiFeatures.js";
 import Employee from "../models/Employee.js";
-import { CONSTANTS } from "../constants/constants.js";
+import CONSTANTS from "../constants/constants.js";
 
 // search users
 // search contact with exact Number
@@ -92,7 +92,9 @@ export const deleteEmployee = asyncHandler(async (req, res) => {
     throw new Error("Admin cannot delete themselves");
   }
   await employee.deleteOne();
-  res.status(200).json({ success: true, message: "Employee deleted successfully" });
+  res
+    .status(200)
+    .json({ success: true, message: "Employee deleted successfully" });
 });
 
 // update employee

@@ -11,7 +11,7 @@ import {
   isAuthenticatedUser,
   authorizeRoles,
 } from "../middlewares/authMiddlewares.js";
-import { CONSTANTS } from "../constants/constants.js";
+import CONSTANTS from "../constants/constants.js";
 
 const adminRoutes = express.Router();
 

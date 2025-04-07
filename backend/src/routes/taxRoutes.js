@@ -1,4 +1,6 @@
 import express from "express";
+import { isAuthenticatedUser } from "../middlewares/authMiddlewares.js";
+
 import {
   createTax,
   getAllTaxes,
@@ -9,7 +11,7 @@ import {
   uploadTax
 } from "../controllers/taxController.js";
 import { authorizeRoles, isAuthenticatedUser } from "../middlewares/authMiddlewares.js";
-import { CONSTANTS } from "../constants/constants.js";
+import CONSTANTS from "../constants/constants.js";
 
 const taxRoutes = express.Router();
 
@@ -21,6 +23,10 @@ taxRoutes.post("/upload_tax", isAuthenticatedUser, authorizeRoles([CONSTANTS.USE
 
 // Payment Routes
 taxRoutes.post("/payment_url/", isAuthenticatedUser, createTaxAndPaymentURL);
-taxRoutes.get("/payment_status/:orderId", isAuthenticatedUser, paymentStatusCheck);
+taxRoutes.get(
+  "/payment_status/:orderId",
+  isAuthenticatedUser,
+  paymentStatusCheck
+);
 
 export default taxRoutes;

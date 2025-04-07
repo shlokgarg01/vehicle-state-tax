@@ -1,7 +1,7 @@
 import axios from "axios";
 import config from "../config/config.js";
 import { ErrorHandler } from "../utils/errorHandlerUtils.js";
-import { CONSTANTS } from "../constants/constants.js";
+import CONSTANTS from "../constants/constants.js";
 import Tax from "../models/Tax.js";
 import ConstantsManager from "./constantsManager.js";
 

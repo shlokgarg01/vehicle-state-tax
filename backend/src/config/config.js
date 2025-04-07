@@ -21,9 +21,10 @@ const config = {
     mid: process.env.PAYMENT_MID,
     password: process.env.PAYMENT_PASSWORD,
   },
+
   firebase: {
-    bucketName: process.env.FIREBASE_STORAGE_BUCKET_NAME
-  }
+    bucketName: process.env.FIREBASE_STORAGE_BUCKET_NAME,
+  },
 };
 
 export default config;

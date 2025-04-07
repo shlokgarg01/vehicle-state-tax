@@ -1,11 +1,13 @@
 const COLLECTION_NAMES = {
-  USER: "User",
-  TAX: "tax",
+  BANNER: "Banner",
   EMPLOYEE: "Employee",
-  STATE: "State",
   PRICE: "Price",
+  OTP: "OTP",
+  STATE: "State",
+  TAX: "tax",
   TAX_MODE: "TaxMode",
-  CONSTANTS: "Constants"
+  USER: "User",
+  CONSTANTS: "Constants",
 };
 
 export default COLLECTION_NAMES;
