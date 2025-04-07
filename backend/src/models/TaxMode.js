@@ -1,5 +1,5 @@
 import mongoose from "mongoose";
-import { MODES, TAX_MODES, STATUS } from "../constants/constants.js";
+import CONSTANTS from "../constants/constants.js";
 import MongooseDelete from "mongoose-delete";
 
 const TaxModeSchema = new mongoose.Schema(
@@ -11,18 +11,18 @@ const TaxModeSchema = new mongoose.Schema(
     },
     mode: {
       type: String,
-      enum: [MODES.ROAD, MODES.BORDER],
+      enum: [CONSTANTS.MODES.ROAD, CONSTANTS.MODES.BORDER],
       required: true,
     },
     taxMode: {
       type: String,
-      enum: Object.values(TAX_MODES),
+      enum: Object.values(CONSTANTS.TAX_MODES),
       required: true,
     },
     status: {
       type: String,
-      enum: Object.values(STATUS),
-      default: STATUS.ACTIVE,
+      enum: Object.values(CONSTANTS.STATUS),
+      default: CONSTANTS.STATUS.ACTIVE,
     },
   },
   { timestamps: true }

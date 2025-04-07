@@ -1,5 +1,5 @@
 import mongoose from "mongoose";
-import CONSTANTS, { TAX_MODES, VEHICLE_TYPES } from "../constants/constants.js";
+import CONSTANTS from "../constants/constants.js";
 import COLLECTION_NAMES from "../constants/collection.js";
 
 const taxSchema = new mongoose.Schema(
@@ -9,7 +9,7 @@ const taxSchema = new mongoose.Schema(
     seatCapacity: { type: String },
     taxMode: {
       type: String,
-      enum: Object.values(TAX_MODES),
+      enum: Object.values(CONSTANTS.TAX_MODES),
       required: true,
     },
     category: {
@@ -29,7 +29,7 @@ const taxSchema = new mongoose.Schema(
     endDate: { type: Date },
     vehicleType: {
       type: String,
-      enum: [...Object.values(VEHICLE_TYPES), null, ""],
+      enum: [...Object.values(CONSTANTS.VEHICLE_TYPES), null, ""],
       required: false,
     },
     weight: { type: Number },

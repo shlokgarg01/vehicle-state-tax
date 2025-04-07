@@ -19,7 +19,7 @@ const config = {
     baseUrl: process.env.PAYMENT_URL,
     mid: process.env.PAYMENT_MID,
     password: process.env.PAYMENT_PASSWORD,
-  }
+  },
 };
 
 export default config;

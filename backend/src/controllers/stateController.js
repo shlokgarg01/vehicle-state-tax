@@ -1,4 +1,4 @@
-import { STATUS } from "../constants/constants.js";
+import CONSTANTS from "../constants/constants.js";
 import State from "../models/State.js";
 import asyncHandler from "express-async-handler";
 
@@ -18,7 +18,7 @@ export const createState = asyncHandler(async (req, res) => {
   const state = await State.create({
     name: name.trim(),
     mode,
-    status: status || STATUS.ACTIVE,
+    status: status || CONSTANTS.STATUS.ACTIVE,
   });
   console.log(state);
   res.status(201).json({ success: true, state });

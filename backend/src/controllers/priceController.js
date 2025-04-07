@@ -1,11 +1,11 @@
 import Price from "../models/Price.js";
 import asyncHandler from "express-async-handler";
-import { STATUS } from "../constants/constants.js";
+import CONSTANTS from "../constants/constants.js";
 
 // ➕ Create Price
 export const createPrice = asyncHandler(async (req, res) => {
   const data = req.body;
-  data.status = data.status || STATUS.ACTIVE;
+  data.status = data.status || CONSTANTS.STATUS.ACTIVE;
   const price = await Price.create(data);
   res.status(201).json({ success: true, price });
 });

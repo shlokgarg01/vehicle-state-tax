@@ -1,6 +1,6 @@
 import TaxMode from "../models/TaxMode.js";
 import asyncHandler from "express-async-handler";
-import { STATUS } from "../constants/constants.js";
+import CONSTANTS from "../constants/constants.js";
 
 // ➕ Create TaxMode
 export const createTaxMode = asyncHandler(async (req, res) => {
@@ -18,7 +18,7 @@ export const createTaxMode = asyncHandler(async (req, res) => {
     state,
     mode,
     taxMode,
-    status: status || STATUS.ACTIVE,
+    status: status || CONSTANTS.STATUS.ACTIVE,
   });
 
   res.status(201).json({ success: true, taxMode: newTaxMode });

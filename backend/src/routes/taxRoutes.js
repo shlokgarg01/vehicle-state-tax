@@ -1,11 +1,5 @@
 import express from "express";
-import // createTax,
-// getAllTaxes,
-// getTaxById,
-// getUserTaxHistory,
-// createTaxAndPaymentURL,
-// paymentStatusCheck
-"../controllers/taxController.js";
+import "../controllers/taxController.js";
 import { isAuthenticatedUser } from "../middlewares/authMiddlewares.js";
 
 const taxRoutes = express.Router();

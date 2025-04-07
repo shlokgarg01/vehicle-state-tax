@@ -1,6 +1,6 @@
 import mongoose from "mongoose";
 import bcrypt from "bcryptjs";
-import CONSTANTS, { STATUS } from "../constants/constants.js";
+import CONSTANTS from "../constants/constants.js";
 import mongooseDelete from "mongoose-delete";
 import validator from "validator";
 import { INDIAN_PHONE_REGEX } from "../helpers/validators.js";
@@ -15,9 +15,6 @@ const employeeSchema = new Schema(
       unique: true,
       required: [true, "Please enter your username."],
       trim: true,
-      validate: {
-        message: "Please enter a valid username",
-      },
     },
     email: {
       type: String,
@@ -49,7 +46,7 @@ const employeeSchema = new Schema(
     },
     status: {
       type: String,
-      enum: Object.values(STATUS),
+      enum: Object.values(CONSTANTS.STATUS),
       default: CONSTANTS.STATUS.ACTIVE,
     },
   },
