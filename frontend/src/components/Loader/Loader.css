@@ -1,0 +1,39 @@
+/* Regular Loader */
+.loading {
+  width: 100vw;
+  height: 70vh;
+  display: grid;
+  place-items: center;
+  max-width: 100%;
+}
+
+.loading > div {
+  width: 7vmax;
+  height: 7vmax;
+  border-bottom: 4px solid rgba(0, 0, 0, 0.719);
+  border-radius: 50%;
+  animation: loadingRotate 800ms linear infinite;
+}
+
+/* Small Loader */
+.loading_sm {
+  width: 100vw;
+  height: 5vh;
+  display: grid;
+  place-items: center;
+  max-width: 100%;
+}
+
+.loading_sm > div {
+  width: 2vmax;
+  height: 2vmax;
+  border-bottom: 1px solid rgba(0, 0, 0);
+  border-radius: 50%;
+  animation: loadingRotate 800ms linear infinite;
+}
+
+@keyframes loadingRotate {
+  to {
+    transform: rotateZ(-360deg);
+  }
+}
