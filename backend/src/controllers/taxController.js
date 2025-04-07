@@ -162,7 +162,7 @@ export const uploadTax = catchAsyncErrors(async (req, res) => {
   if (!fileData) return res.status(400).json({ success: false,  message: 'No file uploaded' });
   if (!orderId) return res.status(400).json({ success: false,  message: 'Order Id is required' });
 
-  const uploadResponse = await uploadFile(fileData, 'file')
+  const uploadResponse = await uploadFile(fileData, 'new_taxes')
   let tax = {}
   if (uploadResponse.isUploaded) {
     tax = await TaxManager.updateTaxByOrderId(orderId, { fileUrl: uploadResponse.url, isCompleted: true, status: CONSTANTS.ORDER_STATUS.CLOSED })

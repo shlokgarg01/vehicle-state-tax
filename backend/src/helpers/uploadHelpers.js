@@ -1,4 +1,5 @@
 import bucket from "../config/firebase/firebaseBucket.js";
+import { URL } from "url";
 
 export const uploadFile = async (fileData, folderName) => {
   return new Promise((resolve, reject) => {
@@ -60,3 +61,17 @@ export const uploadFile = async (fileData, folderName) => {
     stream.end(fileData.data);
   });
 };
+
+export const deleteFile = async (fileUrl) => {
+  try {
+    const parsedUrl = new URL(fileUrl);
+    const path = decodeURIComponent(parsedUrl.pathname.replace(`/${bucket.name}/`, ""));
+
+    const file = bucket.file(path);
+    await file.delete();
+
+    return { deleted: true, message: "" }
+  } catch(e) {
+    return { deleted: false, message: e.message }
+  }
+}
