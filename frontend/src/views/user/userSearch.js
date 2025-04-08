@@ -16,38 +16,28 @@ import {
   CTableBody,
   CTableDataCell,
 } from '@coreui/react'
+
 import TextInput from '../../components/Form/TextInput'
 import Button from '../../components/Form/Button'
 import Modal from '../../components/Modal/Modal'
-
 import { showToast } from '../../utils/toast'
 import NoData from '../../components/NoData'
-
 import Pagination from '../../components/Pagination/Pagination'
-
 import { deleteSingleUser, getAndSearchUsers } from '../../actions/taxUserAction'
 
-export default function userSearch() {
+export default function UserSearch() {
   const dispatch = useDispatch()
 
-  const allTaxUsersState = useSelector((state) => state.allTaxUsers)
-  console.log('Redux State:', allTaxUsersState)
-  const { loading, taxusers } = allTaxUsersState
-  console.log('tax users', taxusers)
-
+  const { loading, taxusers } = useSelector((state) => state.allTaxUsers)
   const { isDeleted } = useSelector((state) => state.deleteUser)
 
-  // const [contactNumber, setContactNumber] = useState(0)
   const [search, setSearch] = useState('')
-  const [user, setUser] = useState()
   const [currentPage, setCurrentPage] = useState(1)
   const [isDeleteModalVisible, setIsDeleteModalVisible] = useState(false)
   const [stateToDelete, setStateToDelete] = useState(null)
   const [errors, setErrors] = useState({})
 
   const PER_PAGE = 10
-
-  console.log(stateToDelete)
 
   const toggleStateStatus = (id) => {
     dispatch(deleteSingleUser(id))
@@ -57,26 +47,24 @@ export default function userSearch() {
   const handleSearch = (e) => {
     e.preventDefault()
     setCurrentPage(1)
-    if (!search.trim()) {
-      dispatch(getAndSearchUsers({ page: currentPage }))
-    } else {
-      dispatch(getAndSearchUsers({ search, page: currentPage }))
-    }
 
-    // dispatch(getAndSearchUsers({ search, page: currentPage }))
+    if (!search.trim()) {
+      dispatch(getAndSearchUsers({ page: 1 }))
+    } else {
+      dispatch(getAndSearchUsers({ search, page: 1 }))
+    }
   }
-  console.log(taxusers)
+
   useEffect(() => {
     if (isDeleted) {
       showToast('User Deleted')
-      dispatch(getAndSearchUsers({ page: currentPage }))
+      dispatch(deleteSingleUser({ page: currentPage }))
       setIsDeleteModalVisible(false)
     }
   }, [isDeleted, dispatch, currentPage])
 
-  console.log(taxusers?.users?.lengt)
   useEffect(() => {
-    dispatch(getAndSearchUsers({ page: currentPage, search }))
+    dispatch(getAndSearchUsers({ page: currentPage, search, perPage: PER_PAGE }))
   }, [dispatch, currentPage])
 
   return loading ? (
@@ -84,39 +72,54 @@ export default function userSearch() {
   ) : (
     <>
       <CCard className="mb-4">
-        <CCardHeader className="fw-bold">Search users</CCardHeader>
+        <CCardHeader className="fw-bold">Search Users</CCardHeader>
         <CCardBody>
-          <CForm>
+          <CForm onSubmit={handleSearch}>
             <CRow>
-              <CCol sm={4}>
+              <CCol sm={8}>
                 <TextInput
                   type="text"
                   placeholder="Contact Number"
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
                   id="contactNumber"
-                  label="Contact number"
                   errors={errors}
                 />
               </CCol>
-            </CRow>
 
-            <Button
-              title="Search"
-              onClick={(e) => handleSearch(e)}
-              type="submit"
-              color="success"
-              btnSmall
-              marginBottom
-              marginTop
-            />
+              <CCol sm={2}>
+                <Button
+                  title="Search"
+                  type="submit"
+                  color="success"
+                  btnLarge
+                  fullWidth
+                  marginBottom
+                />
+              </CCol>
+              <CCol sm={2}>
+                <Button
+                  title="Reset"
+                  onClick={() => {
+                    setSearch('')
+                    setErrors({})
+                    dispatch(getAndSearchUsers({ page: 1 }))
+                  }}
+                  type="button"
+                  color="danger"
+                  btnLarge
+                  fullWidth
+                  marginBottom
+                />
+              </CCol>
+            </CRow>
           </CForm>
         </CCardBody>
       </CCard>
 
       <CCard>
         <CCardHeader>
-          <strong>Users ({taxusers.count})</strong>
+          <strong>Users ({taxusers.filteredUsersCount})</strong>
         </CCardHeader>
         {taxusers?.users?.length === 0 ? (
           <NoData title="No User Found" />
@@ -175,7 +178,6 @@ export default function userSearch() {
         onVisibleToggle={() => setIsDeleteModalVisible(!isDeleteModalVisible)}
         onSubmitBtnClick={() => {
           toggleStateStatus(stateToDelete)
-          console.log(stateToDelete)
         }}
         onClose={() => setIsDeleteModalVisible(false)}
         title="Delete User"
