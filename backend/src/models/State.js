@@ -1,12 +1,13 @@
 import mongoose from "mongoose";
 import CONSTANTS from "../constants/constants.js";
 import MongooseDelete from "mongoose-delete";
+import COLLECTION_NAMES from '../constants/collection.js'
 
 const StateSchema = new mongoose.Schema(
   {
     mode: {
       type: String,
-      enum: [CONSTANTS.MODES.ROAD, CONSTANTS.MODES.BORDER],
+      enum: Object.values(CONSTANTS.TAX_CATEGORIES),
       required: true,
     },
     name: {
@@ -30,4 +31,4 @@ StateSchema.plugin(MongooseDelete, {
   overrideMethods: "all",
 });
 
-export default mongoose.model("State", StateSchema);
+export default mongoose.model(COLLECTION_NAMES.STATE, StateSchema);

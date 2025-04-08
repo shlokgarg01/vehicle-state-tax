@@ -25,4 +25,11 @@ stateRoutes.get(
   getAllStates
 );
 
+stateRoutes.put(
+  "/:id",
+  isAuthenticatedUser,
+  authorizeRoles(CONSTANTS.USER_ROLES.ADMIN),
+  updateState
+);
+
 export default stateRoutes;

@@ -1,0 +1,117 @@
+@use "@coreui/coreui/scss/coreui" as * with ( 
+  $enable-deprecation-messages: false,
+);
+@use "@coreui/chartjs/scss/coreui-chartjs";
+@use "vendors/simplebar";
+
+body {
+  background-color: var(--cui-tertiary-bg);
+  font-size: 0.9rem !important;
+}
+
+.wrapper {
+  width: 100%;
+  padding-inline: var(--cui-sidebar-occupy-start, 0) var(--cui-sidebar-occupy-end, 0);
+  will-change: auto;
+  @include transition(padding .15s);
+}
+
+.header > .container-fluid,
+.sidebar-header {
+  min-height: calc(4rem + 1px); // stylelint-disable-line function-disallowed-list
+}
+
+.sidebar-brand-full {
+  margin-left: 3px;
+}
+
+.sidebar-header {
+  .nav-underline-border {
+    --cui-nav-underline-border-link-padding-x: 1rem;
+    --cui-nav-underline-border-gap: 0;
+  }
+
+  .nav-link {
+    display: flex;
+    align-items: center;
+    min-height: calc(4rem + 1px); // stylelint-disable-line function-disallowed-list
+  }
+}
+
+.sidebar-toggler {
+  margin-inline-start: auto;
+}
+
+.sidebar-narrow,
+.sidebar-narrow-unfoldable:not(:hover) {
+  .sidebar-toggler {
+    margin-inline-end: auto;
+  }
+}
+
+.header > .container-fluid + .container-fluid {
+  min-height: 3rem;
+}
+
+.footer {
+  min-height: calc(3rem + 1px); // stylelint-disable-line function-disallowed-list
+}
+
+@include color-mode(dark) {
+  body {
+    background-color: var(--cui-dark-bg-subtle);
+  }
+
+  .footer {
+    --cui-footer-bg: var(--cui-body-bg);
+  }
+}
+
+
+
+
+// Custom Component Styling
+.card-body {
+  padding-bottom: 0 !important;
+}
+
+.form-control {
+  margin-bottom: 0.5rem !important;
+}
+
+.modal-title {
+  font-size: 0.9rem !important;
+}
+
+.nav-group .nav-group-items .nav-item {
+  text-decoration: none;
+}
+
+// Date Selector Styles
+.date-selector {
+  height: 33px;
+  border-radius: 4px;
+  width: 100%;
+  padding-left: 13px;
+  border: 1px solid #dbdfe6;
+  color: #6A6E76;
+}
+
+.date-selector:focus {
+  box-shadow: 0 0 0 0.25rem rgba(88, 86, 214, 0.25) !important;
+  border-color: rgb(171.5, 170.5, 234.5) !important;
+  outline: 0;
+}
+
+.hover-cursor:hover {
+  cursor: pointer;
+}
+
+.pdf-table {
+  background-color: transparent !important;
+}
+
+.pdf-table th,
+.pdf-table td {
+  background-color: transparent !important;
+}

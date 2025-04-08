@@ -38,12 +38,10 @@ const CONSTANTS = {
   },
 
   TAX_MODES: {
+    DAYS: "days",
+    MONTHLY: "monthly",
     YEARLY: "yearly",
     QUARTERLY: "quarterly",
-    MONTHLY: "monthly",
-    WEEKLY: "weekly",
-    DAILY: "daily",
-    CUSTOM: "custom",
   },
 
   SEAT_CAPACITY: {

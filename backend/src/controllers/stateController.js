@@ -1,14 +1,14 @@
 import CONSTANTS from "../constants/constants.js";
 import State from "../models/State.js";
 import asyncHandler from "express-async-handler";
+import ApiFeatures from "../utils/apiFeatures.js";
 
 //  Create a new state
 export const createState = asyncHandler(async (req, res) => {
   const { name, mode, status } = req.body;
 
-  const existing = await State.findOne({ name: name.trim(), mode });
-  console.log(existing);
-  if (existing) {
+  const isExistingState = await State.findOne({ name: name.trim(), mode });
+  if (isExistingState) {
     return res.status(400).json({
       success: false,
       message: "State with this name and mode already exists",
@@ -26,22 +26,39 @@ export const createState = asyncHandler(async (req, res) => {
 
 //  Get all states
 export const getAllStates = asyncHandler(async (req, res) => {
-  const states = await State.find().sort({ name: 1 });
-  res.status(200).json({ success: true, states });
+  try {
+    const resultsPerPage = req.params.perPage || 10;
+    let apiFeature = new ApiFeatures(
+      State.find().sort({ createdAt: -1 }),
+      req.query
+    )
+
+    const totalStates = await State.countDocuments(
+      apiFeature.query.getFilter()
+    );
+    apiFeature = apiFeature.pagination(resultsPerPage);
+    const states = await apiFeature.query;
+
+    res.status(200).json({
+      success: true,
+      totalStates,
+      states,
+      resultsPerPage
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error });
+  }
 });
+
 //  Update a state
 export const updateState = asyncHandler(async (req, res) => {
-  const { name, mode, status } = req.body;
   const state = await State.findById(req.params.id);
-
   if (!state) {
     return res.status(404).json({ success: false, message: "State not found" });
   }
 
-  state.name = name?.trim() || state.name;
-  state.mode = mode || state.mode;
-  state.status = status || state.status;
-
-  const updatedState = await state.save();
+  const updatedState = await State.findByIdAndUpdate(req.params.id, req.body, {
+    new: true
+  });
   res.status(200).json({ success: true, state: updatedState });
 });

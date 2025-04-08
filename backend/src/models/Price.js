@@ -2,13 +2,12 @@ import mongoose from "mongoose";
 import mongooseDelete from "mongoose-delete";
 import CONSTANTS from "../constants/constants.js";
 import COLLECTION_NAMES from "../constants/collection.js";
-// import { VEHICLE_TYPES } from "../constants/constants.js";
 
 const priceSchema = new mongoose.Schema(
   {
     state: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "State",
+      ref: COLLECTION_NAMES.STATE,
       required: true,
     },
     mode: {

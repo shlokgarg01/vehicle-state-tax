@@ -139,12 +139,20 @@ export const loginEmployee = asyncHandler(async (req, res, next) => {
     const user = employee;
     res.json({
       token: generateToken(user),
-      employee,
+      user: employee,
     });
   } catch (error) {
     console.error("Error in loginEmployee:", error);
     next(new ErrorHandler("Internal Server Error", 500));
   }
+});
+
+// Logout
+export const logoutUser = asyncHandler(async (req, res) => {
+  res.status(200).json({
+    success: true,
+    message: "Logged out successfully.",
+  });
 });
 
 export const getUserDetails = asyncHandler(async (req, res, next) => {

@@ -3,6 +3,7 @@ import {
   authenticateViaOTP,
   getUserDetails,
   loginEmployee,
+  logoutUser,
   registerEmployee,
   sendOTPForLogin,
 } from "../controllers/authController.js";
@@ -25,5 +26,6 @@ authRoutes.post(
   authorizeRoles([CONSTANTS.USER_ROLES.ADMIN]),
   registerEmployee
 );
+authRoutes.get("/logout", isAuthenticatedUser, logoutUser)
 
 export default authRoutes;
