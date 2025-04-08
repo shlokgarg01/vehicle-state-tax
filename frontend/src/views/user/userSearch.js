@@ -116,7 +116,7 @@ export default function userSearch() {
 
       <CCard>
         <CCardHeader>
-          <strong>Users ({taxusers.totalUsersCount})</strong>
+          <strong>Users ({taxusers.count})</strong>
         </CCardHeader>
         {taxusers?.users?.length === 0 ? (
           <NoData title="No User Found" />
