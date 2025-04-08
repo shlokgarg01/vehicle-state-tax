@@ -1,6 +1,6 @@
 import { EMPLOYEE_CONSTANTS } from '../constants/employeeConstants'
 
-export const employeeGetReducer = (state = { users: [] }, action) => {
+export const employeeGetReducer = (state = { employees: [] }, action) => {
   switch (action.type) {
     case EMPLOYEE_CONSTANTS.GET_EMPLOYEE_REQUEST:
       return {
@@ -11,15 +11,15 @@ export const employeeGetReducer = (state = { users: [] }, action) => {
       return {
         ...state,
         loading: false,
-        users: action.payload,
+        employees: action.payload,
         success: true,
         resultsPerPage: action.resultsPerPage,
       }
-    case EMPLOYEE_CONSTANTS.GET_EMPLOYEE_SUCCESS:
+    case EMPLOYEE_CONSTANTS.GET_EMPLOYEE_FAIL:
       return {
         ...state,
         loading: false,
-        users: [],
+        employees: [],
         error: action.payload,
       }
     default:
@@ -58,7 +58,7 @@ export const employeeDeleteReducer = (state = {}, action) => {
   }
 }
 
-export const updateSingleEmployee = (state = {}, action) => {
+export const updateSingleEmployee = (state = { employee: [] }, action) => {
   switch (action.type) {
     case EMPLOYEE_CONSTANTS.UPDATE_EMPLOYEE_REQUEST:
       return {
@@ -69,20 +69,21 @@ export const updateSingleEmployee = (state = {}, action) => {
       return {
         ...state,
         loading: false,
-        isDeleted: true,
+        isUpdated: true,
+        employee: action.payload,
       }
     case EMPLOYEE_CONSTANTS.UPDATE_EMPLOYEE_FAIL:
       return {
         ...state,
         loading: false,
         error: action.payload,
-        isDeleted: false,
+        isUpdated: false,
       }
     case EMPLOYEE_CONSTANTS.CLEAR_ERRORS:
       return {
         ...state,
         error: null,
-        isDeleted: false,
+        isUpdated: false,
       }
     default:
       return state
