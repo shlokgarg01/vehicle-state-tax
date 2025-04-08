@@ -23,7 +23,11 @@ export default function SelectBox({
         aria-label={label}
         onChange={onChange}
         style={{
+<<<<<<< HEAD
           fontSize: '0.8rem',
+=======
+          fontSize: '0.9rem',
+>>>>>>> f4d1f8adfe88f8999e130f43d0e79fd885fc3927
           width: width ? width : null,
         }}
         value={value}
@@ -34,7 +38,11 @@ export default function SelectBox({
       {errors[id] && (
         <div
           style={{
+<<<<<<< HEAD
             fontSize: '0.8rem',
+=======
+            fontSize: '0.9rem',
+>>>>>>> f4d1f8adfe88f8999e130f43d0e79fd885fc3927
             marginBottom: '0.5rem',
           }}
           className="text-danger"

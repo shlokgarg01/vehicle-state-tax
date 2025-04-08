@@ -4,5 +4,25 @@ import AppFooter from './AppFooter'
 import AppHeader from './AppHeader'
 import AppHeaderDropdown from './header/AppHeaderDropdown'
 import AppSidebar from './AppSidebar'
+<<<<<<< HEAD
 
 export { AppBreadcrumb, AppContent, AppFooter, AppHeader, AppHeaderDropdown, AppSidebar }
+=======
+import DocsComponents from './DocsComponents'
+import DocsIcons from './DocsIcons'
+import DocsLink from './DocsLink'
+import DocsExample from './DocsExample'
+
+export {
+  AppBreadcrumb,
+  AppContent,
+  AppFooter,
+  AppHeader,
+  AppHeaderDropdown,
+  AppSidebar,
+  DocsComponents,
+  DocsIcons,
+  DocsLink,
+  DocsExample,
+}
+>>>>>>> f4d1f8adfe88f8999e130f43d0e79fd885fc3927

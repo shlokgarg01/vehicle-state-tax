@@ -2,13 +2,21 @@ import React from 'react'
 import { useSelector, useDispatch } from 'react-redux'
 import { CCloseButton, CSidebar, CSidebarHeader } from '@coreui/react'
 import { AppSidebarNav } from './AppSidebarNav'
+<<<<<<< HEAD
 // import navigation from '../_nav'
+=======
+import navigation from '../_nav'
+>>>>>>> f4d1f8adfe88f8999e130f43d0e79fd885fc3927
 
 const AppSidebar = () => {
   const dispatch = useDispatch()
   const unfoldable = useSelector((state) => state.sidebarUnfoldable)
   const { sidebarShow } = useSelector((state) => state.sidebarShow)
+<<<<<<< HEAD
   // const { user } = useSelector((state) => state.user)
+=======
+  const { user } = useSelector((state) => state.user)
+>>>>>>> f4d1f8adfe88f8999e130f43d0e79fd885fc3927
 
   return (
     <CSidebar
@@ -40,8 +48,12 @@ const AppSidebar = () => {
           onClick={() => dispatch({ type: 'set', sidebarShow: false })}
         />
       </CSidebarHeader>
+<<<<<<< HEAD
       <AppSidebarNav />
       {/* <AppSidebarNav items={navigation(user?.role)} /> */}
+=======
+      <AppSidebarNav items={navigation(user?.role)} />
+>>>>>>> f4d1f8adfe88f8999e130f43d0e79fd885fc3927
     </CSidebar>
   )
 }

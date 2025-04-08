@@ -1,15 +1,25 @@
 {
+<<<<<<< HEAD
   "name": "Vehicle State Tax",
   "version": "1.0.0",
   "description": "",
+=======
+  "name": "vehicle_state_tax",
+  "version": "5.4.0",
+  "description": "vehicle_state_tax",
+>>>>>>> f4d1f8adfe88f8999e130f43d0e79fd885fc3927
   "homepage": ".",
   "license": "MIT",
   "scripts": {
     "build": "vite build",
     "lint": "eslint",
     "serve": "vite preview",
+<<<<<<< HEAD
     "start": "vite",
     "prepare": "husky"
+=======
+    "start": "vite"
+>>>>>>> f4d1f8adfe88f8999e130f43d0e79fd885fc3927
   },
   "dependencies": {
     "@coreui/chartjs": "^4.1.0",
@@ -21,7 +31,11 @@
     "@coreui/utils": "^2.0.2",
     "@popperjs/core": "^2.11.8",
     "@redux-devtools/extension": "^3.3.0",
+<<<<<<< HEAD
     "axios": "^1.8.2",
+=======
+    "axios": "^1.8.4",
+>>>>>>> f4d1f8adfe88f8999e130f43d0e79fd885fc3927
     "chart.js": "^4.4.7",
     "classnames": "^2.5.1",
     "core-js": "^3.40.0",
@@ -44,7 +58,10 @@
     "eslint-plugin-react": "^7.37.4",
     "eslint-plugin-react-hooks": "^5.1.0",
     "globals": "^15.15.0",
+<<<<<<< HEAD
     "husky": "^9.1.7",
+=======
+>>>>>>> f4d1f8adfe88f8999e130f43d0e79fd885fc3927
     "postcss": "^8.5.2",
     "prettier": "3.5.1",
     "sass": "^1.85.0",

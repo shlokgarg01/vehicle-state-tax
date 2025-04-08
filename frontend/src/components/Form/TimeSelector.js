@@ -1,0 +1,30 @@
+import { CFormLabel } from '@coreui/react'
+import React from 'react'
+
+export default function TimeSelector({ value, onChange, label, id, errors, disableBottomMargin }) {
+  return (
+    <>
+      {label && (
+        <>
+          <CFormLabel htmlFor={id} style={{ fontSize: '0.9rem' }}>
+            {label}
+          </CFormLabel>
+          <br />
+        </>
+      )}
+      <input type="time" value={value} onChange={onChange} className="date-selector" />
+      {errors[id] && (
+        <div
+          style={{
+            fontSize: '0.9rem',
+            marginBottom: !disableBottomMargin ? '0.5rem' : 0,
+            marginTop: '0.5rem',
+          }}
+          className="text-danger"
+        >
+          {errors[id]}
+        </div>
+      )}
+    </>
+  )
+}

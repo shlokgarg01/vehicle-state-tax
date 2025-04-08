@@ -63,7 +63,11 @@ export default function TextInput({
           {errors[id] && (
             <div
               style={{
+<<<<<<< HEAD
                 fontSize: '0.8rem',
+=======
+                fontSize: '0.9rem',
+>>>>>>> f4d1f8adfe88f8999e130f43d0e79fd885fc3927
               }}
               className="text-danger"
             >
@@ -74,7 +78,11 @@ export default function TextInput({
       ) : (
         <>
           {label && (
+<<<<<<< HEAD
             <CFormLabel htmlFor={id} style={{ fontSize: '0.8rem' }}>
+=======
+            <CFormLabel htmlFor={id} style={{ fontSize: '0.9rem' }}>
+>>>>>>> f4d1f8adfe88f8999e130f43d0e79fd885fc3927
               {label}
             </CFormLabel>
           )}
@@ -89,7 +97,11 @@ export default function TextInput({
             maxLength={maxLength}
             className={`${errors[id] && 'border-danger'}`}
             style={{
+<<<<<<< HEAD
               fontSize: '0.8rem',
+=======
+              fontSize: '0.9rem',
+>>>>>>> f4d1f8adfe88f8999e130f43d0e79fd885fc3927
               backgroundColor: disabled ? Colors.DISABLED_GRAY : null,
               marginBottom: !disableBottomMargin && !errors[id] ? '1rem' : 0,
               ...style,
@@ -101,7 +113,11 @@ export default function TextInput({
           {errors[id] && (
             <div
               style={{
+<<<<<<< HEAD
                 fontSize: '0.8rem',
+=======
+                fontSize: '0.9rem',
+>>>>>>> f4d1f8adfe88f8999e130f43d0e79fd885fc3927
                 marginBottom: !disableBottomMargin ? '0.5rem' : 0,
                 marginTop: '0.5rem',
               }}
