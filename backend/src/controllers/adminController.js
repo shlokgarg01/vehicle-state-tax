@@ -16,12 +16,13 @@ export const searchUsers = asyncHandler(async (req, res) => {
       .pagination(resultPerPage);
 
     const users = await apiFeatures.query;
-
+    const totalUsersCount = await User.countDocuments();
     res.status(200).json({
       success: true,
       count: users.length,
       users,
       resultPerPage,
+      totalUsersCount,
     });
   } catch (error) {
     console.error("Error in searchUsers:", error);

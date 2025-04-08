@@ -8,18 +8,33 @@ const PER_PAGE = 10
 export const getAndSearchUsers = (params) => async (dispatch) => {
   try {
     dispatch({ type: TAX_USER_CONSTANTS.GET_ALL_USERS_REQUEST })
-    // const { page = 1, perPage = PER_PAGE, contactNumber } = params
-    let url = `${PREFIX}/users`
+    const { page = 1, perPage = PER_PAGE, contactNumber } = params
+    let url = `${PREFIX}/users?page=${page}&perPage=${perPage}`
+    if (contactNumber) {
+      url += `&contactNumber=${contactNumber}`
+    }
     const { data } = await axiosInstance.get(url)
     console.log(data)
 
     console.log(data.users)
-    console.log(data.count)
 
-    dispatch({ type: TAX_USER_CONSTANTS.GET_ALL_USERS_SUCCESS, payload: data.users })
+    dispatch({ type: TAX_USER_CONSTANTS.GET_ALL_USERS_SUCCESS, payload: data })
   } catch (error) {
     dispatch({
       type: TAX_USER_CONSTANTS.GET_ALL_USERS_FAIL,
+      payload: error.response,
+    })
+  }
+}
+export const deleteSingleUser = (id) => async (dispatch) => {
+  try {
+    dispatch({ type: TAX_USER_CONSTANTS.DELETE_USER_REQUEST })
+    await axiosInstance.delete(`${PREFIX}/user/${id}`)
+
+    dispatch({ type: TAX_USER_CONSTANTS.DELETE_USER_SUCCESS, payload: id })
+  } catch (error) {
+    dispatch({
+      type: TAX_USER_CONSTANTS.DELETE_USER_FAIL,
       payload: error.response,
     })
   }
