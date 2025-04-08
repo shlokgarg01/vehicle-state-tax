@@ -50,7 +50,7 @@ class ApiFeatures {
       }
       // Apply exact match for numbers
       else {
-        mongoFilter[key] = value;
+        mongoFilter[key] = isNaN(value) ? value : Number(value);
       }
     });
 

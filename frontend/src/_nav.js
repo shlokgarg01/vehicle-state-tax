@@ -43,14 +43,18 @@ const _nav = (role) => {
       icon: <CIcon icon={cilPuzzle} customClassName="nav-icon" />,
       items: [
         { component: CNavItem, name: 'All users', to: '/user/search' },
-        { component: CNavItem, name: 'search user', to: '/user/search' },
+        // { component: CNavItem, name: 'search user', to: '/user/search' },
       ],
     },
     isAdmin && {
-      component: CNavItem,
+      component: CNavGroup,
       name: 'Employees',
-      to: '/employee',
+      // to: '/employee',
       icon: <CIcon icon={cilSpeedometer} customClassName="nav-icon" />,
+      items: [
+        { component: CNavItem, name: 'All employee', to: '/employee' },
+        // { component: CNavItem, name: 'search user', to: '/user/search' },
+      ],
     },
     isAdmin && {
       component: CNavItem,

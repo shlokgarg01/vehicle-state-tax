@@ -27,7 +27,7 @@ import Pagination from '../../components/Pagination/Pagination'
 
 import { deleteSingleUser, getAndSearchUsers } from '../../actions/taxUserAction'
 
-export default function userSearch() {
+export default function EmployeeList() {
   const dispatch = useDispatch()
 
   const allTaxUsersState = useSelector((state) => state.allTaxUsers)
@@ -37,7 +37,7 @@ export default function userSearch() {
 
   const { isDeleted } = useSelector((state) => state.deleteUser)
 
-  // const [contactNumber, setContactNumber] = useState(0)
+  const [contactNumber, setContactNumber] = useState(0)
   const [search, setSearch] = useState('')
   const [user, setUser] = useState()
   const [currentPage, setCurrentPage] = useState(1)
@@ -56,14 +56,12 @@ export default function userSearch() {
 
   const handleSearch = (e) => {
     e.preventDefault()
-    setCurrentPage(1)
-    if (!search.trim()) {
-      dispatch(getAndSearchUsers({ page: currentPage }))
-    } else {
-      dispatch(getAndSearchUsers({ search, page: currentPage }))
+    if (!search) {
+      setErrors({ contactNumber: 'Contact number is required' })
+      return
     }
 
-    // dispatch(getAndSearchUsers({ search, page: currentPage }))
+    dispatch(getAndSearchUsers({ contactNumber: search }))
   }
   console.log(taxusers)
   useEffect(() => {
@@ -76,7 +74,7 @@ export default function userSearch() {
 
   console.log(taxusers?.users?.lengt)
   useEffect(() => {
-    dispatch(getAndSearchUsers({ page: currentPage, search }))
+    dispatch(getAndSearchUsers({ page: currentPage, contactNumber: search }))
   }, [dispatch, currentPage])
 
   return loading ? (
@@ -153,7 +151,6 @@ export default function userSearch() {
                           btnSmall
                           marginBottom
                           marginTop
-                          disabled={loading}
                         ></Button>
                       </CCol>
                     </CTableDataCell>

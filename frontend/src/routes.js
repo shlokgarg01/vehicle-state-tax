@@ -8,6 +8,7 @@ import CreateRoadTaxPrice from './views/roadTax/createRoadTaxPrice'
 
 import Home from './views/Home/Home'
 import userSearch from './views/user/userSearch'
+import EmployeeList from './views/employee/EmployeeList'
 
 const routes = [
   { path: '/', exact: true, name: 'Home', element: Home },
@@ -21,6 +22,7 @@ const routes = [
   { path: '/road_tax/price', name: 'Create Price', element: CreateRoadTaxPrice },
 
   { path: '/user/search', name: 'Users ', element: userSearch },
+  { path: '/employee', name: 'Employee ', element: EmployeeList },
 ]
 
 export default routes

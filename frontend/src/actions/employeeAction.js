@@ -8,10 +8,10 @@ const PER_PAGE = 10
 export const getAndSearchUsers = (params) => async (dispatch) => {
   try {
     dispatch({ type: TAX_USER_CONSTANTS.GET_ALL_USERS_REQUEST })
-    const { page = 1, perPage = PER_PAGE, search } = params
+    const { page = 1, perPage = PER_PAGE, contactNumber } = params
     let url = `${PREFIX}/users?page=${page}&perPage=${perPage}`
-    if (search) {
-      url += `&search=${search}`
+    if (contactNumber) {
+      url += `&contactNumber=${contactNumber}`
     }
     const { data } = await axiosInstance.get(url)
     console.log(data)
@@ -39,3 +39,5 @@ export const deleteSingleUser = (id) => async (dispatch) => {
     })
   }
 }
+
+export const updateEmployee = (id, params) => async (dispatch) => {}
