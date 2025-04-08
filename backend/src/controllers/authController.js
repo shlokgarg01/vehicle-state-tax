@@ -24,7 +24,7 @@ export const sendOTPForLogin = asyncHandler(async (req, res, next) => {
 
     await OTP.deleteMany({ contactNumber });
 
-    const otpRecord = await OTP.create({
+    await OTP.create({
       contactNumber,
       otpHash: hash,
       expiresAt: new Date(Date.now() + 3 * 60 * 1000),
@@ -32,7 +32,9 @@ export const sendOTPForLogin = asyncHandler(async (req, res, next) => {
 
     await sendOTP(otp, contactNumber);
 
-    res.status(200).json({ success: true, message: "OTP sent successfully" });
+    res
+      .status(200)
+      .json({ success: true, message: "OTP sent successfully", otp });
   } catch (error) {
     console.error(" Error in sendOTPForLogin:", error);
     next(new ErrorHandler("Internal Server Error", 500));
