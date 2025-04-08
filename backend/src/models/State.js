@@ -6,7 +6,7 @@ const StateSchema = new mongoose.Schema(
   {
     mode: {
       type: String,
-      enum: [CONSTANTS.MODES.ROAD, CONSTANTS.MODES.BORDER],
+      enum: Object.values(CONSTANTS.TAX_CATEGORIES),
       required: true,
     },
     name: {

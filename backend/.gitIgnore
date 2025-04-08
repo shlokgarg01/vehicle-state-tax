@@ -142,3 +142,7 @@ dist
 node_modules/cloudinary
 
 node_modules\@cloudinary\url-gen\dist
+
+
+./src/firebase/config.json
+/src/firebase/config.json

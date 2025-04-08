@@ -13,7 +13,7 @@ import CONSTANTS from "../constants/constants.js";
 const stateRoutes = express.Router();
 
 stateRoutes.post(
-  "/",
+  "/new",
   isAuthenticatedUser,
   authorizeRoles([CONSTANTS.USER_ROLES.ADMIN]),
   createState
@@ -23,6 +23,13 @@ stateRoutes.get(
   isAuthenticatedUser,
   authorizeRoles(CONSTANTS.USER_ROLES.ADMIN),
   getAllStates
+);
+
+stateRoutes.put(
+  "/:id",
+  isAuthenticatedUser,
+  authorizeRoles([CONSTANTS.USER_ROLES.ADMIN]),
+  updateState
 );
 
 export default stateRoutes;

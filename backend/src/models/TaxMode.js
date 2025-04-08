@@ -1,17 +1,18 @@
 import mongoose from "mongoose";
 import CONSTANTS from "../constants/constants.js";
 import MongooseDelete from "mongoose-delete";
+import COLLECTION_NAMES from '../constants/collection.js'
 
 const TaxModeSchema = new mongoose.Schema(
   {
     state: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "State",
+      ref: COLLECTION_NAMES.STATE,
       required: true,
     },
     mode: {
       type: String,
-      enum: [CONSTANTS.MODES.ROAD, CONSTANTS.MODES.BORDER],
+      enum: Object.values(CONSTANTS.TAX_CATEGORIES),
       required: true,
     },
     taxMode: {
@@ -27,9 +28,10 @@ const TaxModeSchema = new mongoose.Schema(
   },
   { timestamps: true }
 );
+
 TaxModeSchema.plugin(MongooseDelete, {
   deletedAt: true,
   overrideMethods: "all",
 });
 
-export default mongoose.model("TaxMode", TaxModeSchema);
+export default mongoose.model(COLLECTION_NAMES.TAX_MODE, TaxModeSchema);

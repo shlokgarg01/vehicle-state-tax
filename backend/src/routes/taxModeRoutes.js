@@ -13,23 +13,23 @@ import CONSTANTS from "../constants/constants.js";
 const router = express.Router();
 
 router.post(
-  "/",
+  "/new",
   isAuthenticatedUser,
-  authorizeRoles(CONSTANTS.USER_ROLES.ADMIN),
+  authorizeRoles([CONSTANTS.USER_ROLES.ADMIN]),
   createTaxMode
 );
 
 router.get(
   "/",
   isAuthenticatedUser,
-  authorizeRoles(CONSTANTS.USER_ROLES.ADMIN),
+  authorizeRoles([CONSTANTS.USER_ROLES.ADMIN]),
   getAllTaxModes
 );
 
 router.put(
   "/:id",
   isAuthenticatedUser,
-  authorizeRoles(CONSTANTS.USER_ROLES.ADMIN),
+  authorizeRoles([CONSTANTS.USER_ROLES.ADMIN]),
   updateTaxMode
 );
 

@@ -7,16 +7,13 @@ import config from "../config/config.js";
 
 // Middleware to protect routes with JWT authentication
 export const isAuthenticatedUser = asyncHandler(async (req, res, next) => {
-  let token = null;
-
-  // Get token from Bearer format
-  const authHeader = req.headers["authorization"];
-  if (authHeader && authHeader.startsWith("Bearer ")) {
-    token = authHeader.split(" ")[1];
+  let token = null
+  if (token === null || token === undefined) {
+    token = req.headers['authorization']
   }
 
-  if (!token) {
-    return next(new ErrorHandler("Please login to access this resource.", 401));
+  if(!token) {
+    return next(new ErrorHandler("Please login to access this resource.", 401))
   }
 
   try {
@@ -26,14 +23,15 @@ export const isAuthenticatedUser = asyncHandler(async (req, res, next) => {
       (await Employee.findById(decodedData.userId));
 
     if (!user) {
-      return next(new ErrorHandler("User not found for this token.", 401));
+      return next(
+        new ErrorHandler("Invalid authentication token. Please login.", 401)
+      );
     }
 
     req.user = user;
     req.role = decodedData.role;
     next();
   } catch (error) {
-    console.error("JWT Error:", error.message);
     return next(new ErrorHandler("Invalid or expired token.", 401));
   }
 });
