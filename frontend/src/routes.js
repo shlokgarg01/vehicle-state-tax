@@ -7,7 +7,7 @@ import CreateRoadTaxMode from './views/roadTax/createRoadTaxMode'
 import CreateRoadTaxPrice from './views/roadTax/createRoadTaxPrice'
 
 import Home from './views/Home/Home'
-import userSearch from './views/user/userSearch'
+import userSearch from './views/user/userList'
 import EmployeeList from './views/employee/EmployeeList'
 
 const routes = [

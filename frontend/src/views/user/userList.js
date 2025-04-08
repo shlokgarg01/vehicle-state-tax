@@ -24,20 +24,18 @@ import { showToast } from '../../utils/toast'
 import NoData from '../../components/NoData'
 import Pagination from '../../components/Pagination/Pagination'
 import { deleteSingleUser, getAndSearchUsers } from '../../actions/usersAction'
+import Constants from '../../utils/constants'
 
 export default function UserSearch() {
   const dispatch = useDispatch()
 
-  const { loading, users } = useSelector((state) => state.users)
+  const { loading, users, errors } = useSelector((state) => state.users)
   const { isDeleted } = useSelector((state) => state.deleteUser)
 
   const [search, setSearch] = useState('')
   const [currentPage, setCurrentPage] = useState(1)
   const [isDeleteModalVisible, setIsDeleteModalVisible] = useState(false)
   const [stateToDelete, setStateToDelete] = useState(null)
-  const [errors, setErrors] = useState({})
-
-  const PER_PAGE = 10
 
   const toggleStateStatus = (id) => {
     dispatch(deleteSingleUser(id))
@@ -64,7 +62,7 @@ export default function UserSearch() {
   }, [isDeleted, dispatch, currentPage])
 
   useEffect(() => {
-    dispatch(getAndSearchUsers({ page: currentPage, search, perPage: PER_PAGE }))
+    dispatch(getAndSearchUsers({ page: currentPage, search }))
   }, [dispatch, currentPage])
 
   return loading ? (
@@ -102,7 +100,7 @@ export default function UserSearch() {
                   title="Reset"
                   onClick={() => {
                     setSearch('')
-                    setErrors({})
+
                     dispatch(getAndSearchUsers({ page: 1 }))
                   }}
                   type="button"
@@ -139,7 +137,7 @@ export default function UserSearch() {
                   <CTableRow key={index + 1}>
                     {/* serial number */}
                     <CTableHeaderCell scope="row">
-                      {(currentPage - 1) * PER_PAGE + index + 1}
+                      {(currentPage - 1) * Constants.ITEMS_PER_PAGE + index + 1}
                     </CTableHeaderCell>
                     {/* contact number */}
                     <CTableDataCell>{stateData.contactNumber}</CTableDataCell>
@@ -166,7 +164,7 @@ export default function UserSearch() {
             </CTable>
             <Pagination
               currentPage={currentPage}
-              totalPages={Math.ceil(users?.totalUsersCount / users.resultPerPage)}
+              totalPages={Math.ceil(users?.totalUsersCount / users.resultsPerPage)}
               onPageChange={setCurrentPage}
             />
           </CCardBody>

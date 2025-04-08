@@ -4,17 +4,16 @@ import ApiFeatures from "../utils/apiFeatures.js";
 import Employee from "../models/Employee.js";
 import CONSTANTS from "../constants/constants.js";
 
-
 export const searchUsers = asyncHandler(async (req, res) => {
   try {
-    const resultPerPage = Number(req.query.perPage) || 10;
+    const resultsPerPage = Number(req.query.perPage) || 10;
 
     const apiFeatures = new ApiFeatures(User.find(), req.query)
       .search(["contactNumber"])
       .filter()
-      .pagination(resultPerPage);
+      .pagination(resultsPerPage);
 
-    const filteredUsersQuery = apiFeatures.query.clone(); 
+    const filteredUsersQuery = apiFeatures.query.clone();
     const filteredUsersCount = await filteredUsersQuery.countDocuments();
     const users = await apiFeatures.query;
     const totalUsersCount = await User.countDocuments();
@@ -22,7 +21,7 @@ export const searchUsers = asyncHandler(async (req, res) => {
       success: true,
       count: users.length,
       users,
-      resultPerPage,
+      resultsPerPage,
       totalUsersCount,
       filteredUsersCount,
     });
@@ -35,7 +34,7 @@ export const searchUsers = asyncHandler(async (req, res) => {
 // view managers
 export const viewManagers = asyncHandler(async (req, res) => {
   try {
-    const resultPerPage = Number(req.query.perPage) || 10;
+    const resultsPerPage = Number(req.query.perPage) || 10;
     const baseQuery = Employee.find().select("-password");
     const apiFeatures = new ApiFeatures(baseQuery, req.query)
       .search(["username", "email", "contactNumber"])
@@ -43,7 +42,7 @@ export const viewManagers = asyncHandler(async (req, res) => {
 
     const filter = apiFeatures.query.getFilter();
 
-    apiFeatures.pagination(resultPerPage);
+    apiFeatures.pagination(resultsPerPage);
 
     const [managers, totalManagers] = await Promise.all([
       apiFeatures.query,
@@ -54,8 +53,8 @@ export const viewManagers = asyncHandler(async (req, res) => {
       success: true,
       managers,
       totalManagers,
-      resultPerPage,
-      totalPages: Math.ceil(totalManagers / resultPerPage),
+      resultsPerPage,
+      totalPages: Math.ceil(totalManagers / resultsPerPage),
       currentPage: Number(req.query.page) || 1,
     });
   } catch (error) {

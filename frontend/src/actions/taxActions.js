@@ -1,8 +1,8 @@
 import { TAX_CONSTANTS } from '../constants/taxConstants'
+import Constants from '../utils/constants'
 import axiosInstance from '../utils/config'
 
 const PREFIX = 'api/v1/state'
-const PER_PAGE = 10
 
 // Create a New State
 export const createTaxState = (params) => async (dispatch) => {
@@ -22,7 +22,7 @@ export const createTaxState = (params) => async (dispatch) => {
 // Get All States
 export const getTaxStates = (params) => async (dispatch) => {
   try {
-    const { page = 1, perPage = PER_PAGE, mode } = params
+    const { page = 1, perPage = Constants.ITEMS_PER_PAGE, mode } = params
     dispatch({ type: TAX_CONSTANTS.GET_ALL_STATES_REQUEST })
     let url = `${PREFIX}?page=${page}&perPage=${perPage}&mode=${mode}`
 

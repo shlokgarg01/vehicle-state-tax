@@ -13,7 +13,7 @@ export const usersReducer = (state = { users: [] }, action) => {
         loading: false,
         users: action.payload,
         success: true,
-        resultPerPage: action.resultPerPage,
+        resultsPerPage: action.resultsPerPage,
       }
     case USERS_CONSTANTS.GET_ALL_USERS_FAIL:
       return {

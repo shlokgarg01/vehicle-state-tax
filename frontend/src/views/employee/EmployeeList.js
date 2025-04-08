@@ -25,15 +25,15 @@ import NoData from '../../components/NoData'
 
 import Pagination from '../../components/Pagination/Pagination'
 
-import { deleteSingleUser, getAndSearchUsers } from '../../actions/taxUserAction'
-
+import { deleteSingleUser, getAndSearchUsers } from '../../actions/usersAction'
+import { getAndSearchEmployee } from '../../actions/employeeAction'
+import Constants from '../../utils/constants'
 export default function EmployeeList() {
   const dispatch = useDispatch()
 
   const allTaxUsersState = useSelector((state) => state.allTaxUsers)
-  console.log('Redux State:', allTaxUsersState)
+
   const { loading, taxusers } = allTaxUsersState
-  console.log('tax users', taxusers)
 
   const { isDeleted } = useSelector((state) => state.deleteUser)
 
@@ -44,10 +44,6 @@ export default function EmployeeList() {
   const [isDeleteModalVisible, setIsDeleteModalVisible] = useState(false)
   const [stateToDelete, setStateToDelete] = useState(null)
   const [errors, setErrors] = useState({})
-
-  const PER_PAGE = 10
-
-  console.log(stateToDelete)
 
   const toggleStateStatus = (id) => {
     dispatch(deleteSingleUser(id))
@@ -61,20 +57,20 @@ export default function EmployeeList() {
       return
     }
 
-    dispatch(getAndSearchUsers({ contactNumber: search }))
+    dispatch(getAndSearchEmployee({ search }))
+    setCurrentPage(1)
   }
-  console.log(taxusers)
+
   useEffect(() => {
     if (isDeleted) {
       showToast('User Deleted')
-      dispatch(getAndSearchUsers({ page: currentPage }))
+      dispatch(getAndSearchEmployee({ page: currentPage }))
       setIsDeleteModalVisible(false)
     }
   }, [isDeleted, dispatch, currentPage])
 
-  console.log(taxusers?.users?.lengt)
   useEffect(() => {
-    dispatch(getAndSearchUsers({ page: currentPage, contactNumber: search }))
+    dispatch(getAndSearchEmployee({ page: currentPage, search }))
   }, [dispatch, currentPage])
 
   return loading ? (
@@ -134,7 +130,7 @@ export default function EmployeeList() {
                   <CTableRow key={index + 1}>
                     {/* serial number */}
                     <CTableHeaderCell scope="row">
-                      {(currentPage - 1) * PER_PAGE + index + 1}
+                      {(currentPage - 1) * Constants.ITEMS_PER_PAGE + index + 1}
                     </CTableHeaderCell>
                     {/* contact number */}
                     <CTableDataCell>{stateData.contactNumber}</CTableDataCell>
@@ -160,7 +156,7 @@ export default function EmployeeList() {
             </CTable>
             <Pagination
               currentPage={currentPage}
-              totalPages={Math.ceil(taxusers?.totalUsersCount / taxusers.resultPerPage)}
+              totalPages={Math.ceil(taxusers?.totalUsersCount / taxusers.resultsPerPage)}
               onPageChange={setCurrentPage}
             />
           </CCardBody>
@@ -172,7 +168,6 @@ export default function EmployeeList() {
         onVisibleToggle={() => setIsDeleteModalVisible(!isDeleteModalVisible)}
         onSubmitBtnClick={() => {
           toggleStateStatus(stateToDelete)
-          console.log(stateToDelete)
         }}
         onClose={() => setIsDeleteModalVisible(false)}
         title="Delete User"
