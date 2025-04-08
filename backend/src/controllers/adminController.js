@@ -4,8 +4,7 @@ import ApiFeatures from "../utils/apiFeatures.js";
 import Employee from "../models/Employee.js";
 import CONSTANTS from "../constants/constants.js";
 
-// search users
-// search contact with exact Number
+
 export const searchUsers = asyncHandler(async (req, res) => {
   try {
     const resultPerPage = Number(req.query.perPage) || 10;
@@ -15,6 +14,8 @@ export const searchUsers = asyncHandler(async (req, res) => {
       .filter()
       .pagination(resultPerPage);
 
+    const filteredUsersQuery = apiFeatures.query.clone(); 
+    const filteredUsersCount = await filteredUsersQuery.countDocuments();
     const users = await apiFeatures.query;
     const totalUsersCount = await User.countDocuments();
     res.status(200).json({
@@ -23,6 +24,7 @@ export const searchUsers = asyncHandler(async (req, res) => {
       users,
       resultPerPage,
       totalUsersCount,
+      filteredUsersCount,
     });
   } catch (error) {
     console.error("Error in searchUsers:", error);
@@ -39,10 +41,8 @@ export const viewManagers = asyncHandler(async (req, res) => {
       .search(["username", "email", "contactNumber"])
       .filter();
 
-    // Get filter object **after search + filter applied**
     const filter = apiFeatures.query.getFilter();
 
-    // Pagination applied last
     apiFeatures.pagination(resultPerPage);
 
     const [managers, totalManagers] = await Promise.all([
@@ -54,6 +54,7 @@ export const viewManagers = asyncHandler(async (req, res) => {
       success: true,
       managers,
       totalManagers,
+      resultPerPage,
       totalPages: Math.ceil(totalManagers / resultPerPage),
       currentPage: Number(req.query.page) || 1,
     });

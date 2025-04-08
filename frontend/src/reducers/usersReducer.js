@@ -1,25 +1,25 @@
-import { TAX_USER_CONSTANTS } from '../constants/taxUsersConstants'
+import { USERS_CONSTANTS } from '../constants/usersConstants'
 
-export const allTaxUsersReducer = (state = { taxusers: [] }, action) => {
+export const usersReducer = (state = { users: [] }, action) => {
   switch (action.type) {
-    case TAX_USER_CONSTANTS.GET_ALL_USERS_REQUEST:
+    case USERS_CONSTANTS.GET_ALL_USERS_REQUEST:
       return {
         ...state,
         loading: true,
       }
-    case TAX_USER_CONSTANTS.GET_ALL_USERS_SUCCESS:
+    case USERS_CONSTANTS.GET_ALL_USERS_SUCCESS:
       return {
         ...state,
         loading: false,
-        taxusers: action.payload,
+        users: action.payload,
         success: true,
         resultPerPage: action.resultPerPage,
       }
-    case TAX_USER_CONSTANTS.GET_ALL_USERS_FAIL:
+    case USERS_CONSTANTS.GET_ALL_USERS_FAIL:
       return {
         ...state,
         loading: false,
-        taxusers: [],
+        users: [],
         error: action.payload,
       }
     default:
@@ -29,25 +29,25 @@ export const allTaxUsersReducer = (state = { taxusers: [] }, action) => {
 
 export const deleteSingleUser = (state = {}, action) => {
   switch (action.type) {
-    case TAX_USER_CONSTANTS.DELETE_USER_REQUEST:
+    case USERS_CONSTANTS.DELETE_USER_REQUEST:
       return {
         ...state,
         loading: true,
       }
-    case TAX_USER_CONSTANTS.DELETE_USER_SUCCESS:
+    case USERS_CONSTANTS.DELETE_USER_SUCCESS:
       return {
         ...state,
         loading: false,
         isDeleted: true,
       }
-    case TAX_USER_CONSTANTS.DELETE_USER_FAIL:
+    case USERS_CONSTANTS.DELETE_USER_FAIL:
       return {
         ...state,
         loading: false,
         error: action.payload,
         isDeleted: false,
       }
-    case TAX_USER_CONSTANTS.CLEAR_ERRORS:
+    case USERS_CONSTANTS.CLEAR_ERRORS:
       return {
         ...state,
         error: null,

@@ -23,12 +23,12 @@ import Modal from '../../components/Modal/Modal'
 import { showToast } from '../../utils/toast'
 import NoData from '../../components/NoData'
 import Pagination from '../../components/Pagination/Pagination'
-import { deleteSingleUser, getAndSearchUsers } from '../../actions/taxUserAction'
+import { deleteSingleUser, getAndSearchUsers } from '../../actions/usersAction'
 
 export default function UserSearch() {
   const dispatch = useDispatch()
 
-  const { loading, taxusers } = useSelector((state) => state.allTaxUsers)
+  const { loading, users } = useSelector((state) => state.users)
   const { isDeleted } = useSelector((state) => state.deleteUser)
 
   const [search, setSearch] = useState('')
@@ -119,9 +119,9 @@ export default function UserSearch() {
 
       <CCard>
         <CCardHeader>
-          <strong>Users ({taxusers.filteredUsersCount})</strong>
+          <strong>Users ({users.filteredUsersCount})</strong>
         </CCardHeader>
-        {taxusers?.users?.length === 0 ? (
+        {users?.users?.length === 0 ? (
           <NoData title="No User Found" />
         ) : (
           <CCardBody>
@@ -135,7 +135,7 @@ export default function UserSearch() {
                 </CTableRow>
               </CTableHead>
               <CTableBody>
-                {taxusers?.users?.map((stateData, index) => (
+                {users?.users?.map((stateData, index) => (
                   <CTableRow key={index + 1}>
                     {/* serial number */}
                     <CTableHeaderCell scope="row">
@@ -166,7 +166,7 @@ export default function UserSearch() {
             </CTable>
             <Pagination
               currentPage={currentPage}
-              totalPages={Math.ceil(taxusers?.totalUsersCount / taxusers.resultPerPage)}
+              totalPages={Math.ceil(users?.totalUsersCount / users.resultPerPage)}
               onPageChange={setCurrentPage}
             />
           </CCardBody>

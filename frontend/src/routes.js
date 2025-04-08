@@ -21,7 +21,7 @@ const routes = [
   { path: '/road_tax/tax_mode', name: 'Create Tax Mode', element: CreateRoadTaxMode },
   { path: '/road_tax/price', name: 'Create Price', element: CreateRoadTaxPrice },
 
-  { path: '/user/search', name: 'Users ', element: userSearch },
+  { path: '/user', name: 'Users ', element: userSearch },
   { path: '/employee', name: 'Employee ', element: EmployeeList },
 ]
 

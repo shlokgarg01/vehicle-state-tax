@@ -46,7 +46,7 @@ const _nav = (role) => {
     isAdmin && {
       component: CNavGroup,
       name: 'Employees',
-      // to: '/employee',
+  
       icon: <CIcon icon={cilSpeedometer} customClassName="nav-icon" />,
       items: [{ component: CNavItem, name: 'All employee', to: '/employee' }],
     },
