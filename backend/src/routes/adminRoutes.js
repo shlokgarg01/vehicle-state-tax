@@ -23,7 +23,7 @@ adminRoutes.get(
 );
 
 adminRoutes.get(
-  "/managers",
+  "/employee",
   isAuthenticatedUser,
   authorizeRoles([CONSTANTS.USER_ROLES.ADMIN]),
   viewManagers
