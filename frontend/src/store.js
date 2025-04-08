@@ -21,11 +21,14 @@ const reducer = combineReducers({
   sidebarShow: toggleSidebar,
 
   user: userReducer.loadUserReducer,
+
   users: taxUserReducer.usersReducer,
+  deleteUser: taxUserReducer.deleteSingleUser,
+
   getEmployee: employeeReducer.employeeGetReducer,
   deleteEmployee: employeeReducer.employeeDeleteReducer,
   updateEmployee: employeeReducer.updateSingleEmployee,
-  deleteUser: taxUserReducer.deleteSingleUser,
+
   createState: taxReducer.createStateReducer,
   allStates: taxReducer.allStatesReducer,
   state: taxReducer.updateStateReducer,
