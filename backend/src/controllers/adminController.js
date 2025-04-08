@@ -21,6 +21,7 @@ export const searchUsers = asyncHandler(async (req, res) => {
       success: true,
       count: users.length,
       users,
+      resultPerPage,
     });
   } catch (error) {
     console.error("Error in searchUsers:", error);

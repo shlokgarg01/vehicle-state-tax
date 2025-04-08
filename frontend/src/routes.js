@@ -7,6 +7,7 @@ import CreateRoadTaxMode from './views/roadTax/createRoadTaxMode'
 import CreateRoadTaxPrice from './views/roadTax/createRoadTaxPrice'
 
 import Home from './views/Home/Home'
+import userSearch from './views/user/userSearch'
 
 const routes = [
   { path: '/', exact: true, name: 'Home', element: Home },
@@ -18,6 +19,8 @@ const routes = [
   { path: '/road_tax/state', name: 'Create State', element: CreateRoadTaxState },
   { path: '/road_tax/tax_mode', name: 'Create Tax Mode', element: CreateRoadTaxMode },
   { path: '/road_tax/price', name: 'Create Price', element: CreateRoadTaxPrice },
+
+  { path: '/user/search', name: 'Users ', element: userSearch },
 ]
 
 export default routes

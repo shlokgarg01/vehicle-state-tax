@@ -3,6 +3,7 @@ import { thunk } from 'redux-thunk'
 import { composeWithDevTools } from '@redux-devtools/extension'
 import * as userReducer from './reducers/userReducer'
 import * as taxReducer from './reducers/taxReducer'
+import * as taxUserReducer from './reducers/taxUserReducer'
 
 const initialState = { sidebarShow: true }
 
@@ -19,6 +20,7 @@ const reducer = combineReducers({
   sidebarShow: toggleSidebar,
 
   user: userReducer.loadUserReducer,
+  allTaxUsers: taxUserReducer.allTaxUsersReducer,
 
   createState: taxReducer.createStateReducer,
   allStates: taxReducer.allStatesReducer,

@@ -16,7 +16,9 @@ export const isAuthenticatedUser = catchAsyncErrors(async (req, res, next) => {
   }
 
   const decodedData = jwt.verify(token, config.JWT.secret);
-  const user = await User.findById(decodedData.userId) || await Employee.findById(decodedData.userId);
+  const user =
+    (await User.findById(decodedData.userId)) ||
+    (await Employee.findById(decodedData.userId));
   if (!user) {
     return next(
       new ErrorHandler("Invalid authentication token. Please login.", 401)

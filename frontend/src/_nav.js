@@ -37,10 +37,14 @@ const _nav = (role) => {
       ],
     },
     isAdmin && {
-      component: CNavItem,
+      component: CNavGroup,
       name: 'Users',
-      to: '/users',
-      icon: <CIcon icon={cilDrop} customClassName="nav-icon" />,
+      // to: '/users',
+      icon: <CIcon icon={cilPuzzle} customClassName="nav-icon" />,
+      items: [
+        { component: CNavItem, name: 'All users', to: '/user/search' },
+        { component: CNavItem, name: 'search user', to: '/user/search' },
+      ],
     },
     isAdmin && {
       component: CNavItem,
