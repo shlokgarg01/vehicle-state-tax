@@ -1,6 +1,6 @@
 import { EMPLOYEE_CONSTANTS } from '../constants/employeeConstants'
 
-export const usersReducer = (state = { users: [] }, action) => {
+export const employeeGetReducer = (state = { users: [] }, action) => {
   switch (action.type) {
     case EMPLOYEE_CONSTANTS.GET_EMPLOYEE_REQUEST:
       return {
@@ -27,7 +27,7 @@ export const usersReducer = (state = { users: [] }, action) => {
   }
 }
 
-export const deleteSingleUser = (state = {}, action) => {
+export const employeeDeleteReducer = (state = {}, action) => {
   switch (action.type) {
     case EMPLOYEE_CONSTANTS.DELETE_EMPLOYEE_REQUEST:
       return {
