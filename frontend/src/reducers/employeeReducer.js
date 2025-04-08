@@ -60,18 +60,18 @@ export const employeeDeleteReducer = (state = {}, action) => {
 
 export const updateSingleEmployee = (state = {}, action) => {
   switch (action.type) {
-    case EMPLOYEE_CONSTANTS.DELETE_EMPLOYEE_REQUEST:
+    case EMPLOYEE_CONSTANTS.UPDATE_EMPLOYEE_REQUEST:
       return {
         ...state,
         loading: true,
       }
-    case EMPLOYEE_CONSTANTS.DELETE_EMPLOYEE_SUCCESS:
+    case EMPLOYEE_CONSTANTS.UPDATE_EMPLOYEE_SUCCESS:
       return {
         ...state,
         loading: false,
         isDeleted: true,
       }
-    case EMPLOYEE_CONSTANTS.DELETE_EMPLOYEE_FAIL:
+    case EMPLOYEE_CONSTANTS.UPDATE_EMPLOYEE_FAIL:
       return {
         ...state,
         loading: false,

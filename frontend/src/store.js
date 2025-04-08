@@ -4,6 +4,7 @@ import { composeWithDevTools } from '@redux-devtools/extension'
 import * as userReducer from './reducers/userReducer'
 import * as taxReducer from './reducers/taxReducer'
 import * as taxUserReducer from './reducers/usersReducer'
+import * as employeeReducer from './reducers/employeeReducer'
 
 const initialState = { sidebarShow: true }
 
@@ -21,6 +22,9 @@ const reducer = combineReducers({
 
   user: userReducer.loadUserReducer,
   users: taxUserReducer.usersReducer,
+  getEmployee: employeeReducer.employeeGetReducer,
+  deleteEmployee: employeeReducer.employeeDeleteReducer,
+  updateEmployee: employeeReducer.updateSingleEmployee,
   deleteUser: taxUserReducer.deleteSingleUser,
   createState: taxReducer.createStateReducer,
   allStates: taxReducer.allStatesReducer,
