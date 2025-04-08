@@ -1,17 +1,23 @@
 import React, { useEffect, useRef } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
 <<<<<<< HEAD
+<<<<<<< HEAD
 import { CContainer, CHeader, CHeaderNav, CHeaderToggler } from '@coreui/react'
 import CIcon from '@coreui/icons-react'
 import { cilMenu } from '@coreui/icons'
 import { AppHeaderDropdown } from './header/index'
 // import User from '../models/userModel'
 =======
+=======
+>>>>>>> f4d1f8adfe88f8999e130f43d0e79fd885fc3927
 import { CContainer, CHeader, CHeaderToggler } from '@coreui/react'
 import CIcon from '@coreui/icons-react'
 import { cilMenu } from '@coreui/icons'
 import { logoutUser } from '../actions/userActions'
 import { showToast } from '../utils/toast'
+<<<<<<< HEAD
+>>>>>>> f4d1f8adfe88f8999e130f43d0e79fd885fc3927
+=======
 >>>>>>> f4d1f8adfe88f8999e130f43d0e79fd885fc3927
 
 const AppHeader = () => {
@@ -19,8 +25,11 @@ const AppHeader = () => {
   const dispatch = useDispatch()
   const { sidebarShow } = useSelector((state) => state.sidebarShow)
 <<<<<<< HEAD
+<<<<<<< HEAD
   // const { user: userState } = useSelector((state) => state.user)
   // const user = new User(userState)
+=======
+>>>>>>> f4d1f8adfe88f8999e130f43d0e79fd885fc3927
 =======
 >>>>>>> f4d1f8adfe88f8999e130f43d0e79fd885fc3927
 
@@ -41,11 +50,14 @@ const AppHeader = () => {
           <CIcon icon={cilMenu} size="lg" />
         </CHeaderToggler>
 <<<<<<< HEAD
+<<<<<<< HEAD
         {/* <div style={{ fontSize: 16 }}>{user.getFullName()}</div> */}
         <CHeaderNav>
           <AppHeaderDropdown />
         </CHeaderNav>
 =======
+=======
+>>>>>>> f4d1f8adfe88f8999e130f43d0e79fd885fc3927
         <div
           onClick={() => {
             dispatch(logoutUser())
@@ -56,6 +68,9 @@ const AppHeader = () => {
         >
           Logout
         </div>
+<<<<<<< HEAD
+>>>>>>> f4d1f8adfe88f8999e130f43d0e79fd885fc3927
+=======
 >>>>>>> f4d1f8adfe88f8999e130f43d0e79fd885fc3927
       </CContainer>
     </CHeader>

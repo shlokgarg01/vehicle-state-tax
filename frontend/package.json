@@ -1,8 +1,14 @@
 {
 <<<<<<< HEAD
+<<<<<<< HEAD
   "name": "Vehicle State Tax",
   "version": "1.0.0",
   "description": "",
+=======
+  "name": "vehicle_state_tax",
+  "version": "5.4.0",
+  "description": "vehicle_state_tax",
+>>>>>>> f4d1f8adfe88f8999e130f43d0e79fd885fc3927
 =======
   "name": "vehicle_state_tax",
   "version": "5.4.0",
@@ -15,8 +21,12 @@
     "lint": "eslint",
     "serve": "vite preview",
 <<<<<<< HEAD
+<<<<<<< HEAD
     "start": "vite",
     "prepare": "husky"
+=======
+    "start": "vite"
+>>>>>>> f4d1f8adfe88f8999e130f43d0e79fd885fc3927
 =======
     "start": "vite"
 >>>>>>> f4d1f8adfe88f8999e130f43d0e79fd885fc3927
@@ -32,7 +42,11 @@
     "@popperjs/core": "^2.11.8",
     "@redux-devtools/extension": "^3.3.0",
 <<<<<<< HEAD
+<<<<<<< HEAD
     "axios": "^1.8.2",
+=======
+    "axios": "^1.8.4",
+>>>>>>> f4d1f8adfe88f8999e130f43d0e79fd885fc3927
 =======
     "axios": "^1.8.4",
 >>>>>>> f4d1f8adfe88f8999e130f43d0e79fd885fc3927
@@ -59,7 +73,10 @@
     "eslint-plugin-react-hooks": "^5.1.0",
     "globals": "^15.15.0",
 <<<<<<< HEAD
+<<<<<<< HEAD
     "husky": "^9.1.7",
+=======
+>>>>>>> f4d1f8adfe88f8999e130f43d0e79fd885fc3927
 =======
 >>>>>>> f4d1f8adfe88f8999e130f43d0e79fd885fc3927
     "postcss": "^8.5.2",

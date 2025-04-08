@@ -5,6 +5,7 @@ import store from './store'
 import './scss/style.scss'
 import 'react-toastify/dist/ReactToastify.css'
 <<<<<<< HEAD
+<<<<<<< HEAD
 // import { loadUser } from './actions/userActions'
 import ProtectedRoute from './routes/protectedRoutes'
 const DefaultLayout = React.lazy(() => import('./layout/DefaultLayout'))
@@ -15,6 +16,8 @@ const App = () => {
   //   store.dispatch(loadUser())
   // }, [])
 =======
+=======
+>>>>>>> f4d1f8adfe88f8999e130f43d0e79fd885fc3927
 import { loadUser } from './actions/userActions'
 import ProtectedRoute from './routes/protectedRoutes'
 
@@ -26,6 +29,9 @@ const App = () => {
   useEffect(() => {
     store.dispatch(loadUser())
   }, [])
+<<<<<<< HEAD
+>>>>>>> f4d1f8adfe88f8999e130f43d0e79fd885fc3927
+=======
 >>>>>>> f4d1f8adfe88f8999e130f43d0e79fd885fc3927
 
   return (
@@ -33,6 +39,10 @@ const App = () => {
       <ToastContainer />
       <Routes>
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+        <Route exact path="/login" name="Login Page" element={<Login />} />
+>>>>>>> f4d1f8adfe88f8999e130f43d0e79fd885fc3927
 =======
         <Route exact path="/login" name="Login Page" element={<Login />} />
 >>>>>>> f4d1f8adfe88f8999e130f43d0e79fd885fc3927

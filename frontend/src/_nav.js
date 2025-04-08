@@ -1,6 +1,7 @@
 import React from 'react'
 import CIcon from '@coreui/icons-react'
 <<<<<<< HEAD
+<<<<<<< HEAD
 import { cilSpeedometer } from '@coreui/icons'
 import { CNavGroup } from '@coreui/react'
 import Enums from './utils/enums'
@@ -46,6 +47,8 @@ const _nav = (role) => {
     },
   ].filter(Boolean) // This removes the false values from the array
 =======
+=======
+>>>>>>> f4d1f8adfe88f8999e130f43d0e79fd885fc3927
 import { cilDrop, cilPuzzle, cilSpeedometer, cilCalculator } from '@coreui/icons'
 import { CNavGroup, CNavItem } from '@coreui/react'
 import Constants from './utils/constants'
@@ -193,6 +196,9 @@ const _nav = (role) => {
       ],
     },
   ].filter(Boolean)
+<<<<<<< HEAD
+>>>>>>> f4d1f8adfe88f8999e130f43d0e79fd885fc3927
+=======
 >>>>>>> f4d1f8adfe88f8999e130f43d0e79fd885fc3927
 }
 

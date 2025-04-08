@@ -2,7 +2,11 @@ import { CFormLabel } from '@coreui/react'
 import React from 'react'
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 export default function DateSelector({ value, onChange, label, id, errors }) {
+=======
+export default function DateSelector({ value, onChange, label, id, errors, disableBottomMargin }) {
+>>>>>>> f4d1f8adfe88f8999e130f43d0e79fd885fc3927
 =======
 export default function DateSelector({ value, onChange, label, id, errors, disableBottomMargin }) {
 >>>>>>> f4d1f8adfe88f8999e130f43d0e79fd885fc3927
@@ -11,7 +15,11 @@ export default function DateSelector({ value, onChange, label, id, errors, disab
       {label && (
         <>
 <<<<<<< HEAD
+<<<<<<< HEAD
           <CFormLabel htmlFor={id} style={{ fontSize: '0.8rem' }}>
+=======
+          <CFormLabel htmlFor={id} style={{ fontSize: '0.9rem' }}>
+>>>>>>> f4d1f8adfe88f8999e130f43d0e79fd885fc3927
 =======
           <CFormLabel htmlFor={id} style={{ fontSize: '0.9rem' }}>
 >>>>>>> f4d1f8adfe88f8999e130f43d0e79fd885fc3927
@@ -25,7 +33,11 @@ export default function DateSelector({ value, onChange, label, id, errors, disab
         <div
           style={{
 <<<<<<< HEAD
+<<<<<<< HEAD
             fontSize: '0.8rem',
+=======
+            fontSize: '0.9rem',
+>>>>>>> f4d1f8adfe88f8999e130f43d0e79fd885fc3927
 =======
             fontSize: '0.9rem',
 >>>>>>> f4d1f8adfe88f8999e130f43d0e79fd885fc3927

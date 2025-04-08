@@ -5,9 +5,12 @@ import AppHeader from './AppHeader'
 import AppHeaderDropdown from './header/AppHeaderDropdown'
 import AppSidebar from './AppSidebar'
 <<<<<<< HEAD
+<<<<<<< HEAD
 
 export { AppBreadcrumb, AppContent, AppFooter, AppHeader, AppHeaderDropdown, AppSidebar }
 =======
+=======
+>>>>>>> f4d1f8adfe88f8999e130f43d0e79fd885fc3927
 import DocsComponents from './DocsComponents'
 import DocsIcons from './DocsIcons'
 import DocsLink from './DocsLink'
@@ -25,4 +28,7 @@ export {
   DocsLink,
   DocsExample,
 }
+<<<<<<< HEAD
+>>>>>>> f4d1f8adfe88f8999e130f43d0e79fd885fc3927
+=======
 >>>>>>> f4d1f8adfe88f8999e130f43d0e79fd885fc3927

@@ -21,7 +21,10 @@ export const getDateTimeFromDateString = (dateTime) => {
   return formattedDateTime
 }
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
+=======
+>>>>>>> f4d1f8adfe88f8999e130f43d0e79fd885fc3927
 
 export const formattedDate = (date) => {
   const day = String(date.getDate()).padStart(2, '0') // Ensure 2-digit format
@@ -31,4 +34,7 @@ export const formattedDate = (date) => {
   const formattedDate = `${day}-${month}-${year}`
   return formattedDate
 }
+<<<<<<< HEAD
+>>>>>>> f4d1f8adfe88f8999e130f43d0e79fd885fc3927
+=======
 >>>>>>> f4d1f8adfe88f8999e130f43d0e79fd885fc3927

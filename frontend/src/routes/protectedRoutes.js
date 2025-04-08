@@ -4,6 +4,7 @@ import { useSelector } from 'react-redux'
 import { Outlet, useNavigate } from 'react-router-dom'
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 const ProtectedRoute = ({ isAdmin, isSuperAdmin }) => {
   const navigate = useNavigate()
   // const { isAuthenticated, user, loading } = useSelector((state) => state.user)
@@ -18,6 +19,8 @@ const ProtectedRoute = ({ isAdmin, isSuperAdmin }) => {
     // }
   // }, [isAuthenticated, isAdmin, navigate, user])
 =======
+=======
+>>>>>>> f4d1f8adfe88f8999e130f43d0e79fd885fc3927
 const ProtectedRoute = ({ isAdmin }) => {
   const navigate = useNavigate()
   const { isAuthenticated, user, loading } = useSelector((state) => state.user)
@@ -31,6 +34,9 @@ const ProtectedRoute = ({ isAdmin }) => {
       navigate('/login')
     }
   }, [isAdmin, navigate])
+<<<<<<< HEAD
+>>>>>>> f4d1f8adfe88f8999e130f43d0e79fd885fc3927
+=======
 >>>>>>> f4d1f8adfe88f8999e130f43d0e79fd885fc3927
 
   return <Outlet />

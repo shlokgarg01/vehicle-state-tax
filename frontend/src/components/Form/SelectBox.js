@@ -24,7 +24,11 @@ export default function SelectBox({
         onChange={onChange}
         style={{
 <<<<<<< HEAD
+<<<<<<< HEAD
           fontSize: '0.8rem',
+=======
+          fontSize: '0.9rem',
+>>>>>>> f4d1f8adfe88f8999e130f43d0e79fd885fc3927
 =======
           fontSize: '0.9rem',
 >>>>>>> f4d1f8adfe88f8999e130f43d0e79fd885fc3927
@@ -39,7 +43,11 @@ export default function SelectBox({
         <div
           style={{
 <<<<<<< HEAD
+<<<<<<< HEAD
             fontSize: '0.8rem',
+=======
+            fontSize: '0.9rem',
+>>>>>>> f4d1f8adfe88f8999e130f43d0e79fd885fc3927
 =======
             fontSize: '0.9rem',
 >>>>>>> f4d1f8adfe88f8999e130f43d0e79fd885fc3927

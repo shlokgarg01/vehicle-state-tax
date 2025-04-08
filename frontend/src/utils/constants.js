@@ -5,7 +5,10 @@ const Constants = {
     INACTIVE: 'inactive',
   },
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
+=======
+>>>>>>> f4d1f8adfe88f8999e130f43d0e79fd885fc3927
   ROLES: {
     ADMIN: 'admin',
     MANAGER: 'manager',
@@ -23,6 +26,9 @@ const Constants = {
     YEARLY: 'yearly',
     QUARTERLY: 'quarterly',
   },
+<<<<<<< HEAD
+>>>>>>> f4d1f8adfe88f8999e130f43d0e79fd885fc3927
+=======
 >>>>>>> f4d1f8adfe88f8999e130f43d0e79fd885fc3927
 }
 

@@ -3,7 +3,11 @@ import { useSelector, useDispatch } from 'react-redux'
 import { CCloseButton, CSidebar, CSidebarHeader } from '@coreui/react'
 import { AppSidebarNav } from './AppSidebarNav'
 <<<<<<< HEAD
+<<<<<<< HEAD
 // import navigation from '../_nav'
+=======
+import navigation from '../_nav'
+>>>>>>> f4d1f8adfe88f8999e130f43d0e79fd885fc3927
 =======
 import navigation from '../_nav'
 >>>>>>> f4d1f8adfe88f8999e130f43d0e79fd885fc3927
@@ -13,7 +17,11 @@ const AppSidebar = () => {
   const unfoldable = useSelector((state) => state.sidebarUnfoldable)
   const { sidebarShow } = useSelector((state) => state.sidebarShow)
 <<<<<<< HEAD
+<<<<<<< HEAD
   // const { user } = useSelector((state) => state.user)
+=======
+  const { user } = useSelector((state) => state.user)
+>>>>>>> f4d1f8adfe88f8999e130f43d0e79fd885fc3927
 =======
   const { user } = useSelector((state) => state.user)
 >>>>>>> f4d1f8adfe88f8999e130f43d0e79fd885fc3927
@@ -49,8 +57,12 @@ const AppSidebar = () => {
         />
       </CSidebarHeader>
 <<<<<<< HEAD
+<<<<<<< HEAD
       <AppSidebarNav />
       {/* <AppSidebarNav items={navigation(user?.role)} /> */}
+=======
+      <AppSidebarNav items={navigation(user?.role)} />
+>>>>>>> f4d1f8adfe88f8999e130f43d0e79fd885fc3927
 =======
       <AppSidebarNav items={navigation(user?.role)} />
 >>>>>>> f4d1f8adfe88f8999e130f43d0e79fd885fc3927
