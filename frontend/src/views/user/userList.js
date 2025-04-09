@@ -150,7 +150,7 @@ export default function UserSearch() {
                             setStateToDelete(stateData._id)
                           }}
                           type="submit"
-                          color="primary"
+                          color="danger"
                           btnSmall
                           marginBottom
                           marginTop
