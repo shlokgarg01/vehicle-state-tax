@@ -77,7 +77,7 @@ export const deleteBanner = catchAsyncErrors(async (req, res) => {
 
   const deleteResult = await deleteFile(banner.url);
   if (deleteResult.deleted) {
-    await Banner.deleteOne({ _id: id });
+    await Banner.delete({ _id: id });
     res.status(200).json({
       success: true,
       message: "Banner deleted successfully",

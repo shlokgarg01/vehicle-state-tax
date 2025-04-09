@@ -1,11 +1,10 @@
 import express from "express";
 import {
-  // changeManagerPassword,
   deleteEmployee,
-  deleteUser,
   searchUsers,
   updateEmployee,
   viewManagers,
+  createEmployee,
 } from "../controllers/adminController.js";
 import {
   isAuthenticatedUser,
@@ -15,13 +14,15 @@ import CONSTANTS from "../constants/constants.js";
 
 const adminRoutes = express.Router();
 
-adminRoutes.get(
-  "/users",
+// create employee
+adminRoutes.post(
+  "/employee/create",
   isAuthenticatedUser,
   authorizeRoles([CONSTANTS.USER_ROLES.ADMIN]),
-  searchUsers
+  createEmployee
 );
 
+// view employee
 adminRoutes.get(
   "/employee",
   isAuthenticatedUser,
@@ -29,13 +30,15 @@ adminRoutes.get(
   viewManagers
 );
 
-adminRoutes.delete(
-  "/user/:id",
+//  update employee
+adminRoutes.put(
+  "/employee/:id",
   isAuthenticatedUser,
   authorizeRoles([CONSTANTS.USER_ROLES.ADMIN]),
-  deleteUser
+  updateEmployee
 );
 
+// delete employee
 adminRoutes.delete(
   "/employee/:id",
   isAuthenticatedUser,
@@ -43,11 +46,12 @@ adminRoutes.delete(
   deleteEmployee
 );
 
-adminRoutes.put(
-  "/employee/:id",
+// get users
+adminRoutes.get(
+  "/users",
   isAuthenticatedUser,
   authorizeRoles([CONSTANTS.USER_ROLES.ADMIN]),
-  updateEmployee
+  searchUsers
 );
 
 export default adminRoutes;

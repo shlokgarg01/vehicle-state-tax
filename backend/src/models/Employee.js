@@ -18,19 +18,12 @@ const employeeSchema = new Schema(
     },
     email: {
       type: String,
-      sparse: true,
       trim: true,
-      validate: {
-        validator: (val) => validator.isEmail(val),
-        message: "Please enter a valid email",
-      },
+      sparse: true,
     },
     contactNumber: {
       type: String,
-      validate: {
-        validator: (val) => INDIAN_PHONE_REGEX.test(val),
-        message: "Provided Contact Number is invalid.",
-      },
+      sparse: true,
     },
     password: {
       type: String,

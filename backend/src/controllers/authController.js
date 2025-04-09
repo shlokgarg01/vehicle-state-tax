@@ -1,12 +1,10 @@
+import asyncHandler from "express-async-handler";
+import bcrypt from "bcryptjs";
 import Employee from "../models/Employee.js";
-import jwt from "jsonwebtoken";
+import User from "../models/User.js";
 import OTP from "../models/SignupOTP.js";
 import { ErrorHandler } from "../utils/errorHandlerUtils.js";
 import { generateOTP, otpHash, sendOTP } from "../utils/otpUtils.js";
-
-import asyncHandler from "express-async-handler";
-import bcrypt from "bcryptjs";
-import User from "../models/User.js";
 import generateToken from "../utils/generateToken.js";
 
 //  Send OTP for login (no registration required)
@@ -86,38 +84,6 @@ export const authenticateViaOTP = asyncHandler(async (req, res, next) => {
   }
 });
 
-//  Register a new employee
-export const registerEmployee = asyncHandler(async (req, res, next) => {
-  try {
-    const { username, email, password, contactNumber } = req.body;
-
-    if (!username || !password) {
-      return next(new ErrorHandler("username and password are required", 400));
-    }
-
-    const employeeExists = await Employee.findOne({ username });
-    if (employeeExists) {
-      return next(new ErrorHandler("Employee already exists", 400));
-    }
-
-    const employee = await Employee.create({
-      username,
-      email,
-      password,
-      contactNumber,
-    });
-
-    res.status(201).json({
-      success: true,
-      message: "Manager registered successfully",
-      employee,
-    });
-  } catch (error) {
-    console.error("Error in registerEmployee:", error);
-    next(new ErrorHandler("Internal Server Error", 500));
-  }
-});
-
 //  Employee Login
 export const loginEmployee = asyncHandler(async (req, res, next) => {
   try {
@@ -143,7 +109,7 @@ export const loginEmployee = asyncHandler(async (req, res, next) => {
     });
   } catch (error) {
     console.error("Error in loginEmployee:", error);
-    next(new ErrorHandler("Internal Server Error", 500));
+    next(new ErrorHandler("Internal Server Error in login emplyee", 500));
   }
 });
 
@@ -156,8 +122,9 @@ export const logoutUser = asyncHandler(async (req, res) => {
 });
 
 export const getUserDetails = asyncHandler(async (req, res, next) => {
-  let userId = req.user.id
-  const user = await User.findById(userId) || await Employee.findById(userId);
+  let userId = req.user.id;
+  const user =
+    (await User.findById(userId)) || (await Employee.findById(userId));
 
   res.status(200).json({
     success: true,
