@@ -9,7 +9,12 @@ axiosInstance.interceptors.request.use(async function (config) {
   token = token ? JSON.parse(token) : ''
 
   config.headers.Authorization = `${token}`
-  config.headers['Content-Type'] = 'application/json'
+  if (config.isMultipart) {
+    config.headers['Content-Type'] = 'multipart/form-data'
+  } else {
+    config.headers['Content-Type'] = 'application/json'
+  }
+
   return config
 })
 

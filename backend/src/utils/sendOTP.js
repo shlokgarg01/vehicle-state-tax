@@ -30,7 +30,7 @@ export const sendOTP = async (otp, contactNumber) => {
     const response = await axios.get(url.toString());
 
     if (response.data && response.data.status === "success") {
-      console.log(`OTP sent to ${contactNumber}`);
+    console.log(`OTP sent to ${contactNumber}`);
       return true;
     } else {
       throw new Error(

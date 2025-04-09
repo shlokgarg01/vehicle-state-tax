@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+import CONSTANTS from "../constants/constants.js";
 
 const bannerSchema = new mongoose.Schema(
   {
@@ -6,6 +7,11 @@ const bannerSchema = new mongoose.Schema(
     url: {
       type: String,
       required: true,
+    },
+    status: {
+      type: String,
+      enum: CONSTANTS.STATUS,
+      default: CONSTANTS.STATUS.ACTIVE,
     },
     description: { type: String, default: "" },
   },

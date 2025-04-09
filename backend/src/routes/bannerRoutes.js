@@ -1,6 +1,13 @@
 import express from "express";
-import { isAuthenticatedUser, authorizeRoles } from "../middlewares/authMiddlewares.js";
-import { createBanner, getBanners, deleteBanner } from "../controllers/bannerController.js";
+import {
+  isAuthenticatedUser,
+  authorizeRoles,
+} from "../middlewares/authMiddlewares.js";
+import {
+  createBanner,
+  getBanners,
+  deleteBanner,
+} from "../controllers/bannerController.js";
 import CONSTANTS from "../constants/constants.js";
 
 const bannerRoutes = express.Router();

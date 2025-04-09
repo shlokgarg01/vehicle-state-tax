@@ -19,10 +19,10 @@ export const searchUsers = asyncHandler(async (req, res) => {
     const totalUsersCount = await User.countDocuments();
     res.status(200).json({
       success: true,
-      count: users.length,
+      // count: users.length,
       users,
       resultsPerPage,
-      totalUsersCount,
+      // totalUsersCount,
       filteredUsersCount,
     });
   } catch (error) {

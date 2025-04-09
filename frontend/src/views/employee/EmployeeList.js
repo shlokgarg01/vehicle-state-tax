@@ -91,73 +91,66 @@ export default function EmployeeList() {
     <Loader />
   ) : (
     <>
-      <CCard className="mb-4">
+      {/* <CCard className="mb-4">
         <CCardHeader className="fw-bold">Search Employees</CCardHeader>
-        <CCardBody>
-          <CForm onSubmit={handleSearch}>
-            <CRow className="align-items-end">
-              <CCol sm={3}>
-                <TextInput
-                  type="text"
-                  placeholder="Contact Number"
-                  value={search.contactNumber}
-                  onChange={(e) => setSearch({ ...search, contactNumber: e.target.value })}
-                  id="contactNumber"
-                  // label="Contact Number"
-                  errors={error}
-                />
-              </CCol>
-              <CCol sm={2}>
-                <TextInput
-                  type="text"
-                  placeholder="Username"
-                  value={search.username}
-                  onChange={(e) => setSearch({ ...search, username: e.target.value })}
-                  id="username"
-                  // label="Username"
-                  errors={error}
-                />
-              </CCol>
-              <CCol sm={3}>
-                <TextInput
-                  type="email"
-                  placeholder="Email"
-                  value={search.email}
-                  onChange={(e) => setSearch({ ...search, email: e.target.value })}
-                  id="email"
-                  // label="Email"
-                  errors={error}
-                />
-              </CCol>
-              <CCol sm={2}>
-                <Button
-                  title="Search"
-                  type="submit"
-                  color="success"
-                  btnSmall
-                  fullWidth
-                  marginBottom
-                />
-              </CCol>
-              <CCol sm={2}>
-                <Button
-                  title="Reset"
-                  type="button"
-                  color="danger"
-                  btnSmall
-                  fullWidth
-                  marginBottom
-                  onClick={() => {
-                    setSearch({ contactNumber: '', username: '', email: '' })
-                    dispatch(getAndSearchEmployee({ page: 1 }))
-                    setCurrentPage(1)
-                  }}
-                />
-              </CCol>
-            </CRow>
-          </CForm>
-        </CCardBody>
-      </CCard>
+        <CCardBody> */}
+      <CForm onSubmit={handleSearch}>
+        <CRow className="align-items-end">
+          <CCol sm={3}>
+            <TextInput
+              type="text"
+              placeholder="Contact Number"
+              value={search.contactNumber}
+              onChange={(e) => setSearch({ ...search, contactNumber: e.target.value })}
+              id="contactNumber"
+              // label="Contact Number"
+              errors={error}
+            />
+          </CCol>
+          <CCol sm={2}>
+            <TextInput
+              type="text"
+              placeholder="Username"
+              value={search.username}
+              onChange={(e) => setSearch({ ...search, username: e.target.value })}
+              id="username"
+              // label="Username"
+              errors={error}
+            />
+          </CCol>
+          <CCol sm={3}>
+            <TextInput
+              type="email"
+              placeholder="Email"
+              value={search.email}
+              onChange={(e) => setSearch({ ...search, email: e.target.value })}
+              id="email"
+              // label="Email"
+              errors={error}
+            />
+          </CCol>
+          <CCol sm={2}>
+            <Button title="Search" type="submit" color="success" btnSmall fullWidth marginBottom />
+          </CCol>
+          <CCol sm={2}>
+            <Button
+              title="Reset"
+              type="button"
+              color="danger"
+              btnSmall
+              fullWidth
+              marginBottom
+              onClick={() => {
+                setSearch({ contactNumber: '', username: '', email: '' })
+                dispatch(getAndSearchEmployee({ page: 1 }))
+                setCurrentPage(1)
+              }}
+            />
+          </CCol>
+        </CRow>
+      </CForm>
+      {/* </CCardBody>
+      </CCard> */}
 
       <CCard>
         <CCardHeader>
