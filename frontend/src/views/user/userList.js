@@ -117,7 +117,12 @@ export default function UserSearch() {
 
       <CCard>
         <CCardHeader>
-          <strong>Users ({users.filteredUsersCount})</strong>
+          <strong>
+            {' '}
+            Users ({(currentPage - 1) * Constants.ITEMS_PER_PAGE + 1}–
+            {Math.min(currentPage * Constants.ITEMS_PER_PAGE, users.totalUsersCount)} of{' '}
+            {users.filteredUsersCount})
+          </strong>
         </CCardHeader>
         {users?.users?.length === 0 ? (
           <NoData title="No User Found" />
@@ -129,7 +134,6 @@ export default function UserSearch() {
                   <CTableHeaderCell scope="col">S.No</CTableHeaderCell>
                   {/* <CTableHeaderCell scope="col">Name</CTableHeaderCell> */}
                   <CTableHeaderCell scope="col">Contact Number</CTableHeaderCell>
-                  <CTableHeaderCell scope="col">Delete</CTableHeaderCell>
                 </CTableRow>
               </CTableHead>
               <CTableBody>
@@ -141,23 +145,6 @@ export default function UserSearch() {
                     </CTableHeaderCell>
                     {/* contact number */}
                     <CTableDataCell>{stateData.contactNumber}</CTableDataCell>
-                    <CTableDataCell>
-                      <CCol sm={8}>
-                        <Button
-                          title="delete"
-                          onClick={(e) => {
-                            setIsDeleteModalVisible(true)
-                            setStateToDelete(stateData._id)
-                          }}
-                          type="submit"
-                          color="danger"
-                          btnSmall
-                          marginBottom
-                          marginTop
-                          disabled={loading}
-                        ></Button>
-                      </CCol>
-                    </CTableDataCell>
                   </CTableRow>
                 ))}
               </CTableBody>
@@ -169,6 +156,11 @@ export default function UserSearch() {
             />
           </CCardBody>
         )}
+        <p className="text-end text-muted small mt-2">
+          Showing {(currentPage - 1) * Constants.ITEMS_PER_PAGE + 1} to{' '}
+          {Math.min(currentPage * Constants.ITEMS_PER_PAGE, users.filteredUsersCount)} of{' '}
+          {users.totalUsersCount} entries
+        </p>
       </CCard>
 
       <Modal

@@ -219,7 +219,7 @@ export const searchUsers = asyncHandler(async (req, res) => {
       // count: users.length,
       users,
       resultsPerPage,
-      // totalUsersCount,
+      totalUsersCount,
       filteredUsersCount,
     });
   } catch (error) {

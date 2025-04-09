@@ -483,7 +483,7 @@ export default function EmployeeList() {
             </CTable>
             <Pagination
               currentPage={currentPage}
-              totalItems={employees?.totalManagers}
+              totalPages={employees?.totalPages}
               itemsPerPage={Constants.ITEMS_PER_PAGE}
               onPageChange={setCurrentPage}
             />
