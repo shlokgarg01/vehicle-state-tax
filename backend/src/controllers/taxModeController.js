@@ -1,6 +1,7 @@
 import TaxMode from "../models/TaxMode.js";
 import asyncHandler from "express-async-handler";
 import CONSTANTS from "../constants/constants.js";
+import ApiFeatures from "../utils/apiFeatures.js";
 
 // ➕ Create TaxMode
 export const createTaxMode = asyncHandler(async (req, res) => {
@@ -26,11 +27,28 @@ export const createTaxMode = asyncHandler(async (req, res) => {
 
 // 📄 Get All TaxModes
 export const getAllTaxModes = asyncHandler(async (req, res) => {
-  const taxModes = await TaxMode.find()
-    .populate("state", "name")
-    .sort({ createdAt: -1 });
+  try {
+    const resultsPerPage = req.params.perPage || 10;
+    let apiFeature = new ApiFeatures(
+      TaxMode.find().sort({ createdAt: -1 }),
+      req.query
+    ).search(["mode", "state"])
 
-  res.status(200).json({ success: true, taxModes });
+    const totalTaxModes = await TaxMode.countDocuments(
+      apiFeature.query.getFilter()
+    );
+    apiFeature = apiFeature.pagination(resultsPerPage);
+    const taxModes = await apiFeature.query;
+
+    res.status(200).json({
+      success: true,
+      totalTaxModes,
+      taxModes,
+      resultsPerPage,
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error });
+  }
 });
 
 // ✏️ Update TaxMode

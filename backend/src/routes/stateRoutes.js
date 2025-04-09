@@ -21,14 +21,13 @@ stateRoutes.post(
 stateRoutes.get(
   "/",
   isAuthenticatedUser,
-  authorizeRoles(CONSTANTS.USER_ROLES.ADMIN),
   getAllStates
 );
 
 stateRoutes.put(
   "/:id",
   isAuthenticatedUser,
-  authorizeRoles(CONSTANTS.USER_ROLES.ADMIN),
+  authorizeRoles([CONSTANTS.USER_ROLES.ADMIN]),
   updateState
 );
 

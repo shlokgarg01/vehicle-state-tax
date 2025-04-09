@@ -5,27 +5,20 @@ class ApiFeatures {
   }
 
   search(fields = []) {
-    if (this.queryStr.search && fields.length > 0) {
-      const keyword = this.queryStr.search.trim();
+    if (this.queryStr.keyword) {
+      const keyword = this.queryStr.keyword;
 
+      // Get the schema of the model
+      const schemaPaths = this.query.model.schema.paths;
       const searchConditions = fields.map((field) => {
-        if (["string", "text"].includes(typeof this.queryStr[field])) {
-          return { [field]: { $regex: keyword, $options: "i" } };
+        const fieldType = schemaPaths[field]?.instance; // Check the field type in schema
+        if (fieldType === "Number") {
+          return isNaN(keyword) ? null : { [field]: Number(keyword) }; // Convert keyword to Number for numeric fields
+        } else {
+          return { [field]: { $regex: keyword, $options: "i" } }; // Use regex for strings
         }
-
-        // Handle number fields as string using $expr + $regexMatch
-        return {
-          $expr: {
-            $regexMatch: {
-              input: { $toString: `$${field}` },
-              regex: keyword,
-              options: "i",
-            },
-          },
-        };
       });
-
-      this.query = this.query.find({ $or: searchConditions });
+      this.query = this.query.find({ $or: searchConditions.filter(Boolean) }); // Remove null values
     }
     return this;
   }

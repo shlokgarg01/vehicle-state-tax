@@ -1,6 +1,7 @@
 import Price from "../models/Price.js";
 import asyncHandler from "express-async-handler";
 import CONSTANTS from "../constants/constants.js";
+import ApiFeatures from "../utils/apiFeatures.js";
 
 // ➕ Create Price
 export const createPrice = asyncHandler(async (req, res) => {
@@ -11,9 +12,29 @@ export const createPrice = asyncHandler(async (req, res) => {
 });
 
 // 📥 Get All Prices
-export const getAllPrices = asyncHandler(async (_req, res) => {
-  const prices = await Price.find().populate("state").sort({ createdAt: -1 });
-  res.status(200).json({ success: true, prices });
+export const getAllPrices = asyncHandler(async (req, res) => {
+  try {
+    const resultsPerPage = req.params.perPage || 10;
+    let apiFeature = new ApiFeatures(
+      Price.find().sort({ createdAt: -1 }),
+      req.query
+    ).search(["mode", "state", "seatCapacity", "vehicleType", "weight"])
+
+    const totalPrices = await Price.countDocuments(
+      apiFeature.query.getFilter()
+    );
+    apiFeature = apiFeature.pagination(resultsPerPage);
+    const prices = await apiFeature.query;
+
+    res.status(200).json({
+      success: true,
+      totalPrices,
+      prices,
+      resultsPerPage,
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error });
+  }
 });
 
 // ✏️ Update Price
