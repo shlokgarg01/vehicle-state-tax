@@ -10,7 +10,7 @@ export default function TextInput({
   value,
   onChange,
   id,
-  style,
+  style = {},
   trailIconClick,
   bg_color,
   refVal,
@@ -21,97 +21,102 @@ export default function TextInput({
   trailIcon = null,
   disabled = false,
   disableBottomMargin = false,
+  showPasswordToggle = false,
+  togglePasswordVisibility = () => {},
 }) {
+  const hasError = Boolean(errors[id])
+
+  const baseInputStyle = {
+    backgroundColor: disabled ? Colors.DISABLED_GRAY : bg_color || '#fff',
+    fontSize: '1rem',
+    border: hasError ? '1px solid #dc3545' : '1px solid #ced4da',
+    borderRadius: 7,
+    padding: '0.5rem 0.75rem',
+    width: '100%',
+    ...style,
+  }
+
   return (
-    <>
-      {trailIcon ? (
-        <>
-          <div
-            className="input-group"
+    <div className="w-100">
+      {label && (
+        <CFormLabel htmlFor={id} style={{ fontSize: '0.9rem' }}>
+          {label}
+        </CFormLabel>
+      )}
+
+      <div
+        className="d-flex align-items-center"
+        style={{
+          position: 'relative',
+          backgroundColor: bg_color || '#f8f9fa',
+          borderRadius: 7,
+        }}
+      >
+        <CFormInput
+          id={id}
+          ref={refVal}
+          type={type}
+          placeholder={placeholder}
+          value={value}
+          onChange={onChange}
+          maxLength={maxLength}
+          readOnly={disabled}
+          max={max_num}
+          min={min_num}
+          style={{
+            ...baseInputStyle,
+            paddingRight: showPasswordToggle || trailIcon ? '3rem' : '0.75rem',
+          }}
+        />
+
+        {showPasswordToggle && (
+          <button
+            type="button"
+            onClick={togglePasswordVisibility}
+            className="btn btn-link position-absolute"
             style={{
-              ...style,
-              borderRadius: 7,
-              paddingRight: 5,
-              outline: 'none',
+              right: trailIcon ? '2rem' : '0.75rem',
+              top: '50%',
+              transform: 'translateY(-50%)',
+              fontSize: '0.85rem',
+              padding: 0,
             }}
           >
-            <CFormInput
-              id={id}
-              type={type}
-              placeholder={placeholder}
-              aria-label="sm input"
-              value={value}
-              onChange={onChange}
-              readOnly={disabled}
-              ref={refVal}
-              maxLength={maxLength}
-              style={{
-                backgroundColor: disabled ? Colors.DISABLED_GRAY : null,
-                fontSize: '0.4rem',
-                marginBottom: 0,
-                ...style,
-                border: 0,
-              }}
-              className="custom-input"
-            />
-            <span className="input-group-append">
-              <button className="btn" type="button" onClick={trailIconClick}>
-                <CIcon icon={trailIcon} />
-              </button>
-            </span>
-          </div>
-          {errors[id] && (
-            <div
-              style={{
-                fontSize: '0.9rem',
-              }}
-              className="text-danger"
-            >
-              {errors[id]}
-            </div>
-          )}
-        </>
-      ) : (
-        <>
-          {label && (
-            <CFormLabel htmlFor={id} style={{ fontSize: '0.9rem' }}>
-              {label}
-            </CFormLabel>
-          )}
-          <CFormInput
-            id={id}
-            ref={refVal}
-            type={type}
-            placeholder={placeholder}
-            aria-label="sm input"
-            value={value}
-            onChange={onChange}
-            maxLength={maxLength}
-            className={`${errors[id] && 'border-danger'}`}
+            {type === 'password' ? 'Show' : 'Hide'}
+          </button>
+        )}
+
+        {trailIcon && (
+          <button
+            className="btn position-absolute"
+            type="button"
+            onClick={trailIconClick}
             style={{
-              fontSize: '0.9rem',
-              backgroundColor: disabled ? Colors.DISABLED_GRAY : null,
-              marginBottom: !disableBottomMargin && !errors[id] ? '1rem' : 0,
-              ...style,
+              right: '0.5rem',
+              top: '50%',
+              transform: 'translateY(-50%)',
+              padding: 0,
+              backgroundColor: 'transparent',
+              border: 'none',
             }}
-            readOnly={disabled}
-            max={max_num}
-            min={min_num}
-          />
-          {errors[id] && (
-            <div
-              style={{
-                fontSize: '0.9rem',
-                marginBottom: !disableBottomMargin ? '0.5rem' : 0,
-                marginTop: '0.5rem',
-              }}
-              className="text-danger"
-            >
-              {errors[id]}
-            </div>
-          )}
-        </>
+          >
+            <CIcon icon={trailIcon} style={{ fontSize: '1.1rem' }} />
+          </button>
+        )}
+      </div>
+
+      {hasError && (
+        <div
+          className="text-danger"
+          style={{
+            fontSize: '0.9rem',
+            marginTop: '0.5rem',
+            marginBottom: !disableBottomMargin ? '0.5rem' : 0,
+          }}
+        >
+          {errors[id]}
+        </div>
       )}
-    </>
+    </div>
   )
 }

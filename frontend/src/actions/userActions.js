@@ -14,7 +14,7 @@ export const loginUser = (email, password) => async (dispatch) => {
   } catch (error) {
     dispatch({
       type: USER_CONSTANTS.LOGIN_FAIL,
-      payload: error.response.data.message,
+      payload: error.response,
     })
   }
 }

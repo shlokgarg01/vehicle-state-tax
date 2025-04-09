@@ -25,6 +25,7 @@ const reducer = combineReducers({
   users: taxUserReducer.usersReducer,
   deleteUser: taxUserReducer.deleteSingleUser,
 
+  createEmployee: employeeReducer.createEmployeeReducer,
   getEmployee: employeeReducer.employeeGetReducer,
   deleteEmployee: employeeReducer.employeeDeleteReducer,
   updateEmployee: employeeReducer.updateSingleEmployee,

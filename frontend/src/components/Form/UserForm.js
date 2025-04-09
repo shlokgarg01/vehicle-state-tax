@@ -1,8 +1,11 @@
-// src/components/Form/UserForm.jsx
-import React from 'react'
+import React, { useState } from 'react'
 import TextInput from './TextInput'
 
 const UserForm = ({ userData, setUserData, errors }) => {
+  const [showPassword, setShowPassword] = useState(false)
+  const handlePasswordToggle = () => {
+    setShowPassword((prev) => !prev)
+  }
   return (
     <div className="d-flex flex-column gap-2">
       <TextInput
@@ -16,7 +19,7 @@ const UserForm = ({ userData, setUserData, errors }) => {
       <TextInput
         label="Email"
         type="email"
-        value={userData.email}
+        value={userData.email ?? ''}
         onChange={(e) => setUserData({ ...userData, email: e.target.value })}
         placeholder="Enter email"
         id="email"
@@ -30,6 +33,27 @@ const UserForm = ({ userData, setUserData, errors }) => {
         id="contactNumber"
         errors={errors}
       />
+      <TextInput
+        label="Password"
+        type={showPassword ? 'text' : 'password'}
+        value={userData.password || ''}
+        onChange={(e) => setUserData({ ...userData, password: e.target.value })}
+        placeholder="Enter new password (optional)"
+        id="password"
+        showPasswordToggle={true} // Enables show/hide functionality
+        togglePasswordVisibility={handlePasswordToggle}
+        errors={errors}
+      />{' '}
+      <select
+        className="form-select"
+        value={userData.status}
+        onChange={(e) => setUserData({ ...userData, status: e.target.value })}
+      >
+        <option value="">Select Status</option>
+        <option value="active">Active</option>
+        <option value="inactive">Inactive</option>
+      </select>
+      {errors?.status && <p className="text-danger m-0">{errors?.status}</p>}
     </div>
   )
 }
