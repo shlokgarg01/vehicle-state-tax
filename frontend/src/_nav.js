@@ -55,10 +55,7 @@ const _nav = (role) => {
       name: 'Banners',
 
       icon: <CIcon icon={cilCalculator} customClassName="nav-icon" />,
-      items: [
-        { component: CNavItem, name: 'All banner', to: '/banners/list' },
-        { component: CNavItem, name: 'create banner', to: '/banners/create' },
-      ],
+      items: [{ component: CNavItem, name: 'All banner', to: '/banners/list' }],
     },
     isAdmin && {
       component: CNavGroup,

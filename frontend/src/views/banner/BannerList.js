@@ -110,9 +110,6 @@ export default function BannerManager() {
   // Handle delete banner
   const handleDelete = useCallback(() => {
     if (bannerToDelete) {
-      console.log('delete banner handle', bannerToDelete)
-
-      console.log('banner to delete id', bannerToDelete._id)
       dispatch(deleteBanner(bannerToDelete._id)).then(() => fetchBanners())
     }
     setBannerToDelete(null)

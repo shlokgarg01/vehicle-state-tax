@@ -7,10 +7,12 @@ import CreateRoadTaxMode from './views/roadTax/createRoadTaxMode'
 import CreateRoadTaxPrice from './views/roadTax/createRoadTaxPrice'
 
 import Home from './views/Home/Home'
+
 import userSearch from './views/user/userList'
+
 import EmployeeList from './views/employee/EmployeeList'
+
 import BannerList from './views/banner/BannerList'
-import CreateBanner from './views/banner/CreateBanner'
 
 const routes = [
   { path: '/', exact: true, name: 'Home', element: Home },
@@ -25,8 +27,8 @@ const routes = [
 
   { path: '/user', name: 'Users ', element: userSearch },
   { path: '/employee', name: 'Employee ', element: EmployeeList },
+
   { path: '/banners/list', name: 'List Banner ', element: BannerList },
-  { path: '/banners/create', name: 'create Banner ', element: CreateBanner },
 ]
 
 export default routes

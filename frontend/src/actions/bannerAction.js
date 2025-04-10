@@ -12,7 +12,6 @@ export const createBanner = (formData) => async (dispatch) => {
     }
 
     const { data } = await axiosInstance.post(`${PREFIX}/new`, formData, config)
-    console.log(data)
 
     dispatch({
       type: BANNER_CONSTANTS.CREATE_BANNER_SUCCESS,
@@ -45,10 +44,8 @@ export const getBanners =
       const queryString = queryParams.toString()
       const url = queryString ? `${PREFIX}/all?${queryString}` : `${PREFIX}/all`
 
-      console.log('📦 Fetching Banners from:', url)
-
       const { data } = await axiosInstance.get(url)
-      console.log(data)
+
       dispatch({
         type: BANNER_CONSTANTS.GET_BANNERS_SUCCESS,
         payload: data,
