@@ -1,5 +1,13 @@
 import React from 'react'
+import CreateTaxModeWrapper from '../state/CreateTaxModeWrapper'
+import Constants from '../../utils/constants'
 
-export default function CreateBorderTaxMode() {
-  return <div>CreateBorderTaxMode</div>
+const createBorderTaxMode = () => {
+  return (
+    <div>
+      <CreateTaxModeWrapper mode={Constants.MODES.BORDER_TAX} />
+    </div>
+  )
 }
+
+export default createBorderTaxMode

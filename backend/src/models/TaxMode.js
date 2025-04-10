@@ -1,7 +1,7 @@
 import mongoose from "mongoose";
 import CONSTANTS from "../constants/constants.js";
 import MongooseDelete from "mongoose-delete";
-import COLLECTION_NAMES from '../constants/collection.js'
+import COLLECTION_NAMES from "../constants/collection.js";
 
 const TaxModeSchema = new mongoose.Schema(
   {

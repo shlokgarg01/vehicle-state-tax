@@ -6,9 +6,10 @@ export default function SelectBox({
   id,
   onChange,
   defaultOption,
-  options,
+  options = [],
   value,
   width,
+  name,
   disabled = false,
   disableBottomMargin = false,
   errors = {},
@@ -18,18 +19,23 @@ export default function SelectBox({
       {label && <CFormLabel htmlFor={id}>{label}</CFormLabel>}
       <CFormSelect
         disabled={disabled}
-        className={`${disableBottomMargin ? '' : 'mb-2'} ${errors[id] && 'border-danger'}`}
+        className={`${disableBottomMargin ? '' : 'mb-2'} ${errors[id] ? 'border-danger' : ''}`}
         id={id}
+        name={name}
         aria-label={label}
         onChange={onChange}
         style={{
           fontSize: '0.9rem',
-          width: width ? width : null,
+          width: width || null,
         }}
         value={value}
       >
-        <option value="">{defaultOption}</option>
-        {options}
+        {!value && <option value="">{defaultOption}</option>}
+        {options.map((opt) => (
+          <option key={opt.key || opt.value} value={opt.value}>
+            {opt.label}
+          </option>
+        ))}
       </CFormSelect>
       {errors[id] && (
         <div

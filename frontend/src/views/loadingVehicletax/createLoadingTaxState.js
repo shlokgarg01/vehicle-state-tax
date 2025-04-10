@@ -2,12 +2,10 @@ import React from 'react'
 import CreateTaxState from '../state/CreateTaxState'
 import Constants from '../../utils/constants'
 
-const createRoadTaxState = () => {
+export default function CreateLoadingTaxState() {
   return (
     <div>
-      <CreateTaxState mode={Constants.MODES.ROAD_TAX} navigateTo="/road_tax/state" />
+      <CreateTaxState mode={Constants.MODES.LOADING_VEHICLE} navigateTo="/loading_vehicle/state" />
     </div>
   )
 }
-
-export default createRoadTaxState

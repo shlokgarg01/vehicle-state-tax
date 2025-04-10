@@ -9,6 +9,7 @@ export default function TextInput({
   placeholder,
   value,
   onChange,
+  name,
   id,
   style = {},
   trailIconClick,
@@ -56,6 +57,7 @@ export default function TextInput({
           id={id}
           ref={refVal}
           type={type}
+          name={name}
           placeholder={placeholder}
           value={value}
           onChange={onChange}

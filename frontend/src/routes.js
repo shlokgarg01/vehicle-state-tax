@@ -14,6 +14,9 @@ import EmployeeList from './views/employee/EmployeeList'
 
 import BannerList from './views/banner/BannerList'
 
+import CreateLoadingTaxState from './views/loadingVehicletax/createLoadingTaxState'
+import CreateLoadingTaxMode from './views/loadingVehicletax/CreateLoadingTaxMode'
+
 const routes = [
   { path: '/', exact: true, name: 'Home', element: Home },
 
@@ -25,7 +28,11 @@ const routes = [
   { path: '/road_tax/tax_mode', name: 'Create Tax Mode', element: CreateRoadTaxMode },
   { path: '/road_tax/price', name: 'Create Price', element: CreateRoadTaxPrice },
 
+  { path: '/loading_vehicle/state', name: 'Create State', element: CreateLoadingTaxState },
+  { path: '/loading_vehicle/tax_mode', name: 'Create Tax Mode', element: CreateLoadingTaxMode },
+
   { path: '/user', name: 'Users ', element: userSearch },
+
   { path: '/employee', name: 'Employee ', element: EmployeeList },
 
   { path: '/banners/list', name: 'List Banner ', element: BannerList },

@@ -21,6 +21,18 @@ const Constants = {
     YEARLY: 'yearly',
     QUARTERLY: 'quarterly',
   },
+  SEAT_CAPACITY: {
+    FOUR_PLUS_ONE: '4+1',
+    FIVE_PLUS_ONE: '5+1',
+    SIX_PLUS_ONE: '6+1',
+    SEVEN_PLUS_ONE: '7+1',
+  },
+
+  VEHICLE_TYPES: {
+    LIGHT: 'light goods vehicle',
+    MEDIUM: 'medium goods vehicle',
+    HEAVY: 'heavy goods vehicle',
+  },
 }
 
 export default Constants
