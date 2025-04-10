@@ -6,6 +6,7 @@ import * as taxReducer from './reducers/taxReducer'
 import * as taxUserReducer from './reducers/usersReducer'
 import * as employeeReducer from './reducers/employeeReducer'
 import * as bannerReducer from './reducers/bannerReducer'
+
 const initialState = { sidebarShow: true }
 
 const toggleSidebar = (state = initialState, { type, ...rest }) => {

@@ -2,8 +2,8 @@ import axios from 'axios'
 import BANNER_CONSTANTS from '../constants/bannerConstants'
 import axiosInstance from '../utils/config'
 
-// Create a new banner
 const PREFIX = '/api/v1/banner'
+// Create a new banner
 export const createBanner = (formData) => async (dispatch) => {
   try {
     dispatch({ type: BANNER_CONSTANTS.CREATE_BANNER_REQUEST })
@@ -33,16 +33,20 @@ export const getBanners =
     try {
       dispatch({ type: BANNER_CONSTANTS.GET_BANNERS_REQUEST })
 
-      const { page = 1, limit, search, status } = params
+      const { page, perPage, title = '', status = '' } = params
 
       const queryParams = new URLSearchParams()
-      queryParams.append('page', page)
-      if (limit) queryParams.append('limit', limit)
-      if (search) queryParams.append('search', search)
+
+      if (page) queryParams.append('page', page)
+      if (perPage) queryParams.append('perPage', perPage)
+      if (title) queryParams.append('title', title)
       if (status) queryParams.append('status', status)
 
-      const url = `${PREFIX}/all?${queryParams.toString()}`
-      console.log(url)
+      const queryString = queryParams.toString()
+      const url = queryString ? `${PREFIX}/all?${queryString}` : `${PREFIX}/all`
+
+      console.log('📦 Fetching Banners from:', url)
+
       const { data } = await axiosInstance.get(url)
       console.log(data)
       dispatch({
@@ -52,7 +56,7 @@ export const getBanners =
     } catch (error) {
       dispatch({
         type: BANNER_CONSTANTS.GET_BANNERS_FAIL,
-        payload: error.response?.data?.message || error.message,
+        payload: error?.response?.data?.message || 'Something went wrong!',
       })
     }
   }
@@ -62,13 +66,15 @@ export const deleteBanner = (id) => async (dispatch) => {
   try {
     dispatch({ type: BANNER_CONSTANTS.DELETE_BANNER_REQUEST })
 
-    await axiosInstance.delete(`${PREFIX}/delete/${id}`)
+    const response = await axiosInstance.delete(`${PREFIX}/delete/${id}`)
 
     dispatch({
       type: BANNER_CONSTANTS.DELETE_BANNER_SUCCESS,
       payload: id,
     })
   } catch (error) {
+    const errorMsg = error?.response || error.message
+
     dispatch({
       type: BANNER_CONSTANTS.DELETE_BANNER_FAIL,
       payload: error.response || error.message,

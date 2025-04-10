@@ -31,6 +31,7 @@ import UserForm from '../../components/Form/UserForm'
 // Utils
 import { showToast } from '../../utils/toast'
 import Constants from '../../utils/constants'
+import { EMPLOYEE_CONSTANTS } from '../../constants/employeeConstants'
 
 // Actions
 import {
@@ -39,7 +40,6 @@ import {
   deleteSingleEmployee,
   createEmployee,
 } from '../../actions/employeeAction'
-import { EMPLOYEE_CONSTANTS } from '../../constants/employeeConstants'
 
 export default function EmployeeList() {
   const dispatch = useDispatch()
