@@ -433,7 +433,6 @@ export default function EmployeeList() {
                   <CTableHeaderCell scope="col">S.No</CTableHeaderCell>
                   <CTableHeaderCell scope="col">Email</CTableHeaderCell>
                   <CTableHeaderCell scope="col">Username</CTableHeaderCell>
-                  <CTableHeaderCell scope="col">Password</CTableHeaderCell>
                   <CTableHeaderCell scope="col">Contact Number</CTableHeaderCell>
                   <CTableHeaderCell scope="col">Status</CTableHeaderCell>
                   <CTableHeaderCell scope="col">Delete</CTableHeaderCell>
@@ -446,7 +445,6 @@ export default function EmployeeList() {
                     <CTableDataCell>{(currentPage - 1) * limit + index + 1}</CTableDataCell>
                     <CTableDataCell>{stateData.email || '-'}</CTableDataCell>
                     <CTableDataCell>{stateData.username}</CTableDataCell>
-                    <CTableDataCell>******</CTableDataCell>
                     <CTableDataCell>{stateData.contactNumber || '-'}</CTableDataCell>
                     <CTableDataCell>
                       <span
@@ -489,11 +487,6 @@ export default function EmployeeList() {
             />
           </CCardBody>
         )}
-        <p className="text-end text-muted small mt-2">
-          Showing {(currentPage - 1) * Constants.ITEMS_PER_PAGE + 1} to{' '}
-          {Math.min(currentPage * Constants.ITEMS_PER_PAGE, employees.totalManagers)} of{' '}
-          {employees.totalManagers} entries
-        </p>
       </CCard>
 
       {/* delete modal */}

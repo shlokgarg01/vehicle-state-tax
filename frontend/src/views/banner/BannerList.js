@@ -40,10 +40,9 @@ export default function BannerManager() {
   const dispatch = useDispatch()
 
   // State for banner form
-  const [banner, setBanner] = useState({ title: '', status: 'active', image: null })
+  const [banner, setBanner] = useState({ image: null })
 
   // Search and pagination states
-  const [search, setSearch] = useState({ title: '', status: '' })
   const [page, setPage] = useState(1)
   const [perPage] = useState(10)
 
@@ -73,39 +72,35 @@ export default function BannerManager() {
   // Fetch banners from server
   const fetchBanners = useCallback(
     (params = {}) => {
-      const finalParams = { page, perPage, ...search, ...params }
+      const finalParams = { page, perPage, ...params }
       dispatch(getBanners(finalParams))
     },
-    [dispatch, perPage, search, page],
+    [dispatch, perPage, page],
   )
 
   // Load on mount
   useEffect(() => {
-    dispatch(getBanners({ page, perPage, ...search }))
+    dispatch(getBanners({ page, perPage }))
   }, [])
 
   // Refetch on page change
   useEffect(() => {
     dispatch(getBanners({ page, perPage }))
-    // fetchBanners({ page, perPage })
   }, [page])
 
   // Handle create banner
   const handleCreate = (e) => {
     e.preventDefault()
+
+    if (!banner.image) {
+      showToast('Please upload a banner image.', 'error')
+      return
+    }
+
     const formData = new FormData()
-    formData.append('title', banner.title)
-    formData.append('status', banner.status)
     formData.append('banner', banner.image)
     dispatch(createBanner(formData))
   }
-
-  // Reset search filters
-  const handleReset = useCallback(() => {
-    setSearch({ title: '', status: '' })
-    setPage(1)
-    fetchBanners({ page: 1, title: '', status: '' })
-  }, [dispatch, fetchBanners])
 
   // Handle delete banner
   const handleDelete = useCallback(() => {
@@ -115,13 +110,6 @@ export default function BannerManager() {
     setBannerToDelete(null)
     setIsDeleteModalVisible(false)
   }, [bannerToDelete, dispatch, fetchBanners])
-
-  // Search banners
-  const handleSearch = (e) => {
-    e.preventDefault()
-    dispatch(getBanners({ ...search, page: 1, perPage }))
-    setPage(1)
-  }
 
   // Display pagination count
   const displayedCount = useMemo(() => {
@@ -166,24 +154,6 @@ export default function BannerManager() {
           <CForm onSubmit={handleCreate}>
             <CRow className="justify-content-center">
               <CCol md={8}>
-                {/* Title */}
-                <TextInput
-                  label="Title"
-                  id="title"
-                  placeholder="Enter Banner Title"
-                  value={banner.title}
-                  onChange={(e) => setBanner({ ...banner, title: e.target.value })}
-                />
-
-                {/* Status */}
-                <SelectInput
-                  label="Status"
-                  id="status"
-                  value={banner.status}
-                  onChange={(e) => setBanner({ ...banner, status: e.target.value })}
-                  options={['active', 'inactive']}
-                />
-
                 {/* Image */}
                 <label className="form-label fw-semibold">Upload Image</label>
                 <input
@@ -192,7 +162,6 @@ export default function BannerManager() {
                   className="form-control mb-3"
                   onChange={(e) => setBanner({ ...banner, image: e.target.files[0] })}
                 />
-
                 {/* Preview */}
                 {banner.image && (
                   <CCard className="p-3 text-center shadow-sm">
@@ -206,9 +175,8 @@ export default function BannerManager() {
                     <p className="mt-2 text-muted">Click to enlarge</p>
                   </CCard>
                 )}
-
                 {/* Action Buttons */}
-                <div className="d-flex justify-content-center gap-2 mt-3">
+                <div className="d-flex justify-content-center gap-2 mt-3 pb-4">
                   <Button
                     title="Reset"
                     type="button"
@@ -222,30 +190,6 @@ export default function BannerManager() {
                     disabled={createLoading}
                   />
                 </div>
-              </CCol>
-            </CRow>
-          </CForm>
-        </CCardBody>
-      </CCard>
-
-      {/* Search Banner */}
-      <CCard className="mb-4 shadow-sm">
-        <CCardHeader className="fw-bold">Search Banners</CCardHeader>
-        <CCardBody>
-          <CForm onSubmit={handleSearch}>
-            <CRow className="justify-content-center align-items-end">
-              <CCol md={6}>
-                <TextInput
-                  label="Title"
-                  id="search-title"
-                  placeholder="Search by Title"
-                  value={search.title}
-                  onChange={(e) => setSearch((prev) => ({ ...prev, title: e.target.value }))}
-                />
-              </CCol>
-              <CCol md={6} className="d-flex justify-content-center gap-2 mt-3 mt-md-0">
-                <Button title="Reset" type="button" color="danger" onClick={handleReset} />
-                <Button title="Search" type="submit" color="primary" />
               </CCol>
             </CRow>
           </CForm>
@@ -270,8 +214,6 @@ export default function BannerManager() {
                 <CTableHead>
                   <CTableRow>
                     <CTableHeaderCell>#</CTableHeaderCell>
-                    <CTableHeaderCell>Title</CTableHeaderCell>
-                    <CTableHeaderCell>Status</CTableHeaderCell>
                     <CTableHeaderCell>Image</CTableHeaderCell>
                     <CTableHeaderCell>Action</CTableHeaderCell>
                   </CTableRow>
@@ -280,12 +222,6 @@ export default function BannerManager() {
                   {banners.map((banner, index) => (
                     <CTableRow key={banner._id}>
                       <CTableDataCell>{(page - 1) * perPage + index + 1}</CTableDataCell>
-                      <CTableDataCell>{banner.title}</CTableDataCell>
-                      <CTableDataCell>
-                        <CBadge color={banner.status === 'active' ? 'success' : 'secondary'}>
-                          {banner.status}
-                        </CBadge>
-                      </CTableDataCell>
                       <CTableDataCell>
                         <img src={banner.url} alt={banner.title} style={{ width: '100px' }} />
                       </CTableDataCell>
@@ -317,7 +253,7 @@ export default function BannerManager() {
         onSubmitBtnClick={handleDelete}
         onClose={() => setIsDeleteModalVisible(false)}
         title="Delete Banner"
-        body={`Are you sure you want to delete the banner "${bannerToDelete?.title || 'Untitled'}"? This action cannot be undone.`}
+        body={`Are you sure you want to delete the banner. This action cannot be undone.`}
         closeBtnText="Cancel"
         submitBtnText="Delete"
         submitBtnColor="danger"

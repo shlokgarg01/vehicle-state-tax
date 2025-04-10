@@ -69,51 +69,39 @@ export default function UserSearch() {
     <Loader />
   ) : (
     <>
-      <CCard className="mb-4">
-        <CCardHeader className="fw-bold">Search Users</CCardHeader>
-        <CCardBody>
-          <CForm onSubmit={handleSearch}>
-            <CRow>
-              <CCol sm={8}>
-                <TextInput
-                  type="text"
-                  placeholder="Contact Number"
-                  value={search}
-                  onChange={(e) => setSearch(e.target.value)}
-                  id="contactNumber"
-                  errors={errors}
-                />
-              </CCol>
+      <CForm onSubmit={handleSearch}>
+        <CRow>
+          <CCol sm={8}>
+            <TextInput
+              type="text"
+              placeholder="Contact Number"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              id="contactNumber"
+              errors={errors}
+            />
+          </CCol>
 
-              <CCol sm={2}>
-                <Button
-                  title="Search"
-                  type="submit"
-                  color="success"
-                  btnLarge
-                  fullWidth
-                  marginBottom
-                />
-              </CCol>
-              <CCol sm={2}>
-                <Button
-                  title="Reset"
-                  onClick={() => {
-                    setSearch('')
+          <CCol sm={2}>
+            <Button title="Search" type="submit" color="success" btnLarge fullWidth marginBottom />
+          </CCol>
+          <CCol sm={2}>
+            <Button
+              title="Reset"
+              onClick={() => {
+                setSearch('')
 
-                    dispatch(getAndSearchUsers({ page: 1 }))
-                  }}
-                  type="button"
-                  color="danger"
-                  btnLarge
-                  fullWidth
-                  marginBottom
-                />
-              </CCol>
-            </CRow>
-          </CForm>
-        </CCardBody>
-      </CCard>
+                dispatch(getAndSearchUsers({ page: 1 }))
+              }}
+              type="button"
+              color="danger"
+              btnLarge
+              fullWidth
+              marginBottom
+            />
+          </CCol>
+        </CRow>
+      </CForm>
 
       <CCard>
         <CCardHeader>
@@ -156,11 +144,6 @@ export default function UserSearch() {
             />
           </CCardBody>
         )}
-        <p className="text-end text-muted small mt-2">
-          Showing {(currentPage - 1) * Constants.ITEMS_PER_PAGE + 1} to{' '}
-          {Math.min(currentPage * Constants.ITEMS_PER_PAGE, users.filteredUsersCount)} of{' '}
-          {users.totalUsersCount} entries
-        </p>
       </CCard>
 
       <Modal
