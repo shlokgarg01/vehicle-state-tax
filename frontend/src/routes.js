@@ -18,7 +18,7 @@ import CreateLoadingTaxState from './views/loadingVehicletax/createLoadingTaxSta
 import CreateLoadingTaxMode from './views/loadingVehicletax/CreateLoadingTaxMode'
 import createAllIndiaPermitTax from './views/allIndiaPermit/createAllIndiaPermitTax'
 import createAllIndiaTax from './views/allIndiaTax/createAllIndiaTax'
-import { CreateLoadingTaxPrice } from './views/loadingVehicletax/CreateLoadingTaxPrice'
+import CreateLoadingTaxPrice from './views/loadingVehicletax/CreateLoadingTaxPrice'
 
 const routes = [
   { path: '/', exact: true, name: 'Home', element: Home },
@@ -29,7 +29,7 @@ const routes = [
 
   { path: '/road_tax/state', name: 'Create State', element: CreateRoadTaxState },
   { path: '/road_tax/tax_mode', name: 'Create Tax Mode', element: CreateRoadTaxMode },
-  { path: '/road_tax/price', name: 'Create Price', element: CreateRoadTaxMode },
+  { path: '/road_tax/price', name: 'Create Price', element: CreateRoadTaxPrice },
 
   { path: '/loading_vehicle/state', name: 'Create State', element: CreateLoadingTaxState },
   { path: '/loading_vehicle/tax_mode', name: 'Create Tax Mode', element: CreateLoadingTaxMode },

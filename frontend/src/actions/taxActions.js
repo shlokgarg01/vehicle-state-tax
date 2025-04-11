@@ -9,12 +9,13 @@ export const createTaxState = (params) => async (dispatch) => {
   try {
     dispatch({ type: TAX_CONSTANTS.NEW_TAX_STATE_REQUEST })
     const { data } = await axiosInstance.post(`${PREFIX}`, params)
-
+    console.log(data)
     dispatch({ type: TAX_CONSTANTS.NEW_TAX_STATE_SUCCESS, payload: data.state })
   } catch (error) {
+    console.log(error)
     dispatch({
       type: TAX_CONSTANTS.NEW_TAX_STATE_FAIL,
-      payload: error.response,
+      payload: error?.message || error || 'Something went wrong',
     })
   }
 }
@@ -31,15 +32,12 @@ export const getTaxStates =
       let url = `${PREFIX}`
 
       if (mode) {
-     
         url += `?mode=${mode}`
       } else {
-     
         url += `?page=${page}&perPage=${perPage}`
       }
 
       const { data } = await axiosInstance.get(url)
-  
 
       dispatch({
         type: TAX_CONSTANTS.GET_ALL_STATES_SUCCESS,
@@ -51,7 +49,7 @@ export const getTaxStates =
     } catch (error) {
       dispatch({
         type: TAX_CONSTANTS.GET_ALL_STATES_FAIL,
-        payload: error.response?.data?.message || error.message,
+        payload: error.response?.data || error.message || error || error.response,
       })
     }
   }

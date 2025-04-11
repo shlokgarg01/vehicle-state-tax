@@ -52,7 +52,7 @@ export default function UserSearch() {
       dispatch(getAndSearchUsers({ search, page: 1 }))
     }
   }
-  console.log(users)
+
   useEffect(() => {
     if (isDeleted) {
       showToast('User Deleted')

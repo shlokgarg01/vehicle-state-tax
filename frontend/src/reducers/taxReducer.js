@@ -13,6 +13,7 @@ export const createStateReducer = (state = { state: {} }, action) => {
         loading: false,
         isStateCreated: true,
         state: action.payload,
+        error: false,
       }
     case TAX_CONSTANTS.NEW_TAX_STATE_FAIL:
       return {
@@ -20,6 +21,7 @@ export const createStateReducer = (state = { state: {} }, action) => {
         loading: false,
         isStateCreated: false,
         state: null,
+        error: action.payload,
       }
     case TAX_CONSTANTS.CLEAR_ERRORS:
       return {

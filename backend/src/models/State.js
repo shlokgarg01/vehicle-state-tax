@@ -1,7 +1,7 @@
 import mongoose from "mongoose";
 import CONSTANTS from "../constants/constants.js";
 import MongooseDelete from "mongoose-delete";
-import COLLECTION_NAMES from '../constants/collection.js'
+import COLLECTION_NAMES from "../constants/collection.js";
 
 const StateSchema = new mongoose.Schema(
   {
@@ -14,7 +14,6 @@ const StateSchema = new mongoose.Schema(
       type: String,
       required: true,
       trim: true,
-      unique: true,
       lowercase: true,
     },
     status: {

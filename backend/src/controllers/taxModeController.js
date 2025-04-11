@@ -25,7 +25,6 @@ export const createTaxMode = asyncHandler(async (req, res) => {
 
     res.status(201).json({ success: true, taxMode: newTaxMode });
   } catch (error) {
-    console.error("Error creating TaxMode:", error.message);
     res.status(500).json({
       success: false,
       message: "Failed to create TaxMode",
@@ -66,7 +65,6 @@ export const getAllTaxModes = asyncHandler(async (req, res, next) => {
       filteredTaxModesCount,
     });
   } catch (error) {
-    console.error("Error fetching tax modes:", error.message);
     res.status(500).json({
       success: false,
       message: "Failed to fetch tax modes",
