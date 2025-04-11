@@ -25,7 +25,7 @@ const taxSchema = new mongoose.Schema(
     paymentId: { type: String, default: "" },
     paymentLink: { type: String, default: "" },
     state: { type: String, required: true, lowercase: true },
-    border: { type: String, required: true },
+    border: { type: String },
     endDate: { type: Date },
     vehicleType: {
       type: String,
