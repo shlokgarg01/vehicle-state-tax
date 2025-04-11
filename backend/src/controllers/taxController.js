@@ -31,8 +31,7 @@ export const getAllTaxes = async (req, res) => {
         "category",
         "isCompleted",
       ])
-      .filter()
-      .pagination(Number(perPage) || 10);
+      .filter();
 
     const data = await apiFeature.query.lean();
     const totalTaxes = data.length;

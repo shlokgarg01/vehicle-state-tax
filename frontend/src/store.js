@@ -8,6 +8,7 @@ import * as employeeReducer from './reducers/employeeReducer'
 import * as bannerReducer from './reducers/bannerReducer'
 import * as taxModeReducer from './reducers/taxModeReducer'
 import * as priceReducer from './reducers/priceReducer'
+import * as orderReducer from './reducers/orderReducer'
 const initialState = { sidebarShow: true }
 
 const toggleSidebar = (state = initialState, { type, ...rest }) => {
@@ -47,6 +48,10 @@ const reducer = combineReducers({
   createPrice: priceReducer.createPriceReducer,
   allPrices: priceReducer.priceListReducer,
   updatePrice: priceReducer.updatePriceReducer,
+
+  createTax: orderReducer.createTaxReducer,
+  allTaxes: orderReducer.allTaxesReducer,
+  uploadTax: orderReducer.uploadTaxReducer,
 })
 
 const store = createStore(reducer, initialState, composeWithDevTools(applyMiddleware(thunk)))

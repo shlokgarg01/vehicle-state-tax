@@ -83,7 +83,7 @@ export default function UserSearch() {
           </CCol>
 
           <CCol sm={2}>
-            <Button title="Search" type="submit" color="success" btnLarge fullWidth marginBottom />
+            <Button title="Search" type="submit" color="success" btnSmall fullWidth marginBottom />
           </CCol>
           <CCol sm={2}>
             <Button
@@ -95,7 +95,7 @@ export default function UserSearch() {
               }}
               type="button"
               color="danger"
-              btnLarge
+              btnSmall
               fullWidth
               marginBottom
             />
