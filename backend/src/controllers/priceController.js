@@ -24,10 +24,10 @@ export const getAllPrices = asyncHandler(async (req, res) => {
     const baseQuery = new ApiFeatures(Price.find().populate("state"), req.query)
       .search(["seatCapacity", "taxMode", "mode"])
       .filter()
-   
-    const filteredCount = await baseQuery.query.clone().countDocuments();
+      .sort("-createdAt")
+      .pagination(resultPerPage);
 
-    baseQuery.sort("-createdAt").pagination(resultPerPage);
+    const filteredCount = await baseQuery.query.clone().countDocuments();
 
     const prices = await baseQuery.query;
 

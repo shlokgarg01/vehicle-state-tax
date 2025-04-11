@@ -170,7 +170,13 @@ const CreateTaxMode = ({ states, onSubmit, editingTaxMode, loading, error, mode 
                     </div>
                   ))}
 
-                {errorCreate && <p>{errorCreate?.data?.message}</p>}
+                {errorCreate && (
+                  <p className="text-danger text-center fw-semibold">
+                    {typeof errorCreate === 'string'
+                      ? errorCreate
+                      : errorCreate?.data?.message || 'Something went wrong' || errorCreate}
+                  </p>
+                )}
                 {/* State Field */}
                 <CRow className="mb-3 align-items-center">
                   <CCol md={3}>

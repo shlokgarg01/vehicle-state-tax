@@ -52,7 +52,7 @@ export default function UserSearch() {
       dispatch(getAndSearchUsers({ search, page: 1 }))
     }
   }
-
+  console.log(users)
   useEffect(() => {
     if (isDeleted) {
       showToast('User Deleted')
@@ -109,7 +109,7 @@ export default function UserSearch() {
             {' '}
             Users ({(currentPage - 1) * Constants.ITEMS_PER_PAGE + 1}–
             {Math.min(currentPage * Constants.ITEMS_PER_PAGE, users.totalUsersCount)} of{' '}
-            {users.filteredUsersCount})
+            {users.totalUsersCount})
           </strong>
         </CCardHeader>
         {users?.users?.length === 0 ? (

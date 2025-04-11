@@ -37,6 +37,7 @@ export const getAllStates = asyncHandler(async (req, res) => {
       State.find().sort({ createdAt: -1 }),
       req.query
     )
+
       .filter()
       .pagination(resultsPerPage);
 

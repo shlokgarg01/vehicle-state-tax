@@ -17,6 +17,7 @@ export default function TextInput({
   refVal,
   maxLength,
   errors = {},
+  required,
   max_num = null,
   min_num = null,
   trailIcon = null,
@@ -65,6 +66,7 @@ export default function TextInput({
           readOnly={disabled}
           max={max_num}
           min={min_num}
+          required={required}
           style={{
             ...baseInputStyle,
             paddingRight: showPasswordToggle || trailIcon ? '3rem' : '0.75rem',

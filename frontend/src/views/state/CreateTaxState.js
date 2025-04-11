@@ -40,6 +40,7 @@ export default function CreateTaxState({ mode, navigateTo }) {
   const {
     loading: statesLoading,
     states,
+    error: stateError,
     totalStates,
     resultsPerPage,
     filteredStatesCount,
@@ -79,11 +80,18 @@ export default function CreateTaxState({ mode, navigateTo }) {
   }
 
   useEffect(() => {
+    dispatch(getTaxStates({ mode, page: currentPage }))
+  }, [currentPage, dispatch, mode])
+
+  useEffect(() => {
     if (stateCreationError) {
       showToast(stateCreationError, 'error')
       dispatch(clearErrors())
     }
-
+    if (stateError) {
+      showToast(stateError, 'error')
+      dispatch(clearErrors())
+    }
     if (isUpdated) {
       showToast('State Updated')
       dispatch(clearErrors())
@@ -95,10 +103,9 @@ export default function CreateTaxState({ mode, navigateTo }) {
       dispatch(clearErrors())
       if (navigateTo) navigate(navigateTo)
     }
+  }, [isStateCreated, stateCreationError, isUpdated, navigateTo, dispatch])
 
-    dispatch(getTaxStates({ mode, page: currentPage }))
-  }, [currentPage, dispatch, isStateCreated, stateCreationError, isUpdated])
-
+  console.log(stateCreationError)
   const filteredStates = states?.filter((s) => s.mode === mode)
 
   return stateCreationLoading || statesLoading || stateUpdateLoading ? (
@@ -107,6 +114,14 @@ export default function CreateTaxState({ mode, navigateTo }) {
     <>
       <CCard className="mb-4">
         <CCardHeader className="fw-bold">Create New State</CCardHeader>
+        {stateCreationError && (
+          <p className="text-danger text-center fw-semibold">
+            {typeof stateCreationError === 'string'
+              ? stateCreationError
+              : stateCreationError?.data?.message || 'Something went wrong' || stateCreationError}
+          </p>
+        )}
+
         <CCardBody>
           <CForm>
             <CRow>

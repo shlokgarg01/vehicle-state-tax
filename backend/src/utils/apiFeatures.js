@@ -30,6 +30,15 @@ class ApiFeatures {
     return this;
   }
 
+  sort(defaultSort = "-createdAt") {
+    if (this.queryStr.sort) {
+      this.query = this.query.sort(this.queryStr.sort);
+    } else {
+      this.query = this.query.sort(defaultSort);
+    }
+    return this;
+  }
+
   filter() {
     const queryCopy = { ...this.queryStr };
     ["search", "page", "perPage"].forEach((key) => delete queryCopy[key]);

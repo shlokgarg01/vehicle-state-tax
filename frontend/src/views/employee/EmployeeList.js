@@ -275,8 +275,8 @@ export default function EmployeeList() {
                       onChange={(e) => setEmployee({ ...employee, email: e.target.value })}
                       errors={error}
                     />
-                    {updateError?.email && (
-                      <p className="text-danger small mt-1">{updateError.email}</p>
+                    {editErrors?.email && (
+                      <p className="text-danger small mt-1">{editErrors.email}</p>
                     )}
                   </CCol>
                 </CRow>
@@ -299,8 +299,8 @@ export default function EmployeeList() {
                       showPasswordToggle={true}
                       togglePasswordVisibility={handlePasswordToggle}
                     />
-                    {updateError?.password && (
-                      <p className="text-danger small mt-1">{updateError.password}</p>
+                    {editErrors?.password && (
+                      <p className="text-danger small mt-1">{editErrors.password}</p>
                     )}
                   </CCol>
                 </CRow>
@@ -314,7 +314,7 @@ export default function EmployeeList() {
                   </CCol>
                   <CCol md={9}>
                     <TextInput
-                      type="text"
+                      type="number"
                       id="create-contactNumber"
                       placeholder="Enter Contact Number"
                       value={employee.contactNumber}
@@ -326,8 +326,8 @@ export default function EmployeeList() {
                       }
                       errors={error}
                     />
-                    {updateError?.contactNumber && (
-                      <p className="text-danger small mt-1">{updateError.contactNumber}</p>
+                    {editErrors?.contactNumber && (
+                      <p className="text-danger small mt-1">{editErrors.contactNumber}</p>
                     )}
                   </CCol>
                 </CRow>
