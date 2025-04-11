@@ -12,7 +12,7 @@ const priceSchema = new mongoose.Schema(
     },
     mode: {
       type: String,
-      enum: Object.values(CONSTANTS.MODES),
+      enum: Object.values(CONSTANTS.TAX_CATEGORIES),
       required: true,
     },
     taxMode: {

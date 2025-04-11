@@ -8,6 +8,7 @@ import asyncHandler from "express-async-handler";
 import bcrypt from "bcryptjs";
 import User from "../models/User.js";
 import generateToken from "../utils/generateToken.js";
+import CONSTANTS from "../constants/constants.js";
 
 //  Send OTP for login (no registration required)
 export const sendOTPForLogin = asyncHandler(async (req, res, next) => {
@@ -135,6 +136,8 @@ export const loginEmployee = asyncHandler(async (req, res, next) => {
     if (!isMatch) {
       return next(new ErrorHandler(" Invalid Password", 400));
     }
+
+    if (employee.status === CONSTANTS.STATUS.INACTIVE) return next(new ErrorHandler("Employee inactive. Please contact the Admin.", 400));
 
     const user = employee;
     res.json({
