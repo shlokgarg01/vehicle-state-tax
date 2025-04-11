@@ -46,7 +46,9 @@ export const allStatesReducer = (state = { states: [] }, action) => {
         states: action.states,
         totalStates: action.totalStates,
         resultsPerPage: action.resultsPerPage,
+        filteredStatesCount: action.filteredStatesCount,
       }
+
     case TAX_CONSTANTS.GET_ALL_STATES_FAIL:
       return {
         ...state,

@@ -42,52 +42,52 @@ const CreateTaxMode = ({ states, onSubmit, editingTaxMode, loading, error, mode 
   const [currentPage, setCurrentPage] = useState(1)
   const limit = 10
 
+  // redux state
   const {
     taxModes,
     filteredTaxModesCount,
     loading: listLoading,
     error: listError,
   } = useSelector((state) => state.allTaxModes)
-  console.log(filteredTaxModesCount)
+
   const {
     isCreated,
     error: errorCreate,
     loading: loadingCreate,
   } = useSelector((state) => state.taxMode)
+
   const filtered = (taxModes || []).filter((item) => item.mode === mode)
-  // Fetch tax modes on mount or page change
+
+  // effect
   useEffect(() => {
     const filters = {}
     if (mode) filters.mode = mode
-    dispatch(getAllTaxModes('', currentPage, limit, filters))
+    dispatch(getAllTaxModes('', currentPage, limit, filters, mode))
   }, [dispatch, mode, currentPage])
 
-  // Handle successful creation
   useEffect(() => {
     if (!loadingCreate && isCreated) {
       showToast('Tax mode created', 'success')
       dispatch(clearErrors())
       setFormData(initialForm)
       setFormErrors({})
-      dispatch(getAllTaxModes('', 1, limit, mode ? { mode } : {}))
+      dispatch(getAllTaxModes('', 1, limit, mode))
       setCurrentPage(1)
     }
   }, [loadingCreate, isCreated, dispatch, mode])
 
-  // Handle creation error
   useEffect(() => {
     if (errorCreate) {
       showToast(errorCreate?.data?.message || 'Failed to create tax mode', 'error')
     }
   }, [errorCreate])
 
-  // Handle input change
+  // form handler
   const handleChange = (e) => {
     const { name, value } = e.target
     setFormData((prev) => ({ ...prev, [name]: value }))
   }
 
-  // Form validation
   const validateForm = () => {
     const errors = {}
 
@@ -108,28 +108,24 @@ const CreateTaxMode = ({ states, onSubmit, editingTaxMode, loading, error, mode 
 
     setFormErrors(errors)
 
-    // Return errors object to indicate validation result
     return errors
   }
-  // Reset form to initial state
+
   const handleReset = () => {
     setFormData(initialForm)
   }
 
-  // Submit form
   const handleSubmit = async (e) => {
     e.preventDefault()
     const errors = validateForm()
-    console.log(errors)
-    // If validation errors exist, stop submission
-    if (Object.keys(errors).length > 0) {
+
+    if (Object.keys(errors).length > 0 || errorCreate?.data?.message > 0) {
       return
     }
-    console.log(errors)
 
     try {
       await onSubmit(formData)
-      dispatch(getAllTaxModes())
+      dispatch(getAllTaxModes(mode))
       setFormData(initialForm)
       setFormErrors({})
       dispatch(clearErrors())
@@ -141,7 +137,7 @@ const CreateTaxMode = ({ states, onSubmit, editingTaxMode, loading, error, mode 
     }
   }
 
-  // Convert mode key to readable label
+  // data
   const getModeLabel = (modeKey) => {
     return (
       Object.entries(Constants.MODES)
@@ -152,7 +148,6 @@ const CreateTaxMode = ({ states, onSubmit, editingTaxMode, loading, error, mode 
     )
   }
 
-  // Determine allowed tax modes based on selected mode
   const allowedTaxModes =
     mode === Constants.MODES.ALL_INDIA_PERMIT || mode === Constants.MODES.ALL_INDIA_TAX
       ? [Constants.TAX_MODES.YEARLY]
@@ -174,12 +169,7 @@ const CreateTaxMode = ({ states, onSubmit, editingTaxMode, loading, error, mode 
                       {msg}
                     </div>
                   ))}
-                {/* {errorCreate &&
-                  Object.entries(errorCreate).map(([key, msg]) => (
-                    <div key={key} className="text-danger mt-1">
-                      {msg}
-                    </div>
-                  ))} */}
+
                 {errorCreate && <p>{errorCreate?.data?.message}</p>}
                 {/* State Field */}
                 <CRow className="mb-3 align-items-center">

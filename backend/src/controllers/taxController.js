@@ -2,7 +2,7 @@ import Tax from "../models/Tax.js";
 import ApiFeatures from "../utils/apiFeatures.js";
 import TaxManager from "../managers/taxManager.js";
 import CONSTANTS from "../constants/constants.js";
-import catchAsyncErrors from '../middlewares/catchAsyncErrors.js'
+import catchAsyncErrors from "../middlewares/catchAsyncErrors.js";
 import { uploadFile } from "../helpers/uploadHelpers.js";
 
 // Create a Tax Entry
@@ -115,7 +115,7 @@ export const createTaxAndPaymentURL = async (req, res) => {
     res.status(500).json({
       success: false,
       message: e.message,
-    })
+    });
   }
 };
 
@@ -158,21 +158,31 @@ export const paymentStatusCheck = async (req, res) => {
 
 export const uploadTax = catchAsyncErrors(async (req, res) => {
   const fileData = req.files?.file;
-  const orderId = req.body.orderId
-  if (!fileData) return res.status(400).json({ success: false,  message: 'No file uploaded' });
-  if (!orderId) return res.status(400).json({ success: false,  message: 'Order Id is required' });
+  const orderId = req.body.orderId;
+  if (!fileData)
+    return res
+      .status(400)
+      .json({ success: false, message: "No file uploaded" });
+  if (!orderId)
+    return res
+      .status(400)
+      .json({ success: false, message: "Order Id is required" });
 
-  const uploadResponse = await uploadFile(fileData, 'new_taxes')
-  let tax = {}
+  const uploadResponse = await uploadFile(fileData, "new_taxes");
+  let tax = {};
   if (uploadResponse.isUploaded) {
-    tax = await TaxManager.updateTaxByOrderId(orderId, { fileUrl: uploadResponse.url, isCompleted: true, status: CONSTANTS.ORDER_STATUS.CLOSED })
+    tax = await TaxManager.updateTaxByOrderId(orderId, {
+      fileUrl: uploadResponse.url,
+      isCompleted: true,
+      status: CONSTANTS.ORDER_STATUS.CLOSED,
+    });
   }
   res.status(uploadResponse.isUploaded ? 200 : 400).json({
     success: uploadResponse.isUploaded,
     message: uploadResponse.message,
     data: {
       url: uploadResponse.url,
-      tax
-    }
-  })
+      tax,
+    },
+  });
 });

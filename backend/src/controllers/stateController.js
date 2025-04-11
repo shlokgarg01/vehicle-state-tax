@@ -20,33 +20,40 @@ export const createState = asyncHandler(async (req, res) => {
     mode,
     status: status || CONSTANTS.STATUS.ACTIVE,
   });
-  console.log(state);
   res.status(201).json({ success: true, state });
 });
 
 //  Get all states
 export const getAllStates = asyncHandler(async (req, res) => {
   try {
-    const resultsPerPage = req.params.perPage || 10;
+    const resultsPerPage = req.query.perPage || 10;
+    const filter = {};
+    if (req.query.mode) {
+      filter.mode = req.query.mode;
+    }
+
+    const filteredStatesCount = await State.countDocuments(filter);
     let apiFeature = new ApiFeatures(
       State.find().sort({ createdAt: -1 }),
       req.query
     )
+      .filter()
+      .pagination(resultsPerPage);
 
     const totalStates = await State.countDocuments(
-      apiFeature.query.getFilter()
+      apiFeature.query.getFilter?.() || {}
     );
-    apiFeature = apiFeature.pagination(resultsPerPage);
     const states = await apiFeature.query;
 
     res.status(200).json({
       success: true,
       totalStates,
       states,
-      resultsPerPage
+      filteredStatesCount,
+      resultsPerPage,
     });
   } catch (error) {
-    res.status(500).json({ success: false, message: error });
+    res.status(500).json({ success: false, message: error.message });
   }
 });
 
@@ -58,7 +65,7 @@ export const updateState = asyncHandler(async (req, res) => {
   }
 
   const updatedState = await State.findByIdAndUpdate(req.params.id, req.body, {
-    new: true
+    new: true,
   });
   res.status(200).json({ success: true, state: updatedState });
 });

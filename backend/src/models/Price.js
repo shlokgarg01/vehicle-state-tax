@@ -8,7 +8,6 @@ const priceSchema = new mongoose.Schema(
     state: {
       type: mongoose.Schema.Types.ObjectId,
       ref: COLLECTION_NAMES.STATE,
-      required: true,
     },
     mode: {
       type: String,
