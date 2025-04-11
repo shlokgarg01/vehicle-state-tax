@@ -158,12 +158,19 @@ const CreatePrice = ({ states, error, loading, mode, stateLoading, stateError })
       }
     }
 
-    if (mode === Constants.MODES.VEHICLE_TYPE) {
+    if (mode === Constants.MODES.LOADING_VEHICLE) {
       if (!formData.vehicleType) {
         errors.vehicleType = 'Vehicle type is required'
       }
-      if (!formData.weight || parseFloat(formData.weight) <= 0) {
-        errors.weight = 'Valid weight is required'
+
+      const weightNum = parseFloat(formData.weight)
+      if (
+        !formData.weight ||
+        !Constants.WEIGHT.hasOwnProperty(
+          Object.keys(Constants.WEIGHT).find((key) => Constants.WEIGHT[key] === formData.weight),
+        )
+      ) {
+        errors.weight = 'Please select a valid weight'
       }
     }
 
@@ -233,8 +240,10 @@ const CreatePrice = ({ states, error, loading, mode, stateLoading, stateError })
       : Object.values(Constants.TAX_MODES)
   }, [mode])
 
-  const isVehicleTypeMode = useMemo(() => mode === Constants.MODES.VEHICLE_TYPE, [mode])
-
+  const isVehicleTypeMode = useMemo(() => mode === Constants.MODES.LOADING_VEHICLE, [mode])
+  console.log(isVehicleTypeMode)
+  console.log(mode)
+  console.log(Constants.MODES.LOADING_VEHICLE)
   const getModeLabel = useCallback((modeKey) => {
     return (
       Object.entries(Constants.MODES)
@@ -344,12 +353,17 @@ const CreatePrice = ({ states, error, loading, mode, stateLoading, stateError })
 
                 {/* Field: Weight (if applicable) */}
                 {isVehicleTypeMode && (
-                  <TextInput
-                    type="number"
+                  <SelectBox
+                    id="weight"
                     name="weight"
-                    label="Weight"
+                    label="weight"
                     value={formData.weight}
                     onChange={handleChange}
+                    defaultOption="-- Select weight Type --"
+                    options={Object.entries(Constants.WEIGHT).map(([key, label]) => ({
+                      value: key,
+                      label,
+                    }))}
                     errors={formErrors}
                   />
                 )}
@@ -439,12 +453,19 @@ const CreatePrice = ({ states, error, loading, mode, stateLoading, stateError })
               <CTableHead>
                 <CTableRow>
                   <CTableHeaderCell>S.No</CTableHeaderCell>
-                  <CTableHeaderCell>State</CTableHeaderCell>
-                  <CTableHeaderCell>Mode</CTableHeaderCell>
+                  {!(
+                    mode === Constants.MODES.ALL_INDIA_TAX ||
+                    mode === Constants.MODES.ALL_INDIA_PERMIT
+                  ) && <CTableHeaderCell>State</CTableHeaderCell>}
+
+                  {/* <CTableHeaderCell>Mode</CTableHeaderCell> */}
                   <CTableHeaderCell>Tax Mode</CTableHeaderCell>
                   <CTableHeaderCell>Seat Capacity</CTableHeaderCell>
                   <CTableHeaderCell>Price 1</CTableHeaderCell>
-                  <CTableHeaderCell>Price 2</CTableHeaderCell>
+                  {!(
+                    mode === Constants.MODES.ALL_INDIA_TAX ||
+                    mode === Constants.MODES.ALL_INDIA_PERMIT
+                  ) && <CTableHeaderCell>Price 2</CTableHeaderCell>}
                   <CTableHeaderCell>Service Charge</CTableHeaderCell>
                   {isVehicleTypeMode && <CTableHeaderCell>Vehicle Type</CTableHeaderCell>}
                   {isVehicleTypeMode && <CTableHeaderCell>Weight</CTableHeaderCell>}
@@ -457,14 +478,24 @@ const CreatePrice = ({ states, error, loading, mode, stateLoading, stateError })
                 {filteredPrices.map((price, index) => (
                   <CTableRow key={price._id}>
                     <CTableDataCell>{(currentPage - 1) * limit + index + 1}</CTableDataCell>
-                    <CTableDataCell>{price.state?.name || '-'}</CTableDataCell>
-                    <CTableDataCell>{getModeLabel(price.mode)}</CTableDataCell>
+                    {!(
+                      mode === Constants.MODES.ALL_INDIA_TAX ||
+                      mode === Constants.MODES.ALL_INDIA_PERMIT
+                    ) && <CTableDataCell>{price.state?.name || '-'}</CTableDataCell>}
+
+                    {/* <CTableDataCell>{getModeLabel(price.mode)}</CTableDataCell> */}
                     <CTableDataCell>{price.taxMode || '-'}</CTableDataCell>
                     <CTableDataCell>{price.seatCapacity || '-'}</CTableDataCell>
                     <CTableDataCell>₹{parseFloat(price.price1 || 0).toFixed(2)}</CTableDataCell>
-                    <CTableDataCell>
-                      {price.price2 ? `₹${parseFloat(price.price2).toFixed(2)}` : '-'}
-                    </CTableDataCell>
+                    {!(
+                      mode === Constants.MODES.ALL_INDIA_TAX ||
+                      mode === Constants.MODES.ALL_INDIA_PERMIT
+                    ) && (
+                      <CTableDataCell>
+                        {' '}
+                        {price.price2 ? `₹${parseFloat(price.price2).toFixed(2)}` : '-'}
+                      </CTableDataCell>
+                    )}
                     <CTableDataCell>
                       ₹
                       {price.serviceCharge != null
