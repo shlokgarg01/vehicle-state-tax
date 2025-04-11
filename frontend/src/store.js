@@ -46,6 +46,7 @@ const reducer = combineReducers({
 
   createPrice: priceReducer.createPriceReducer,
   allPrices: priceReducer.priceListReducer,
+  updatePrice: priceReducer.updatePriceReducer,
 })
 
 const store = createStore(reducer, initialState, composeWithDevTools(applyMiddleware(thunk)))

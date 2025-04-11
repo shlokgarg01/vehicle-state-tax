@@ -36,9 +36,8 @@ export const getAllPrices =
         perPage,
         search,
         ...filters,
-        mode,
       })
-
+      if (mode) queryParams.set('mode', mode)
       const { data } = await axiosInstance.get(`${PREFIX}?${queryParams.toString()}`)
 
       dispatch({

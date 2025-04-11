@@ -37,7 +37,7 @@ const CreateTaxMode = ({ states, mode }) => {
   // Initial form state
   const initialForm = {
     state: '',
-    mode: mode || Constants.MODES.BORDER_TAX,
+    mode: mode,
     taxMode: '',
     status: Constants.STATUS.ACTIVE,
   }
@@ -45,7 +45,7 @@ const CreateTaxMode = ({ states, mode }) => {
   const [formData, setFormData] = useState(initialForm)
   const [formErrors, setFormErrors] = useState({})
   const [currentPage, setCurrentPage] = useState(1)
-  const limit = 10
+  const limit = Constants.ITEMS_PER_PAGE
   const [isDeleteModalVisible, setIsDeleteModalVisible] = useState(false)
   const [stateToDelete, setStateToDelete] = useState(null)
 

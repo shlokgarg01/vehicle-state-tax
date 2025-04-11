@@ -1,4 +1,3 @@
-import React from 'react'
 import CreatePricePage from '../state/CreatePricePage'
 import Constants from '../../utils/constants'
 

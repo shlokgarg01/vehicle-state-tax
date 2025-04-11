@@ -33,6 +33,12 @@ const Constants = {
     MEDIUM: 'medium goods vehicle',
     HEAVY: 'heavy goods vehicle',
   },
+  MODE_OPTIONS: {
+    STATE: 'State',
+    VEHICLE_TYPE: 'Vehicle Type',
+    WEIGHT: 'Weight',
+    ALL_INDIA: 'All India',
+  },
 }
 
 export default Constants

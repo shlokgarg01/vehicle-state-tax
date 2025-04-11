@@ -16,7 +16,7 @@ const priceSchema = new mongoose.Schema(
     },
     taxMode: {
       type: String,
-      enum: Object.values(CONSTANTS.TAX_MODES),
+    enum: Object.values(CONSTANTS.TAX_MODES),
       required: true,
     },
     seatCapacity: {

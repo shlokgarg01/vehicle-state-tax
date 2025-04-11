@@ -26,13 +26,26 @@ export const getTaxStates =
   (params = {}) =>
   async (dispatch) => {
     try {
-      const { page = 1, perPage = Constants.ITEMS_PER_PAGE, mode } = params
-
       dispatch({ type: TAX_CONSTANTS.GET_ALL_STATES_REQUEST })
 
-      let url = `${PREFIX}?page=${page}&perPage=${perPage}`
-      if (mode) url += `&mode=${mode}`
+      const {
+        page = 1,
+        perPage = Constants.ITEMS_PER_PAGE,
+        mode = '',
+        search = '',
+        ...filters
+      } = params
 
+      const queryParams = new URLSearchParams({
+        page,
+        perPage,
+        search,
+        ...filters,
+      })
+
+      if (mode) queryParams.set('mode', mode)
+
+      const url = `${PREFIX}?${queryParams.toString()}`
       const { data } = await axiosInstance.get(url)
 
       dispatch({
@@ -45,7 +58,7 @@ export const getTaxStates =
     } catch (error) {
       dispatch({
         type: TAX_CONSTANTS.GET_ALL_STATES_FAIL,
-        payload: error.response?.data?.message || error.message || error || error.response,
+        payload: error?.response?.data?.message || error?.message || 'Failed to fetch tax states',
       })
     }
   }

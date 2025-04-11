@@ -1,36 +1,21 @@
+import React, { useEffect, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
-import { useEffect } from 'react'
-import CreatePrice from '../state/CreatePrice'
-import { createPrice } from '../../actions/priceAction'
 import { getTaxStates } from '../../actions/taxActions'
-import Constants from '../../utils/constants'
+import CreatePrice from './CreatePrice'
 
 const CreatePricePage = ({ mode }) => {
   const dispatch = useDispatch()
   const { states, loading, error } = useSelector((state) => state.allStates)
-  const { loading: priceLoading, error: priceError } = useSelector((state) => state.createPrice)
-  console.log('Current mode in CreatePricePage:', mode)
 
+  const [page] = useState(1)
+  const [perPage] = useState(650)
   useEffect(() => {
-    dispatch(getTaxStates())
-  }, [dispatch])
+    if (mode) {
+      dispatch(getTaxStates({ mode, page, perPage }))
+    }
+  }, [dispatch, mode, page, perPage])
 
-  const handleSubmit = async (formData) => {
-    console.log('Submitting formData:', formData)
-    return dispatch(createPrice(formData))
-  }
-
-  return (
-    <CreatePrice
-      states={states}
-      stateLoading={loading}
-      stateError={error}
-      onSubmit={handleSubmit}
-      loading={priceLoading}
-      error={priceError}
-      mode={mode}
-    />
-  )
+  return <CreatePrice states={states || []} stateLoading={loading} mode={mode} stateError={error} />
 }
 
 export default CreatePricePage

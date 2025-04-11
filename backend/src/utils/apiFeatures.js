@@ -46,19 +46,22 @@ class ApiFeatures {
     const mongoFilter = {};
 
     Object.entries(queryCopy).forEach(([key, value]) => {
-      // Handle JSON operators like ?age[gte]=20
+      if (
+        value === undefined ||
+        value === null ||
+        (typeof value === "string" && value.trim() === "")
+      ) {
+        return; // Skip invalid filters
+      }
+
       if (typeof value === "object") {
         mongoFilter[key] = {};
         Object.entries(value).forEach(([op, val]) => {
           mongoFilter[key][`$${op}`] = val;
         });
-      }
-      // Apply partial match for strings (e.g., username=j → $regex)
-      else if (typeof value === "string" && isNaN(value)) {
+      } else if (typeof value === "string" && isNaN(value)) {
         mongoFilter[key] = { $regex: value.trim(), $options: "i" };
-      }
-      // Apply exact match for numbers
-      else {
+      } else {
         mongoFilter[key] = isNaN(value) ? value : Number(value);
       }
     });
