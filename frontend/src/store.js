@@ -40,7 +40,8 @@ const reducer = combineReducers({
   allStates: taxReducer.allStatesReducer,
   state: taxReducer.updateStateReducer,
 
-  taxMode: taxModeReducer.taxModeReducer,
+  createTaxMode: taxModeReducer.createTaxModeReducer,
+  updateTaxMode: taxModeReducer.updateTaxModeReducer,
   allTaxModes: taxModeReducer.allTaxModesReducer,
 
   createPrice: priceReducer.createPriceReducer,

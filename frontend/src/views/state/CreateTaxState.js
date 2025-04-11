@@ -25,7 +25,6 @@ import Constants from '../../utils/constants'
 import { showToast } from '../../utils/toast'
 import NoData from '../../components/NoData'
 import Pagination from '../../components/Pagination/Pagination'
-import { removeUserScoreAndCapitalize } from '../../helpers/strings'
 
 export default function CreateTaxState({ mode, navigateTo }) {
   const dispatch = useDispatch()
@@ -41,7 +40,6 @@ export default function CreateTaxState({ mode, navigateTo }) {
     loading: statesLoading,
     states,
     error: stateError,
-    totalStates,
     resultsPerPage,
     filteredStatesCount,
   } = useSelector((state) => state.allStates)
@@ -85,7 +83,14 @@ export default function CreateTaxState({ mode, navigateTo }) {
 
   useEffect(() => {
     if (stateCreationError) {
-      showToast(stateCreationError, 'error')
+      if (
+        typeof stateCreationError === 'string' &&
+        stateCreationError.toLowerCase().includes('state with this name')
+      ) {
+        setErrors((prev) => ({ ...prev, name: stateCreationError }))
+      } else {
+        showToast(stateCreationError, 'error')
+      }
       dispatch(clearErrors())
     }
     if (stateError) {
@@ -94,18 +99,20 @@ export default function CreateTaxState({ mode, navigateTo }) {
     }
     if (isUpdated) {
       showToast('State Updated')
+      dispatch(getTaxStates({ mode, page: currentPage }))
       dispatch(clearErrors())
     }
 
     if (isStateCreated) {
       showToast('State Created Successfully')
       setState(initial_state)
+      dispatch(getTaxStates({ mode, page: 1 }))
+      setCurrentPage(1)
       dispatch(clearErrors())
       if (navigateTo) navigate(navigateTo)
     }
   }, [isStateCreated, stateCreationError, isUpdated, navigateTo, dispatch])
 
-  console.log(stateCreationError)
   const filteredStates = states?.filter((s) => s.mode === mode)
 
   return stateCreationLoading || statesLoading || stateUpdateLoading ? (
@@ -118,7 +125,7 @@ export default function CreateTaxState({ mode, navigateTo }) {
           <p className="text-danger text-center fw-semibold">
             {typeof stateCreationError === 'string'
               ? stateCreationError
-              : stateCreationError?.data?.message || 'Something went wrong' || stateCreationError}
+              : stateCreationError?.message || 'Something went wrong' || stateCreationError}
           </p>
         )}
 
@@ -130,10 +137,16 @@ export default function CreateTaxState({ mode, navigateTo }) {
                   type="text"
                   placeholder="State Name"
                   value={state.name}
-                  onChange={(e) => setState({ ...state, name: e.target.value })}
+                  onChange={(e) => {
+                    setState({ ...state, name: e.target.value })
+                    if (errors.name) {
+                      setErrors((prev) => ({ ...prev, name: '' }))
+                    }
+                  }}
                   id="name"
                   label="Name"
-                  errors={errors}
+                  name="state"
+                  errors={errors.name}
                 />
               </CCol>
             </CRow>
@@ -178,7 +191,7 @@ export default function CreateTaxState({ mode, navigateTo }) {
                     <CTableDataCell>
                       {(currentPage - 1) * resultsPerPage + index + 1}
                     </CTableDataCell>
-                    <CTableDataCell>{removeUserScoreAndCapitalize(stateData.name)}</CTableDataCell>
+                    <CTableDataCell>{stateData.name}</CTableDataCell>
                     <CTableDataCell>
                       <span
                         className={`badge bg-${stateData.status === Constants.STATUS.ACTIVE ? 'success' : 'secondary'}`}
@@ -188,9 +201,11 @@ export default function CreateTaxState({ mode, navigateTo }) {
                     </CTableDataCell>
                     <CTableDataCell>
                       <Button
-                        title="Activate"
-                        color="danger"
-                        size="sm"
+                        title={
+                          stateData.status === Constants.STATUS.ACTIVE ? 'Deactivate' : 'Activate'
+                        }
+                        color={stateData.status === Constants.STATUS.ACTIVE ? 'danger' : 'success'}
+                        btnSmall
                         onClick={() => {
                           setStateToDelete(stateData)
                           setIsDeleteModalVisible(true)
@@ -224,8 +239,8 @@ export default function CreateTaxState({ mode, navigateTo }) {
           )
         }}
         onClose={() => setIsDeleteModalVisible(false)}
-        title="Delete State"
-        body="Are you sure you want to update the state?"
+        title={`${stateToDelete?.status === Constants.STATUS.ACTIVE ? 'Deactivate' : 'Activate'} State`}
+        body={`Are you sure you want to ${stateToDelete?.status === Constants.STATUS.ACTIVE ? 'deactivate' : 'activate'} this state?`}
         closeBtnText="Close"
         submitBtnText="Yes"
         submitBtnColor="success"

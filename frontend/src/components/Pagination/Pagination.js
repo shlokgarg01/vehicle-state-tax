@@ -1,9 +1,6 @@
 import { CPagination, CPaginationItem } from '@coreui/react'
 
 const Pagination = ({ totalPages, currentPage, onPageChange }) => {
-  //   const maxPageNumbersToShow = 5 // Number of pages to show before truncating
-
-  // Generate page numbers with truncation logic
   const getPageNumbers = () => {
     const pages = []
     const startPage = Math.max(2, currentPage - 2)
@@ -20,42 +17,48 @@ const Pagination = ({ totalPages, currentPage, onPageChange }) => {
 
   return (
     <CPagination size="sm" className="justify-content-end text-secondary">
-      {/* Previous Button */}
-      <CPaginationItem disabled={currentPage === 1} onClick={() => onPageChange(currentPage - 1)}>
+      <CPaginationItem
+        disabled={currentPage === 1}
+        onClick={() => onPageChange(currentPage - 1)}
+        style={{ cursor: currentPage === 1 ? 'not-allowed' : 'pointer' }}
+      >
         Previous
       </CPaginationItem>
 
-      {/* First Page */}
-      <CPaginationItem active={currentPage === 1} onClick={() => onPageChange(1)}>
+      <CPaginationItem
+        active={currentPage === 1}
+        onClick={() => onPageChange(1)}
+        style={{ cursor: currentPage === 1 ? 'default' : 'pointer' }}
+      >
         1
       </CPaginationItem>
 
-      {/* Dynamic Pages */}
       {getPageNumbers().map((page, index) => (
         <CPaginationItem
           key={index}
           active={page === currentPage}
           onClick={() => typeof page === 'number' && onPageChange(page)}
           disabled={page === '...'}
+          style={{ cursor: typeof page === 'number' ? 'pointer' : 'default' }}
         >
           {page}
         </CPaginationItem>
       ))}
 
-      {/* Last Page */}
       {totalPages > 1 && (
         <CPaginationItem
           active={currentPage === totalPages}
           onClick={() => onPageChange(totalPages)}
+          style={{ cursor: currentPage === totalPages ? 'default' : 'pointer' }}
         >
           {totalPages}
         </CPaginationItem>
       )}
 
-      {/* Next Button */}
       <CPaginationItem
         disabled={currentPage === totalPages}
         onClick={() => onPageChange(currentPage + 1)}
+        style={{ cursor: currentPage === totalPages ? 'not-allowed' : 'pointer' }}
       >
         Next
       </CPaginationItem>

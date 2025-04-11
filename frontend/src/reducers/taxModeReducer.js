@@ -1,61 +1,6 @@
-import {
-  CREATE_TAX_MODE_REQUEST,
-  CREATE_TAX_MODE_SUCCESS,
-  CREATE_TAX_MODE_FAIL,
-  GET_ALL_TAX_MODES_REQUEST,
-  GET_ALL_TAX_MODES_SUCCESS,
-  GET_ALL_TAX_MODES_FAIL,
-  UPDATE_TAX_MODE_REQUEST,
-  UPDATE_TAX_MODE_SUCCESS,
-  UPDATE_TAX_MODE_FAIL,
-  CLEAR_ERRORS,
-} from '../constants/taxModeContants'
+import TAX_MODE_CONSTANTS from '../constants/taxModeContants'
 
-export const taxModeReducer = (state = {}, action) => {
-  switch (action.type) {
-    case CREATE_TAX_MODE_REQUEST:
-    case UPDATE_TAX_MODE_REQUEST:
-      return {
-        ...state,
-        loading: true,
-        error: false,
-      }
-
-    case CREATE_TAX_MODE_SUCCESS:
-      return {
-        loading: false,
-        isCreated: true,
-        error: false,
-      }
-
-    case UPDATE_TAX_MODE_SUCCESS:
-      return {
-        loading: false,
-        isUpdated: true,
-        error: false,
-      }
-
-    case CREATE_TAX_MODE_FAIL:
-    case UPDATE_TAX_MODE_FAIL:
-      return {
-        ...state,
-        loading: false,
-        error: action.payload,
-      }
-
-    case CLEAR_ERRORS:
-      return {
-        ...state,
-        error: null,
-        isCreated: false,
-        isUpdated: false,
-      }
-
-    default:
-      return state
-  }
-}
-const initialState = {
+const initialStateForGet = {
   taxModes: [],
   resultsPerPage: 10,
   totalTaxModes: 0,
@@ -64,15 +9,15 @@ const initialState = {
   error: null,
 }
 
-export const allTaxModesReducer = (state = initialState, action) => {
+export const allTaxModesReducer = (state = initialStateForGet, action) => {
   switch (action.type) {
-    case GET_ALL_TAX_MODES_REQUEST:
+    case TAX_MODE_CONSTANTS.GET_ALL_TAX_MODES_REQUEST:
       return {
         ...state,
         loading: true,
       }
 
-    case GET_ALL_TAX_MODES_SUCCESS:
+    case TAX_MODE_CONSTANTS.GET_ALL_TAX_MODES_SUCCESS:
       return {
         ...state,
         loading: false,
@@ -83,14 +28,103 @@ export const allTaxModesReducer = (state = initialState, action) => {
         error: null,
       }
 
-    case GET_ALL_TAX_MODES_FAIL:
+    case TAX_MODE_CONSTANTS.GET_ALL_TAX_MODES_FAIL:
       return {
         ...state,
         loading: false,
         error: action.payload,
       }
 
-    case CLEAR_ERRORS:
+    case TAX_MODE_CONSTANTS.CLEAR_ERRORS:
+      return {
+        ...state,
+        error: null,
+      }
+
+    default:
+      return state
+  }
+}
+
+// update
+const initialStateForUpdate = {
+  loading: false,
+  isUpdated: false,
+  error: null,
+}
+
+export const updateTaxModeReducer = (state = initialStateForUpdate, action) => {
+  switch (action.type) {
+    case TAX_MODE_CONSTANTS.UPDATE_TAX_MODE_REQUEST:
+      return {
+        ...state,
+        loading: true,
+      }
+
+    case TAX_MODE_CONSTANTS.UPDATE_TAX_MODE_SUCCESS:
+      return {
+        loading: false,
+        isUpdated: true,
+        error: null,
+      }
+
+    case TAX_MODE_CONSTANTS.UPDATE_TAX_MODE_FAIL:
+      return {
+        loading: false,
+        isUpdated: false,
+        error: action.payload,
+      }
+
+    case TAX_MODE_CONSTANTS.UPDATE_TAX_MODE_RESET:
+      return {
+        ...initialState,
+      }
+
+    case TAX_MODE_CONSTANTS.CLEAR_ERRORS:
+      return {
+        ...state,
+        error: null,
+      }
+
+    default:
+      return state
+  }
+}
+
+const initialStateForCreate = {
+  loading: false,
+  isCreated: false,
+  error: null,
+}
+
+export const createTaxModeReducer = (state = initialStateForCreate, action) => {
+  switch (action.type) {
+    case TAX_MODE_CONSTANTS.CREATE_TAX_MODE_REQUEST:
+      return {
+        ...state,
+        loading: true,
+      }
+
+    case TAX_MODE_CONSTANTS.CREATE_TAX_MODE_SUCCESS:
+      return {
+        loading: false,
+        isCreated: true,
+        error: null,
+      }
+
+    case TAX_MODE_CONSTANTS.CREATE_TAX_MODE_FAIL:
+      return {
+        loading: false,
+        isCreated: false,
+        error: action.payload,
+      }
+
+    case TAX_MODE_CONSTANTS.CREATE_TAX_MODE_RESET:
+      return {
+        ...initialState,
+      }
+
+    case TAX_MODE_CONSTANTS.CLEAR_ERRORS:
       return {
         ...state,
         error: null,

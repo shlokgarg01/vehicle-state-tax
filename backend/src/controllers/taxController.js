@@ -14,7 +14,6 @@ export const createTax = async (req, res) => {
       taxEntry,
     });
   } catch (error) {
-    console.error("Error creating tax:", error);
     res.status(500).json({ success: false, message: "Internal server error" });
   }
 };
@@ -47,7 +46,6 @@ export const getAllTaxes = async (req, res) => {
       taxes: data,
     });
   } catch (error) {
-    console.error("Error fetching taxes:", error);
     res.status(500).json({ success: false, message: "Internal server error" });
   }
 };
@@ -67,7 +65,6 @@ export const getTaxById = async (req, res) => {
       .status(200)
       .json({ success: true, tax, message: "Tax entry fetched successfully" });
   } catch (error) {
-    console.error("Error fetching tax by ID:", error);
     res.status(500).json({ success: false, message: "Internal server error" });
   }
 };
@@ -83,7 +80,6 @@ export const getUserTaxHistory = async (req, res) => {
       data: { taxes },
     });
   } catch (error) {
-    console.error("Error fetching user tax history:", error);
     res.status(500).json({ success: false, message: "Internal server error" });
   }
 };

@@ -1,30 +1,21 @@
-import axios from 'axios'
-import {
-  CREATE_TAX_MODE_REQUEST,
-  CREATE_TAX_MODE_SUCCESS,
-  CREATE_TAX_MODE_FAIL,
-  GET_ALL_TAX_MODES_REQUEST,
-  GET_ALL_TAX_MODES_SUCCESS,
-  GET_ALL_TAX_MODES_FAIL,
-  UPDATE_TAX_MODE_REQUEST,
-  UPDATE_TAX_MODE_SUCCESS,
-  UPDATE_TAX_MODE_FAIL,
-  CLEAR_ERRORS,
-} from '../constants/taxModeContants'
 import axiosInstance from '../utils/config'
+import TAX_MODE_CONSTANTS from '../constants/taxModeContants'
 
 const PREFIX = '/api/v1/taxMode'
+
 // Create Tax Mode
 export const createTaxMode = (taxModeData) => async (dispatch) => {
   try {
-    dispatch({ type: CREATE_TAX_MODE_REQUEST })
-    const { data } = await axiosInstance.post(`${PREFIX}`, taxModeData)
+    dispatch({ type: TAX_MODE_CONSTANTS.CREATE_TAX_MODE_REQUEST })
 
-    dispatch({ type: CREATE_TAX_MODE_SUCCESS, payload: data })
+    const { data } = await axiosInstance.post(PREFIX, taxModeData)
+    console.log(data)
+    dispatch({ type: TAX_MODE_CONSTANTS.CREATE_TAX_MODE_SUCCESS, payload: data })
   } catch (error) {
+    console.log(error)
     dispatch({
-      type: CREATE_TAX_MODE_FAIL,
-      payload: error.response || error.message || error,
+      type: TAX_MODE_CONSTANTS.CREATE_TAX_MODE_FAIL,
+      payload: error?.response?.data?.message || error.message || error,
     })
   }
 }
@@ -34,7 +25,7 @@ export const getAllTaxModes =
   (search = '', page = 1, perPage = 10, filters = {}) =>
   async (dispatch) => {
     try {
-      dispatch({ type: GET_ALL_TAX_MODES_REQUEST })
+      dispatch({ type: TAX_MODE_CONSTANTS.GET_ALL_TAX_MODES_REQUEST })
 
       const queryParams = new URLSearchParams({
         search,
@@ -46,7 +37,7 @@ export const getAllTaxModes =
       const { data } = await axiosInstance.get(`${PREFIX}?${queryParams}`)
 
       dispatch({
-        type: GET_ALL_TAX_MODES_SUCCESS,
+        type: TAX_MODE_CONSTANTS.GET_ALL_TAX_MODES_SUCCESS,
         payload: {
           taxModes: data.taxModes,
           total: data.totalTaxModes,
@@ -56,8 +47,8 @@ export const getAllTaxModes =
       })
     } catch (error) {
       dispatch({
-        type: GET_ALL_TAX_MODES_FAIL,
-        payload: error.response?.data?.message || error.message,
+        type: TAX_MODE_CONSTANTS.GET_ALL_TAX_MODES_FAIL,
+        payload: error?.response?.data?.message || error.message || error,
       })
     }
   }
@@ -65,18 +56,21 @@ export const getAllTaxModes =
 // Update Tax Mode
 export const updateTaxMode = (id, updatedData) => async (dispatch) => {
   try {
-    dispatch({ type: UPDATE_TAX_MODE_REQUEST })
+    dispatch({ type: TAX_MODE_CONSTANTS.UPDATE_TAX_MODE_REQUEST })
+
     const { data } = await axiosInstance.put(`${PREFIX}/${id}`, updatedData)
-    dispatch({ type: UPDATE_TAX_MODE_SUCCESS, payload: data })
+    console.log(data)
+    dispatch({ type: TAX_MODE_CONSTANTS.UPDATE_TAX_MODE_SUCCESS, payload: data })
   } catch (error) {
+    console.log(error)
     dispatch({
-      type: UPDATE_TAX_MODE_FAIL,
-      payload: error.response || error.message,
+      type: TAX_MODE_CONSTANTS.UPDATE_TAX_MODE_FAIL,
+      payload: error?.response?.data?.message || error.message || error || error?.message,
     })
   }
 }
 
 // Clear Errors
 export const clearErrors = () => (dispatch) => {
-  dispatch({ type: CLEAR_ERRORS })
+  dispatch({ type: TAX_MODE_CONSTANTS.CLEAR_ERRORS })
 }

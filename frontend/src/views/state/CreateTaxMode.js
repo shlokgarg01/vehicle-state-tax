@@ -20,12 +20,18 @@ import SelectBox from '../../components/Form/SelectBox'
 import Button from '../../components/Form/Button'
 import { showToast } from '../../utils/toast'
 import { useDispatch, useSelector } from 'react-redux'
-import { clearErrors, getAllTaxModes } from '../../actions/taxModeAction'
+import {
+  clearErrors,
+  getAllTaxModes,
+  createTaxMode,
+  updateTaxMode,
+} from '../../actions/taxModeAction'
 import Loader from '../../components/Loader/Loader'
 import NoData from '../../components/NoData'
 import Pagination from '../../components/Pagination/Pagination'
+import Modal from '../../components/Modal/Modal'
 
-const CreateTaxMode = ({ states, onSubmit, editingTaxMode, loading, error, mode }) => {
+const CreateTaxMode = ({ states, mode }) => {
   const dispatch = useDispatch()
 
   // Initial form state
@@ -36,45 +42,53 @@ const CreateTaxMode = ({ states, onSubmit, editingTaxMode, loading, error, mode 
     status: Constants.STATUS.ACTIVE,
   }
 
-  // Local states
   const [formData, setFormData] = useState(initialForm)
   const [formErrors, setFormErrors] = useState({})
   const [currentPage, setCurrentPage] = useState(1)
   const limit = 10
+  const [isDeleteModalVisible, setIsDeleteModalVisible] = useState(false)
+  const [stateToDelete, setStateToDelete] = useState(null)
 
-  // redux state
+  // Redux states
   const {
     taxModes,
     filteredTaxModesCount,
     loading: listLoading,
     error: listError,
   } = useSelector((state) => state.allTaxModes)
-
+  const {
+    isUpdated,
+    loading: updateLoading,
+    error: updateError,
+  } = useSelector((state) => state.updateTaxMode)
   const {
     isCreated,
     error: errorCreate,
     loading: loadingCreate,
-  } = useSelector((state) => state.taxMode)
+  } = useSelector((state) => state.createTaxMode)
 
-  const filtered = (taxModes || []).filter((item) => item.mode === mode)
+  const filtered = (taxModes || []).filter(
+    (item) => item.mode === mode && item.state && item.state._id,
+  )
 
-  // effect
   useEffect(() => {
     const filters = {}
     if (mode) filters.mode = mode
-    dispatch(getAllTaxModes('', currentPage, limit, filters, mode))
+    dispatch(getAllTaxModes('', currentPage, limit, filters, { mode }))
   }, [dispatch, mode, currentPage])
 
   useEffect(() => {
     if (!loadingCreate && isCreated) {
-      showToast('Tax mode created', 'success')
       dispatch(clearErrors())
       setFormData(initialForm)
       setFormErrors({})
-      dispatch(getAllTaxModes('', 1, limit, mode))
+      const filters = {}
+      if (mode) filters.mode = mode
+      dispatch(getAllTaxModes('', 1, limit, filters, { mode }))
       setCurrentPage(1)
+      showToast('Tax mode created', 'success')
     }
-  }, [loadingCreate, isCreated, dispatch, mode])
+  }, [loadingCreate, isCreated, dispatch])
 
   useEffect(() => {
     if (errorCreate) {
@@ -82,62 +96,45 @@ const CreateTaxMode = ({ states, onSubmit, editingTaxMode, loading, error, mode 
     }
   }, [errorCreate])
 
-  // form handler
   const handleChange = (e) => {
     const { name, value } = e.target
-    setFormData((prev) => ({ ...prev, [name]: value }))
+    const updatedValue = ['taxMode', 'mode'].includes(name) ? value.toLowerCase() : value
+    setFormData((prev) => ({ ...prev, [name]: updatedValue }))
   }
 
   const validateForm = () => {
     const errors = {}
 
-    // Check for state
     if (!formData.state || formData.state.trim() === '') {
       errors.state = 'Please select a state.'
     }
 
-    // Check for taxMode
     if (!formData.taxMode || formData.taxMode.trim() === '') {
       errors.taxMode = 'Please select a tax mode.'
     }
 
-    // Check for status
     if (!formData.status || formData.status.trim() === '') {
       errors.status = 'Please select status.'
     }
 
     setFormErrors(errors)
-
-    return errors
+    return Object.keys(errors).length === 0
   }
 
   const handleReset = () => {
     setFormData(initialForm)
+    setFormErrors({})
   }
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = (e) => {
     e.preventDefault()
-    const errors = validateForm()
+    const isValid = validateForm()
 
-    if (Object.keys(errors).length > 0 || errorCreate?.data?.message > 0) {
-      return
-    }
+    if (!isValid) return
 
-    try {
-      await onSubmit(formData)
-      dispatch(getAllTaxModes(mode))
-      setFormData(initialForm)
-      setFormErrors({})
-      dispatch(clearErrors())
-    } catch (err) {
-      showToast(
-        err?.response?.data?.message || err?.message || 'Something went wrong while submitting',
-        'error',
-      )
-    }
+    dispatch(createTaxMode(formData))
   }
 
-  // data
   const getModeLabel = (modeKey) => {
     return (
       Object.entries(Constants.MODES)
@@ -148,21 +145,54 @@ const CreateTaxMode = ({ states, onSubmit, editingTaxMode, loading, error, mode 
     )
   }
 
+  const toggleStateStatus = (id, newStatus) => {
+    const existing = taxModes.find((tm) => tm._id === id)
+    if (!existing) return
+
+    if (!existing.state?._id) {
+      showToast('Cannot update tax mode with missing state', 'error')
+      return
+    }
+
+    dispatch(
+      updateTaxMode(id, {
+        state: existing.state._id,
+        mode: existing.mode,
+        taxMode: existing.taxMode,
+        status: newStatus,
+      }),
+    )
+  }
+
   const allowedTaxModes =
     mode === Constants.MODES.ALL_INDIA_PERMIT || mode === Constants.MODES.ALL_INDIA_TAX
       ? [Constants.TAX_MODES.YEARLY]
       : Object.values(Constants.TAX_MODES)
+  useEffect(() => {
+    if (!updateLoading && isUpdated) {
+      showToast('Tax mode status updated', 'success')
+      setIsDeleteModalVisible(false)
+      dispatch(clearErrors())
+
+      const filters = {}
+      if (mode) filters.mode = mode
+      dispatch(getAllTaxModes('', currentPage, limit, filters, { mode }))
+    }
+  }, [isUpdated, updateLoading, dispatch, currentPage, limit, mode])
+  useEffect(() => {
+    if (updateError) {
+      showToast(updateError?.data?.message || 'Failed to update status', 'error')
+    }
+  }, [updateError])
 
   return (
     <>
-      {/* Form Card */}
       <CCard className="mb-4">
         <CCardHeader className="fw-bold">Create {getModeLabel(mode)}</CCardHeader>
         <CCardBody>
           <CForm onSubmit={handleSubmit}>
             <CRow className="justify-content-center">
               <CCol md={8}>
-                {/* Error message */}
                 {formErrors &&
                   Object.entries(formErrors).map(([key, msg]) => (
                     <div key={key} className="text-danger mt-1">
@@ -177,6 +207,7 @@ const CreateTaxMode = ({ states, onSubmit, editingTaxMode, loading, error, mode 
                       : errorCreate?.data?.message || 'Something went wrong' || errorCreate}
                   </p>
                 )}
+
                 {/* State Field */}
                 <CRow className="mb-3 align-items-center">
                   <CCol md={3}>
@@ -226,7 +257,7 @@ const CreateTaxMode = ({ states, onSubmit, editingTaxMode, loading, error, mode 
                 </CRow>
 
                 {/* Status Field */}
-                <CRow className="mb-3 align-items-center">
+                {/* <CRow className="mb-3 align-items-center">
                   <CCol md={3}>
                     <label htmlFor="status" className="form-label fw-semibold">
                       Status
@@ -247,7 +278,7 @@ const CreateTaxMode = ({ states, onSubmit, editingTaxMode, loading, error, mode 
                       errors={formErrors}
                     />
                   </CCol>
-                </CRow>
+                </CRow> */}
 
                 {/* Action Buttons */}
                 <div className="d-flex justify-content-center gap-2 pb-4">
@@ -308,12 +339,24 @@ const CreateTaxMode = ({ states, onSubmit, editingTaxMode, loading, error, mode 
                         {taxMode.status}
                       </span>
                     </CTableDataCell>
+                    <CTableDataCell>
+                      <Button
+                        title={
+                          taxMode.status === Constants.STATUS.ACTIVE ? 'Deactivate' : 'Activate'
+                        }
+                        color={taxMode.status === Constants.STATUS.ACTIVE ? 'danger' : 'success'}
+                        btnSmall
+                        onClick={() => {
+                          setStateToDelete(taxMode)
+                          setIsDeleteModalVisible(true)
+                        }}
+                      />
+                    </CTableDataCell>
                   </CTableRow>
                 ))}
               </CTableBody>
             </CTable>
 
-            {/* Pagination */}
             <Pagination
               currentPage={currentPage}
               totalPages={Math.ceil(filteredTaxModesCount / limit)}
@@ -323,6 +366,24 @@ const CreateTaxMode = ({ states, onSubmit, editingTaxMode, loading, error, mode 
           </CCardBody>
         )}
       </CCard>
+      <Modal
+        visible={isDeleteModalVisible}
+        onVisibleToggle={() => setIsDeleteModalVisible(!isDeleteModalVisible)}
+        onSubmitBtnClick={() => {
+          toggleStateStatus(
+            stateToDelete._id,
+            stateToDelete.status === Constants.STATUS.ACTIVE
+              ? Constants.STATUS.INACTIVE
+              : Constants.STATUS.ACTIVE,
+          )
+        }}
+        onClose={() => setIsDeleteModalVisible(false)}
+        title={`${stateToDelete?.status === Constants.STATUS.ACTIVE ? 'Deactivate' : 'Activate'} State`}
+        body={`Are you sure you want to ${stateToDelete?.status === Constants.STATUS.ACTIVE ? 'deactivate' : 'activate'} this state?`}
+        closeBtnText="Close"
+        submitBtnText="Yes"
+        submitBtnColor="success"
+      />
     </>
   )
 }

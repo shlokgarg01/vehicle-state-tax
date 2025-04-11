@@ -14,11 +14,13 @@ const TaxModeSchema = new mongoose.Schema(
       type: String,
       enum: Object.values(CONSTANTS.TAX_CATEGORIES),
       required: true,
+      lowercase: true,
     },
     taxMode: {
       type: String,
       enum: Object.values(CONSTANTS.TAX_MODES),
       required: true,
+      lowercase: true,
     },
     status: {
       type: String,

@@ -9,13 +9,14 @@ export const createTaxState = (params) => async (dispatch) => {
   try {
     dispatch({ type: TAX_CONSTANTS.NEW_TAX_STATE_REQUEST })
     const { data } = await axiosInstance.post(`${PREFIX}`, params)
-    console.log(data)
+
     dispatch({ type: TAX_CONSTANTS.NEW_TAX_STATE_SUCCESS, payload: data.state })
   } catch (error) {
-    console.log(error)
+    const message = error?.response?.data?.message || error?.message || 'Something went wrong'
     dispatch({
       type: TAX_CONSTANTS.NEW_TAX_STATE_FAIL,
-      payload: error?.message || error || 'Something went wrong',
+
+      payload: message,
     })
   }
 }
@@ -29,13 +30,8 @@ export const getTaxStates =
 
       dispatch({ type: TAX_CONSTANTS.GET_ALL_STATES_REQUEST })
 
-      let url = `${PREFIX}`
-
-      if (mode) {
-        url += `?mode=${mode}`
-      } else {
-        url += `?page=${page}&perPage=${perPage}`
-      }
+      let url = `${PREFIX}?page=${page}&perPage=${perPage}`
+      if (mode) url += `&mode=${mode}`
 
       const { data } = await axiosInstance.get(url)
 
@@ -49,7 +45,7 @@ export const getTaxStates =
     } catch (error) {
       dispatch({
         type: TAX_CONSTANTS.GET_ALL_STATES_FAIL,
-        payload: error.response?.data || error.message || error || error.response,
+        payload: error.response?.data?.message || error.message || error || error.response,
       })
     }
   }
@@ -58,13 +54,13 @@ export const getTaxStates =
 export const updateState = (id, params) => async (dispatch) => {
   try {
     dispatch({ type: TAX_CONSTANTS.UPDATE_STATE_REQUEST })
-    await axiosInstance.put(`${PREFIX}/${id}`, params)
+    const { data } = await axiosInstance.put(`${PREFIX}/${id}`, params)
 
     dispatch({ type: TAX_CONSTANTS.UPDATE_STATE_SUCCESS })
   } catch (error) {
     dispatch({
-      type: TAX_CONSTANTS.UPDATE_STATE_SUCCESS,
-      payload: error.response,
+      type: TAX_CONSTANTS.UPDATE_STATE_FAIL,
+      payload: error.response?.data || error.message || error,
     })
   }
 }

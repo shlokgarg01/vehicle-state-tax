@@ -33,12 +33,10 @@ export const getAllStates = asyncHandler(async (req, res) => {
     }
 
     const filteredStatesCount = await State.countDocuments(filter);
-    let apiFeature = new ApiFeatures(
-      State.find().sort({ createdAt: -1 }),
-      req.query
-    )
+    let apiFeature = new ApiFeatures(State.find(), req.query)
 
       .filter()
+      .sort("-createdAt")
       .pagination(resultsPerPage);
 
     const totalStates = await State.countDocuments(
@@ -58,15 +56,32 @@ export const getAllStates = asyncHandler(async (req, res) => {
   }
 });
 
-//  Update a state
+// Update a state
 export const updateState = asyncHandler(async (req, res) => {
-  const state = await State.findById(req.params.id);
+  const { id } = req.params;
+
+  const state = await State.findById(id);
   if (!state) {
-    return res.status(404).json({ success: false, message: "State not found" });
+    return res.status(404).json({
+      success: false,
+      message: "State not found",
+    });
   }
 
-  const updatedState = await State.findByIdAndUpdate(req.params.id, req.body, {
-    new: true,
-  });
-  res.status(200).json({ success: true, state: updatedState });
+  try {
+    const updatedState = await State.findByIdAndUpdate(id, req.body, {
+      new: true,
+      runValidators: true,
+    });
+
+    res.status(200).json({
+      success: true,
+      state: updatedState,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message || "Something went wrong while updating the state",
+    });
+  }
 });

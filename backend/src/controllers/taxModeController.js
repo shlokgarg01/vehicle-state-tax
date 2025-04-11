@@ -3,16 +3,26 @@ import asyncHandler from "express-async-handler";
 import CONSTANTS from "../constants/constants.js";
 import ApiFeatures from "../utils/apiFeatures.js";
 
-// ➕ Create TaxMode
+//  Create TaxMode
 export const createTaxMode = asyncHandler(async (req, res) => {
   try {
-    const { state, mode, taxMode, status } = req.body;
+    let { state, mode, taxMode, status } = req.body;
+
+    if (!state || !mode || !taxMode) {
+      return res.status(400).json({
+        success: false,
+        message: "State, mode, and taxMode are required fields.",
+      });
+    }
+
+    mode = mode.trim().toUpperCase();
+    taxMode = taxMode.trim().toUpperCase();
 
     const existing = await TaxMode.findOne({ state, mode, taxMode });
     if (existing) {
       return res.status(400).json({
         success: false,
-        message: "A TaxMode with this state, mode, and taxMode already exists",
+        message: `TaxMode already exists for state: ${state}, mode: ${mode}, taxMode: ${taxMode}`,
       });
     }
 
@@ -25,6 +35,7 @@ export const createTaxMode = asyncHandler(async (req, res) => {
 
     res.status(201).json({ success: true, taxMode: newTaxMode });
   } catch (error) {
+    console.error(error);
     res.status(500).json({
       success: false,
       message: "Failed to create TaxMode",
@@ -33,27 +44,28 @@ export const createTaxMode = asyncHandler(async (req, res) => {
   }
 });
 
-// 📄 Get All TaxModes
-export const getAllTaxModes = asyncHandler(async (req, res, next) => {
+//  Get All TaxModes
+export const getAllTaxModes = asyncHandler(async (req, res) => {
   try {
     const resultPerPage = Number(req.query.perPage) || 10;
-
     const totalTaxModes = await TaxMode.countDocuments();
 
     const filteredQuery = new ApiFeatures(TaxMode.find(), req.query)
-      .search(["taxMode", "mode", "status"])
+      .search(["taxMode", "mode", "status"]) 
       .filter();
 
     const filteredTaxModesCount = await filteredQuery.query
       .clone()
       .countDocuments();
 
+    
     const apiFeatures = new ApiFeatures(
-      TaxMode.find().populate("state", "name").sort({ createdAt: -1 }),
+      TaxMode.find().populate("state"),
       req.query
     )
-      .search(["taxMode", "mode", "status"])
+      .search(["taxMode", "mode", "status"]) 
       .filter()
+      .sort("-createdAt")
       .pagination(resultPerPage);
 
     const taxModes = await apiFeatures.query;
@@ -65,6 +77,7 @@ export const getAllTaxModes = asyncHandler(async (req, res, next) => {
       filteredTaxModesCount,
     });
   } catch (error) {
+    console.error(error);
     res.status(500).json({
       success: false,
       message: "Failed to fetch tax modes",
@@ -75,20 +88,61 @@ export const getAllTaxModes = asyncHandler(async (req, res, next) => {
 
 // ✏️ Update TaxMode
 export const updateTaxMode = asyncHandler(async (req, res) => {
-  const { state, mode, taxMode, status } = req.body;
-  const taxModeDoc = await TaxMode.findById(req.params.id);
+  try {
+    const { state, mode, taxMode, status } = req.body;
+    const taxModeDoc = await TaxMode.findById(req.params.id);
 
-  if (!taxModeDoc) {
-    return res
-      .status(404)
-      .json({ success: false, message: "TaxMode not found" });
+    if (!taxModeDoc) {
+      return res.status(404).json({
+        success: false,
+        message: "TaxMode not found",
+      });
+    }
+
+  
+    if (!state || !mode || !taxMode) {
+      return res.status(400).json({
+        success: false,
+        message: "State, mode, and taxMode are required fields.",
+      });
+    }
+
+    const normalizedMode = mode.trim().toUpperCase();
+    const normalizedTaxMode = taxMode.trim().toUpperCase();
+
+  
+    const duplicate = await TaxMode.findOne({
+      state,
+      mode: normalizedMode,
+      taxMode: normalizedTaxMode,
+      _id: { $ne: req.params.id },
+    });
+
+    if (duplicate) {
+      return res.status(400).json({
+        success: false,
+        message: "A TaxMode with this state, mode, and taxMode already exists",
+      });
+    }
+
+ 
+    taxModeDoc.state = state;
+    taxModeDoc.mode = normalizedMode;
+    taxModeDoc.taxMode = normalizedTaxMode;
+    taxModeDoc.status = status || taxModeDoc.status;
+
+    const updated = await taxModeDoc.save();
+
+    res.status(200).json({
+      success: true,
+      taxMode: updated,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to update TaxMode",
+      error: error.message,
+    });
   }
-
-  taxModeDoc.state = state || taxModeDoc.state;
-  taxModeDoc.mode = mode || taxModeDoc.mode;
-  taxModeDoc.taxMode = taxMode || taxModeDoc.taxMode;
-  taxModeDoc.status = status || taxModeDoc.status;
-
-  const updated = await taxModeDoc.save();
-  res.status(200).json({ success: true, taxMode: updated });
 });
