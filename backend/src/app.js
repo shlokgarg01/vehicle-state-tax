@@ -8,6 +8,7 @@ import cors from "cors";
 import path from 'path';
 import router from "./routes/index.js";
 import "./jobs/taxJobs.js";
+import { fileURLToPath } from 'url';
 
 const app = express();
 
@@ -38,6 +39,9 @@ app.use("/api/v1", router);
 
 // This is the static frontend file. Whenever any change in frontend is made, u need to generate build file &then run server again.
 // IMPORTANT - make sure that this static frontend route is after all the backend routes otherwise all API calls will fail.
+const __filename = fileURLToPath(import.meta.url); // get the resolved path to the file
+const __dirname = path.dirname(__filename); 
+
 app.use(express.static(path.join(__dirname, "../../frontend/build")));
 app.get("*", (req, res) => {
   res.sendFile(
