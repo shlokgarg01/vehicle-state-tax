@@ -6,14 +6,11 @@ import config from "../config/config.js";
 import catchAsyncErrors from "./catchAsyncErrors.js";
 
 export const isAuthenticatedUser = catchAsyncErrors(async (req, res, next) => {
-  let token = null;
-  if (token === null || token === undefined) {
-    token = req.headers["authorization"];
-  }
-
-  if (!token) {
+  let token = req.headers["authorization"];
+  if (!token || !token.startsWith("Bearer ")) {
     return next(new ErrorHandler("Please login to access this resource.", 401));
   }
+  token = token.split(" ")[1];
 
   const decodedData = jwt.verify(token, config.JWT.secret);
   const user =

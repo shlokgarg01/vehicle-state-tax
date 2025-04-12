@@ -170,7 +170,11 @@ export default function BannerManager() {
                       alt="Preview"
                       className="img-fluid rounded"
                       style={{ maxHeight: '250px', objectFit: 'contain', cursor: 'pointer' }}
-                      onClick={() => window.open(URL.createObjectURL(banner.image), '_blank')}
+                      onClick={(e) => {
+                        e.preventDefault() // 🔒 Prevent any default form or navigation
+                        const blobUrl = URL.createObjectURL(banner.image)
+                        window.open(blobUrl, '_blank', 'noopener,noreferrer')
+                      }}
                     />
                     <p className="mt-2 text-muted">Click to enlarge</p>
                   </CCard>

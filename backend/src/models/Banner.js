@@ -20,6 +20,6 @@ const bannerSchema = new mongoose.Schema(
   }
 );
 
-mongoose.set("debug", true);
+// mongoose.set("debug", true);
 const Banner = mongoose.model("Banner", bannerSchema);
 export default Banner;

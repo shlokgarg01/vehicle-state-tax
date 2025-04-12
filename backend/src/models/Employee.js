@@ -59,6 +59,6 @@ employeeSchema.plugin(mongooseDelete, {
   deletedAt: true,
 });
 
-mongoose.set("debug", true);
+// mongoose.set("debug", true);
 const Employee = mongoose.model(COLLECTION_NAMES.EMPLOYEE, employeeSchema);
 export default Employee;

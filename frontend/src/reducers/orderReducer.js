@@ -49,8 +49,9 @@ export const uploadTaxReducer = (state = {}, action) => {
       return { loading: false, uploaded: true, data: action.payload }
 
     case TAX_CONSTANTS.UPLOAD_TAX_FAIL:
-      return { loading: false, error: action.payload }
-
+      return { loading: false, error: action.payload, uploaded: false }
+    case TAX_CONSTANTS.UPLOAD_TAX_RESET:
+      return {}
     default:
       return state
   }

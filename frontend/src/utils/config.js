@@ -1,23 +1,32 @@
 import axios from 'axios'
 
 const axiosInstance = axios.create({
-  baseURL: 'http://localhost:4000',
+  baseURL: 'http://localhost:4000', // Your API base URL
 })
 
-axiosInstance.interceptors.request.use(async function (config) {
-  let token = localStorage.getItem('token')
-  token = token ? JSON.parse(token) : ''
+axiosInstance.interceptors.request.use(
+  async function (config) {
+    let token = localStorage.getItem('token')
+    token = token ? token : ''
 
-  config.headers.Authorization = `${token}`
-  if (config.isMultipart) {
-    config.headers['Content-Type'] = 'multipart/form-data'
-  } else {
-    config.headers['Content-Type'] = 'application/json'
-  }
+    // Add the token to the Authorization header with 'Bearer' prefix
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`
+    }
 
-  return config
-})
+    // Check if the request is multipart, then set the appropriate Content-Type
+    if (config.isMultipart) {
+      config.headers['Content-Type'] = 'multipart/form-data'
+    } else {
+      config.headers['Content-Type'] = 'application/json'
+    }
 
-// local - http://localhost:4000
+    return config
+  },
+  function (error) {
+    // Handle request error
+    return Promise.reject(error)
+  },
+)
 
 export default axiosInstance

@@ -8,7 +8,8 @@ export const loginUser = (email, password) => async (dispatch) => {
   try {
     dispatch({ type: USER_CONSTANTS.LOGIN_REQUEST })
     const { data } = await axiosInstance.post(`${PREFIX}/login`, { username: email, password })
-    localStorage.setItem('token', JSON.stringify(data.token))
+
+    localStorage.setItem('token', data.token)
 
     dispatch({ type: USER_CONSTANTS.LOGIN_SUCCESS, payload: data.user })
   } catch (error) {
@@ -24,11 +25,12 @@ export const loadUser = () => async (dispatch) => {
   try {
     dispatch({ type: USER_CONSTANTS.LOAD_USER_REQUEST })
     const { data } = await axiosInstance.get(`${PREFIX}/me`)
+
     dispatch({ type: USER_CONSTANTS.LOAD_USER_SUCCESS, payload: data.user })
   } catch (error) {
     dispatch({
       type: USER_CONSTANTS.LOAD_USER_FAIL,
-      payload: error.response,
+      payload: error.response ? error.response.data : error.message,
     })
   }
 }
@@ -39,6 +41,7 @@ export const logoutUser = () => async (dispatch) => {
     await axiosInstance.get(`${PREFIX}/logout`)
     localStorage.clear()
     dispatch({ type: USER_CONSTANTS.LOGOUT_USER_SUCCESS })
+    localStorage.removeItem('token')
   } catch (error) {
     dispatch({
       type: USER_CONSTANTS.LOGOUT_USER_FAIL,

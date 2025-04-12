@@ -2,39 +2,28 @@ import React, { useEffect } from 'react'
 import TaxCard from '../state/TaxCard'
 import { useDispatch, useSelector } from 'react-redux'
 import { getAllTaxes } from '../../actions/orderActions'
-// import { getAllTaxes } from '../../actions/taxActions'
-// import { getAllTaxes } from '../../actions/taxActions'
+import Loader from '../../components/Loader/Loader'
+import Constants from '../../utils/constants'
 const completeOrder = () => {
-  const dummyTaxData = {
-    state: 'Maharashtra',
-    city: 'Mumbai',
-    createdAt: new Date().toISOString(),
-    vehicleNo: 'MH12AB1234',
-    amount: '₹12,500',
-    mobile: '9876543210',
-    seatingCapacity: 7,
-    taxMode: 'Quarterly',
-    taxFrom: '2025-01-01',
-    taxUpto: '2025-03-31',
-    // fileUrl: 'https://example.com/sample-tax-slip.pdf',
-  }
   const dispatch = useDispatch()
 
   const { taxes, loading, error } = useSelector((state) => state.allTaxes)
 
   useEffect(() => {
-    dispatch(getAllTaxes())
+    dispatch(getAllTaxes({ status: Constants.ORDER_STATUS.CLOSED }))
   }, [dispatch])
-  console.log(taxes)
+  // console.log(taxes)
 
-  const completedTaxes = taxes?.filter((tax) => tax.isCompleted === true)
+  const completedTaxes = taxes?.filter((tax) => tax.status === Constants.ORDER_STATUS.CLOSED)
   console.log(completedTaxes)
   return (
     <div>
-      {loading && <p>Loading completed taxes...</p>}
-      {error && <p className="text-danger">Error: {error}</p>}
+      {loading && <Loader />}
+      {error && <div className="alert alert-danger">Error: {error}</div>}
 
-      {!loading && completedTaxes?.length === 0 && <p>No completed tax entries found.</p>}
+      {!loading && completedTaxes?.length === 0 && (
+        <div className="alert alert-warning">No pending tax entries found.</div>
+      )}
 
       {completedTaxes?.map((tax) => (
         <TaxCard key={tax._id} data={tax} />

@@ -222,11 +222,13 @@ const CreateTaxMode = ({ states, mode }) => {
                       value={formData.state}
                       onChange={handleChange}
                       defaultOption="-- Select State --"
-                      options={states.map((state) => ({
-                        value: state._id,
-                        key: state._id,
-                        label: state.name,
-                      }))}
+                      options={states
+                        .filter((state) => state.status === Constants.STATUS.ACTIVE)
+                        .map((state) => ({
+                          value: state._id,
+                          key: state._id,
+                          label: state.name,
+                        }))}
                       errors={formErrors}
                     />
                   </CCol>

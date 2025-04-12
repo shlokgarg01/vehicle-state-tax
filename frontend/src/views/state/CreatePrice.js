@@ -97,7 +97,13 @@ const CreatePrice = ({ states, error, loading, mode, stateLoading, stateError })
 
   useEffect(() => {
     if (errorCreate) {
-      showToast(errorCreate?.data?.message || 'Failed to create price', 'error')
+      showToast(
+        errorCreate?.data?.message ||
+          errorCreate ||
+          errorCreate?.response?.data?.message ||
+          'Failed to create price',
+        'error',
+      )
     }
   }, [errorCreate])
 
@@ -148,8 +154,10 @@ const CreatePrice = ({ states, error, loading, mode, stateLoading, stateError })
       errors.seatCapacity = 'Seat capacity is required'
     }
 
-    if (!formData.price1 || parseFloat(formData.price1) <= 0) {
-      errors.price1 = 'Valid Price 1 is required'
+    if (!formData.price1) {
+      errors.price1 = 'Price 1 is required'
+    } else if (isNaN(formData.price1) || formData.price1 <= 0) {
+      errors.price1 = 'Price 1 must be a valid positive number'
     }
 
     if (formData.taxMode === Constants.TAX_MODES.DAYS) {
@@ -164,13 +172,10 @@ const CreatePrice = ({ states, error, loading, mode, stateLoading, stateError })
       }
 
       const weightNum = parseFloat(formData.weight)
-      if (
-        !formData.weight ||
-        !Constants.WEIGHT.hasOwnProperty(
-          Object.keys(Constants.WEIGHT).find((key) => Constants.WEIGHT[key] === formData.weight),
-        )
-      ) {
-        errors.weight = 'Please select a valid weight'
+
+      // Check if the weight exists
+      if (!formData.weight) {
+        errors.weight = 'Weight is required'
       }
     }
 
@@ -193,6 +198,8 @@ const CreatePrice = ({ states, error, loading, mode, stateLoading, stateError })
 
   const handleSubmit = async (e) => {
     e.preventDefault()
+
+    // Validate form data
     const errors = validateForm()
     if (Object.keys(errors).length > 0) {
       setFormErrors(errors)
@@ -206,16 +213,24 @@ const CreatePrice = ({ states, error, loading, mode, stateLoading, stateError })
       if (!payload.vehicleType) delete payload.vehicleType
       if (!payload.weight) delete payload.weight
 
-      const result = dispatch(createPrice(payload))
-      showToast('Price submitted successfully', 'success')
+      // Show success message first
 
+      // Now dispatch the createPrice action
+      const result = dispatch(createPrice(payload))
+
+      // Handle the result from the dispatch (success or failure)
       if (result?.success) {
+        showToast('Price submitted successfully', 'success')
         handleReset()
         dispatch(getAllPrices({ page: currentPage, perPage: limit, mode }))
       }
     } catch (err) {
+      // If there's an error, show the error message after the success toast
       const message =
-        err?.response?.data?.message || err?.message || 'Something went wrong while submitting'
+        err?.response?.data?.message ||
+        err?.message ||
+        'Something went wrong while submitting' ||
+        error
       showToast(message, 'error')
     }
   }
@@ -271,7 +286,6 @@ const CreatePrice = ({ states, error, loading, mode, stateLoading, stateError })
                       : error?.data?.message || 'Something went wrong'}
                   </p>
                 )}
-
                 {/* Field: State (if not All India Mode) */}
                 {mode !== Constants.MODES.ALL_INDIA_PERMIT &&
                   mode !== Constants.MODES.ALL_INDIA_TAX && (
@@ -290,6 +304,7 @@ const CreatePrice = ({ states, error, loading, mode, stateLoading, stateError })
                           defaultOption="-- Select State --"
                           options={states
                             .filter((state) => state.mode === mode)
+                            .filter((state) => state.status === Constants.STATUS.ACTIVE)
                             .map((state) => ({
                               value: state._id,
                               key: state._id,
@@ -300,7 +315,6 @@ const CreatePrice = ({ states, error, loading, mode, stateLoading, stateError })
                       )}
                     </>
                   )}
-
                 {/* Field: Tax Mode */}
                 <SelectBox
                   id="taxMode"
@@ -316,22 +330,23 @@ const CreatePrice = ({ states, error, loading, mode, stateLoading, stateError })
                   }))}
                   errors={formErrors}
                 />
-
                 {/* Field: Seat Capacity */}
-                <SelectBox
-                  id="seatCapacity"
-                  name="seatCapacity"
-                  label="Seat Capacity"
-                  value={formData.seatCapacity}
-                  onChange={handleChange}
-                  defaultOption="-- Select Seat Capacity --"
-                  options={Object.values(Constants.SEAT_CAPACITY).map((seat) => ({
-                    value: seat,
-                    key: seat,
-                    label: seat,
-                  }))}
-                  errors={formErrors}
-                />
+                {!isVehicleTypeMode && (
+                  <SelectBox
+                    id="seatCapacity"
+                    name="seatCapacity"
+                    label="Seat Capacity"
+                    value={formData.seatCapacity}
+                    onChange={handleChange}
+                    defaultOption="-- Select Seat Capacity --"
+                    options={Object.values(Constants.SEAT_CAPACITY).map((seat) => ({
+                      value: seat,
+                      key: seat,
+                      label: seat,
+                    }))}
+                    errors={formErrors}
+                  />
+                )}
 
                 {/* Field: Vehicle Type (if applicable) */}
                 {isVehicleTypeMode && (
@@ -350,7 +365,6 @@ const CreatePrice = ({ states, error, loading, mode, stateLoading, stateError })
                     errors={formErrors}
                   />
                 )}
-
                 {/* Field: Weight (if applicable) */}
                 {isVehicleTypeMode && (
                   <SelectBox
@@ -360,24 +374,23 @@ const CreatePrice = ({ states, error, loading, mode, stateLoading, stateError })
                     value={formData.weight}
                     onChange={handleChange}
                     defaultOption="-- Select weight Type --"
-                    options={Object.entries(Constants.WEIGHT).map(([key, label]) => ({
-                      value: key,
-                      label,
+                    options={Object.entries(Constants.WEIGHT).map(([key, value]) => ({
+                      value,
+                      label: value.toString(),
                     }))}
                     errors={formErrors}
                   />
                 )}
-
                 {/* Field: Price 1 */}
                 <TextInput
                   type="number"
                   name="price1"
                   label="Price 1"
+                  id="price1"
                   value={formData.price1}
                   onChange={handleChange}
-                  errors={formErrors}
+                  errors={formErrors.price1}
                 />
-
                 {/* Field: Price 2 (only for Days tax mode) */}
                 {formData.taxMode === Constants.TAX_MODES.DAYS && (
                   <TextInput
@@ -388,16 +401,16 @@ const CreatePrice = ({ states, error, loading, mode, stateLoading, stateError })
                     onChange={handleChange}
                   />
                 )}
-
                 {/* Field: Service Charge */}
                 <TextInput
                   type="number"
                   name="serviceCharge"
                   label="Service Charge"
                   value={formData.serviceCharge}
+                  id="serviceCharge"
                   onChange={handleChange}
+                  errors={formErrors.serviceCharge}
                 />
-
                 {/* Field: Status */}
                 {/* <SelectBox
                   id="status"
@@ -412,7 +425,6 @@ const CreatePrice = ({ states, error, loading, mode, stateLoading, stateError })
                     label: stat,
                   }))}
                 /> */}
-
                 {/* Buttons */}
                 <div className="d-flex justify-content-center gap-2 pb-4 mt-3">
                   <Button color="danger" type="button" onClick={handleReset} title="Reset" />
@@ -460,7 +472,8 @@ const CreatePrice = ({ states, error, loading, mode, stateLoading, stateError })
 
                   {/* <CTableHeaderCell>Mode</CTableHeaderCell> */}
                   <CTableHeaderCell>Tax Mode</CTableHeaderCell>
-                  <CTableHeaderCell>Seat Capacity</CTableHeaderCell>
+
+                  {!isVehicleTypeMode && <CTableHeaderCell>Seat Capacity</CTableHeaderCell>}
                   <CTableHeaderCell>Price 1</CTableHeaderCell>
                   {!(
                     mode === Constants.MODES.ALL_INDIA_TAX ||
@@ -485,7 +498,9 @@ const CreatePrice = ({ states, error, loading, mode, stateLoading, stateError })
 
                     {/* <CTableDataCell>{getModeLabel(price.mode)}</CTableDataCell> */}
                     <CTableDataCell>{price.taxMode || '-'}</CTableDataCell>
-                    <CTableDataCell>{price.seatCapacity || '-'}</CTableDataCell>
+                    {!isVehicleTypeMode && (
+                      <CTableDataCell>{price.seatCapacity || '-'}</CTableDataCell>
+                    )}
                     <CTableDataCell>₹{parseFloat(price.price1 || 0).toFixed(2)}</CTableDataCell>
                     {!(
                       mode === Constants.MODES.ALL_INDIA_TAX ||
