@@ -1,6 +1,9 @@
 import { legacy_createStore as createStore, combineReducers, applyMiddleware } from 'redux'
 import { thunk } from 'redux-thunk'
 import { composeWithDevTools } from '@redux-devtools/extension'
+import storage from 'redux-persist/lib/storage'
+import { persistStore, persistReducer } from 'redux-persist'
+
 import * as userReducer from './reducers/userReducer'
 import * as taxReducer from './reducers/taxReducer'
 import * as taxUserReducer from './reducers/usersReducer'
@@ -9,6 +12,7 @@ import * as bannerReducer from './reducers/bannerReducer'
 import * as taxModeReducer from './reducers/taxModeReducer'
 import * as priceReducer from './reducers/priceReducer'
 import * as orderReducer from './reducers/orderReducer'
+
 const initialState = { sidebarShow: true }
 
 const toggleSidebar = (state = initialState, { type, ...rest }) => {
@@ -20,7 +24,7 @@ const toggleSidebar = (state = initialState, { type, ...rest }) => {
   }
 }
 
-const reducer = combineReducers({
+const rootReducer = combineReducers({
   sidebarShow: toggleSidebar,
 
   user: userReducer.loadUserReducer,
@@ -54,5 +58,17 @@ const reducer = combineReducers({
   uploadTax: orderReducer.uploadTaxReducer,
 })
 
-const store = createStore(reducer, initialState, composeWithDevTools(applyMiddleware(thunk)))
-export default store
+// ✅ persist config
+const persistConfig = {
+  key: 'root',
+  storage,
+  whitelist: ['user'], // Only persist the user state
+}
+
+const persistedReducer = persistReducer(persistConfig, rootReducer)
+
+const store = createStore(persistedReducer, composeWithDevTools(applyMiddleware(thunk)))
+
+const persistor = persistStore(store)
+
+export { store, persistor }

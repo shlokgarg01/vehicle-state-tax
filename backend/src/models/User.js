@@ -25,7 +25,7 @@ userSchema.plugin(mongooseDelete, {
   overrideMethods: "all",
   deletedAt: true,
 });
-mongoose.set("debug", true);
+// mongoose.set("debug", true);
 
 const User = mongoose.model(COLLECTION_NAMES.USER, userSchema);
 export default User;

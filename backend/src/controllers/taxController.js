@@ -7,6 +7,8 @@ import { uploadFile } from "../helpers/uploadHelpers.js";
 
 // Create a Tax Entry
 export const createTax = async (req, res) => {
+  console.log("USER:", req.user);
+
   try {
     const taxEntry = await TaxManager.createTaxEntry(req.user?._id, req.body);
     res.status(201).json({
@@ -14,37 +16,62 @@ export const createTax = async (req, res) => {
       taxEntry,
     });
   } catch (error) {
-    res.status(500).json({ success: false, message: "Internal server error" });
+    res.status(500).json({
+      success: false,
+      message: "Internal server error in creating atax",
+      error: error,
+    });
   }
 };
 
 // Get All Taxes (With Filters, Search, Pagination)
 export const getAllTaxes = async (req, res) => {
   try {
-    const { perPage, page } = req.query;
-    const query = Tax.find();
-    const apiFeature = new ApiFeatures(query, req.query)
+    // const { perPage = 10, page = 1 } = req.query;
+    const page = req.query.page ? Number(req.query.page) : null;
+    const perPage = req.query.perPage ? Number(req.query.perPage) : null;
+
+    // Apply filters & search on base query for total count
+    const countQuery = Tax.find();
+    const apiFeatureForCount = new ApiFeatures(countQuery, req.query)
       .search([
         "vehicleNumber",
         "mobileNumber",
         "state",
         "category",
         "isCompleted",
+        "status",
       ])
       .filter();
 
-    const data = await apiFeature.query.lean();
-    const totalTaxes = data.length;
-    const totalPages = Math.ceil(totalTaxes / (Number(perPage) || 10));
+    const filteredCount = await apiFeatureForCount.query.countDocuments();
+
+    // Apply same filters, search, and pagination for paginated results
+    const paginatedQuery = Tax.find();
+    const apiFeature = new ApiFeatures(paginatedQuery, req.query)
+      .search([
+        "vehicleNumber",
+        "mobileNumber",
+        "state",
+        "category",
+        "isCompleted",
+        "status",
+      ])
+      .filter()
+      .sort("-createdAt")
+      .pagination(Number(perPage));
+
+    const taxes = await apiFeature.query.lean();
 
     res.status(200).json({
       success: true,
-      count: totalTaxes,
-      totalPages,
-      currentPage: Number(page) || 1,
-      taxes: data,
+      count: filteredCount,
+      totalPages: Math.ceil(filteredCount / Number(perPage)),
+      currentPage: Number(page),
+      taxes,
     });
   } catch (error) {
+    console.error("getAllTaxes error:", error);
     res.status(500).json({ success: false, message: "Internal server error" });
   }
 };

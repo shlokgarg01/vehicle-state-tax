@@ -15,6 +15,7 @@ export const createPrice = (priceData) => async (dispatch) => {
       payload: data,
     })
   } catch (error) {
+    console.log(error)
     dispatch({
       type: PRICE_CONSTANTS.NEW_TAX_PRICE_FAIL,
       payload: error?.response?.data?.message || error.message || 'Unknown error',

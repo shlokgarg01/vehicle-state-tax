@@ -14,6 +14,6 @@ const signupOTPSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-mongoose.set("debug", true);
+// mongoose.set("debug", true);
 const OTP = mongoose.model("OTP", signupOTPSchema);
 export default OTP;

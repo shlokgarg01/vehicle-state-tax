@@ -122,13 +122,33 @@ export const logoutUser = asyncHandler(async (req, res) => {
 });
 
 export const getUserDetails = asyncHandler(async (req, res, next) => {
-  let userId = req.user.id;
-  const user =
-    (await User.findById(userId)) || (await Employee.findById(userId));
+  try {
+    let userId = req.user.id;
 
-  res.status(200).json({
-    success: true,
-    message: "User details fetched successfully",
-    user,
-  });
+    // Try to fetch user details first from User model
+    let user = await User.findById(userId);
+
+    // If not found, try Employee model
+    if (!user) {
+      user = await Employee.findById(userId);
+    }
+
+    // If user or employee is not found, throw error
+    if (!user) {
+      return next(new ErrorHandler("User not found", 404));
+    }
+
+    // Respond with user details
+    res.status(200).json({
+      success: true,
+      message: "User details fetched successfully",
+      user,
+    });
+  } catch (error) {
+    // Log the error for debugging
+    console.error("Error fetching user details:", error);
+
+    // Pass error to the global error handler middleware
+    next(new ErrorHandler("Internal Server Error", 500));
+  }
 });

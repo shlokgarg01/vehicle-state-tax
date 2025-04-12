@@ -7,7 +7,7 @@ export const createTax = (taxData) => async (dispatch) => {
     dispatch({ type: TAX_CONSTANTS.CREATE_TAX_REQUEST })
 
     const { data } = await axiosInstance.post(`${PREFIX}/new`, taxData)
-    console.log(data)
+
     dispatch({
       type: TAX_CONSTANTS.CREATE_TAX_SUCCESS,
       payload: data.taxEntry,
@@ -27,11 +27,18 @@ export const getAllTaxes =
       dispatch({ type: TAX_CONSTANTS.GET_ALL_TAXES_REQUEST })
 
       const query = new URLSearchParams(params).toString()
-      const { data } = await axiosInstance.get(`${TAX_PREFIX}?${query}`, { withCredentials: true })
-      console.log(data)
+      const { data } = await axiosInstance.get(`${TAX_PREFIX}${query ? `?${query}` : ''}`, {
+        withCredentials: true,
+      })
+      // console.log(data)
       dispatch({
         type: TAX_CONSTANTS.GET_ALL_TAXES_SUCCESS,
-        payload: data,
+        payload: {
+          taxes: data.taxes,
+          count: data.count,
+          totalPages: data.totalPages,
+          currentPage: data.currentPage,
+        },
       })
     } catch (error) {
       dispatch({
@@ -48,7 +55,7 @@ export const uploadTax = (formData) => async (dispatch) => {
     const { data } = await axiosInstance.post(`${TAX_PREFIX}/upload_tax`, formData, {
       isMultipart: true, // Triggers multipart handling in interceptor
     })
-    console.log(data)
+    console.log('upload data,', data)
     dispatch({
       type: TAX_CONSTANTS.UPLOAD_TAX_SUCCESS,
       payload: data,
