@@ -1,5 +1,6 @@
 import React, { useState } from 'react'
 import TextInput from './TextInput'
+import Constants from '../../utils/constants'
 
 const UserForm = ({ userData, setUserData, errors }) => {
   const [showPassword, setShowPassword] = useState(false)
@@ -10,6 +11,7 @@ const UserForm = ({ userData, setUserData, errors }) => {
     <div className="d-flex flex-column gap-2">
       <TextInput
         label="Username"
+        disabled
         value={userData.username}
         onChange={(e) => setUserData({ ...userData, username: e.target.value })}
         placeholder="Enter username"
@@ -33,17 +35,19 @@ const UserForm = ({ userData, setUserData, errors }) => {
         id="contactNumber"
         errors={errors}
       />
-      <TextInput
-        label="Password"
-        type={showPassword ? 'text' : 'password'}
-        value={userData.password || ''}
-        onChange={(e) => setUserData({ ...userData, password: e.target.value })}
-        placeholder="Enter new password (optional)"
-        id="password"
-        showPasswordToggle={true} // Enables show/hide functionality
-        togglePasswordVisibility={handlePasswordToggle}
-        errors={errors}
-      />{' '}
+      {userData.role !== Constants.ROLES.ADMIN && (
+        <TextInput
+          label="Password"
+          type={showPassword ? 'text' : 'password'}
+          value={userData.password || ''}
+          onChange={(e) => setUserData({ ...userData, password: e.target.value })}
+          placeholder="Enter new password (optional)"
+          id="password"
+          showPasswordToggle={true}
+          togglePasswordVisibility={handlePasswordToggle}
+          errors={errors}
+        />
+      )}{' '}
       <select
         className="form-select"
         value={userData.status}

@@ -21,7 +21,6 @@ stateRoutes.post(
 stateRoutes.get(
   "/",
   isAuthenticatedUser,
-  authorizeRoles(CONSTANTS.USER_ROLES.ADMIN),
   getAllStates
 );
 

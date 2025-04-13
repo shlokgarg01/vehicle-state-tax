@@ -30,7 +30,6 @@ export const getAllTaxes =
       const { data } = await axiosInstance.get(`${TAX_PREFIX}${query ? `?${query}` : ''}`, {
         withCredentials: true,
       })
-      // console.log(data)
       dispatch({
         type: TAX_CONSTANTS.GET_ALL_TAXES_SUCCESS,
         payload: {
@@ -55,7 +54,6 @@ export const uploadTax = (formData) => async (dispatch) => {
     const { data } = await axiosInstance.post(`${TAX_PREFIX}/upload_tax`, formData, {
       isMultipart: true, // Triggers multipart handling in interceptor
     })
-    console.log('upload data,', data)
     dispatch({
       type: TAX_CONSTANTS.UPLOAD_TAX_SUCCESS,
       payload: data,

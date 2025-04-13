@@ -4,6 +4,7 @@ import { useDispatch, useSelector } from 'react-redux'
 import { getAllTaxes } from '../../actions/orderActions'
 import Loader from '../../components/Loader/Loader'
 import Constants from '../../utils/constants'
+
 const completeOrder = () => {
   const dispatch = useDispatch()
 
@@ -12,10 +13,8 @@ const completeOrder = () => {
   useEffect(() => {
     dispatch(getAllTaxes({ status: Constants.ORDER_STATUS.CLOSED }))
   }, [dispatch])
-  // console.log(taxes)
 
   const completedTaxes = taxes?.filter((tax) => tax.status === Constants.ORDER_STATUS.CLOSED)
-  console.log(completedTaxes)
   return (
     <div>
       {loading && <Loader />}

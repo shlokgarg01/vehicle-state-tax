@@ -22,7 +22,6 @@ router.post(
 router.get(
   "/",
   isAuthenticatedUser,
-  authorizeRoles(CONSTANTS.USER_ROLES.ADMIN),
   getAllTaxModes
 );
 

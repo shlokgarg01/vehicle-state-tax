@@ -23,6 +23,7 @@ const Constants = {
   },
   TAX_MODES: {
     DAYS: 'days',
+    WEEKLY: 'weekly',
     MONTHLY: 'monthly',
     YEARLY: 'yearly',
     QUARTERLY: 'quarterly',
@@ -32,6 +33,7 @@ const Constants = {
     FIVE_PLUS_ONE: '5+1',
     SIX_PLUS_ONE: '6+1',
     SEVEN_PLUS_ONE: '7+1',
+    TWELVE_PLUS_ONE: '12+1',
   },
 
   VEHICLE_TYPES: {

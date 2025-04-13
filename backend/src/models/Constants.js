@@ -17,5 +17,5 @@ constantsSchema.plugin(mongooseDelete, {
   deletedAt: true,
 });
 
-// mongoose.set("debug", true);
+mongoose.set("debug", true);
 export default mongoose.model(COLLECTION_NAMES.CONSTANTS, constantsSchema);

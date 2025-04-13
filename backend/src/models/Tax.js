@@ -17,6 +17,10 @@ const taxSchema = new mongoose.Schema(
       required: true,
       enum: Object.values(CONSTANTS.TAX_CATEGORIES),
     },
+    whoCompleted: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: COLLECTION_NAMES.EMPLOYEE,
+    }, // id of the employee who completed the Tax i.e. who uploaded the tax.
     startDate: { type: Date, required: true },
     amount: { type: Number, required: true },
     fileUrl: { type: String, default: "" },
@@ -24,8 +28,8 @@ const taxSchema = new mongoose.Schema(
     orderId: { type: String, default: "", required: true, unique: true },
     paymentId: { type: String, default: "" },
     paymentLink: { type: String, default: "" },
-    state: { type: String, required: true, lowercase: true },
-    border: { type: String, required: true },
+    state: { type: String, lowercase: true },
+    border: { type: String },
     endDate: { type: Date },
     vehicleType: {
       type: String,

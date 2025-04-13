@@ -190,8 +190,6 @@ export default function EmployeeList() {
       dispatch({ type: EMPLOYEE_CONSTANTS.UPDATE_EMPLOYEE_RESET })
       showToast('Employee updated successfully', 'success')
     }
-    console.log('isDeleted:', isDeleted)
-    console.log('isUpdated:', isUpdated)
   }, [isDeleted, isUpdated, currentPage, dispatch])
 
   // Auto Pagination Adjustment if No Data
@@ -454,15 +452,17 @@ export default function EmployeeList() {
                       </span>
                     </CTableDataCell>
                     <CTableDataCell>
-                      <Button
-                        title="Delete"
-                        color="danger"
-                        size="sm"
-                        onClick={() => {
-                          setStateToDelete(stateData._id)
-                          setIsDeleteModalVisible(true)
-                        }}
-                      />
+                      {stateData.role !== Constants.ROLES.ADMIN && (
+                        <Button
+                          title="Delete"
+                          color="danger"
+                          size="sm"
+                          onClick={() => {
+                            setStateToDelete(stateData._id)
+                            setIsDeleteModalVisible(true)
+                          }}
+                        />
+                      )}
                     </CTableDataCell>
                     <CTableDataCell>
                       <Button

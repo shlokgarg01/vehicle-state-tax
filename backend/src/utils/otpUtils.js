@@ -12,6 +12,5 @@ export const otpHash = (otp) => {
 
 // Mock SMS sending function
 export const sendOTP = async (otp, contactNumber) => {
-  console.log(`OTP for ${contactNumber}: ${otp}`);
   // In production, integrate with SMS gateway like Twilio, AWS SNS, etc.
 };

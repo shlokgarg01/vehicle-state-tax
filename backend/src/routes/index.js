@@ -7,6 +7,8 @@ import adminRoutes from "./adminRoutes.js";
 import stateRoutes from "./stateRoutes.js";
 import taxModeRoutes from "./taxModeRoutes.js";
 import priceRoutes from "./priceRoutes.js";
+import constantRoutes from "./constantsRoutes.js";
+import citiesRoutes from "./citiesRoutes.js";
 
 const router = express.Router();
 
@@ -17,5 +19,7 @@ router.use("/admin", adminRoutes);
 router.use("/state", stateRoutes);
 router.use("/taxMode", taxModeRoutes);
 router.use("/price", priceRoutes);
+router.use("/constants", constantRoutes)
+router.use('/cities', citiesRoutes)
 
 export default router;

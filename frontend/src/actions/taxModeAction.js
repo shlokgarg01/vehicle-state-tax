@@ -9,10 +9,8 @@ export const createTaxMode = (taxModeData) => async (dispatch) => {
     dispatch({ type: TAX_MODE_CONSTANTS.CREATE_TAX_MODE_REQUEST })
 
     const { data } = await axiosInstance.post(PREFIX, taxModeData)
-    console.log(data)
     dispatch({ type: TAX_MODE_CONSTANTS.CREATE_TAX_MODE_SUCCESS, payload: data })
   } catch (error) {
-    console.log(error)
     dispatch({
       type: TAX_MODE_CONSTANTS.CREATE_TAX_MODE_FAIL,
       payload: error?.response?.data?.message || error.message || error,
@@ -59,10 +57,8 @@ export const updateTaxMode = (id, updatedData) => async (dispatch) => {
     dispatch({ type: TAX_MODE_CONSTANTS.UPDATE_TAX_MODE_REQUEST })
 
     const { data } = await axiosInstance.put(`${PREFIX}/${id}`, updatedData)
-    console.log(data)
     dispatch({ type: TAX_MODE_CONSTANTS.UPDATE_TAX_MODE_SUCCESS, payload: data })
   } catch (error) {
-    console.log(error)
     dispatch({
       type: TAX_MODE_CONSTANTS.UPDATE_TAX_MODE_FAIL,
       payload: error?.response?.data?.message || error.message || error || error?.message,

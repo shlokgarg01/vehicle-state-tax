@@ -1,20 +1,48 @@
 import React from 'react'
 import CIcon from '@coreui/icons-react'
-import { cilDrop, cilPuzzle, cilSpeedometer, cilCalculator } from '@coreui/icons'
+import {
+  cilDrop,
+  cilPuzzle,
+  cilSpeedometer,
+  cilCalculator,
+  cilStar,
+  cilChartPie,
+  cilBell,
+  cilTruck,
+} from '@coreui/icons'
 import { CNavGroup, CNavItem } from '@coreui/react'
 import Constants from './utils/constants'
 
 const _nav = (role) => {
   const isAdmin = role === Constants.ROLES.ADMIN
+  const isManager = role === Constants.ROLES.MANAGER
 
   return [
-    {
+    isAdmin && {
       component: CNavItem,
       name: 'Home',
       to: '/',
       icon: <CIcon icon={cilDrop} customClassName="nav-icon" />,
     },
-    {
+    isManager && {
+      component: CNavItem,
+      name: 'New Orders',
+      to: '/orders/new',
+      icon: <CIcon icon={cilPuzzle} customClassName="nav-icon" />,
+    },
+    isManager && {
+      component: CNavItem,
+      name: 'Completed Orders',
+      to: '/orders/completed',
+      icon: <CIcon icon={cilSpeedometer} customClassName="nav-icon" />,
+    },
+    isManager && {
+      component: CNavItem,
+      name: 'Search Orders',
+      to: '/orders/search',
+      icon: <CIcon icon={cilDrop} customClassName="nav-icon" />,
+    },
+    isAdmin && {
       component: CNavGroup,
       name: 'Orders',
       icon: <CIcon icon={cilPuzzle} customClassName="nav-icon" />,
@@ -40,7 +68,7 @@ const _nav = (role) => {
       component: CNavGroup,
       name: 'Users',
       to: '/users',
-      icon: <CIcon icon={cilPuzzle} customClassName="nav-icon" />,
+      icon: <CIcon icon={cilStar} customClassName="nav-icon" />,
       items: [{ component: CNavItem, name: 'All users', to: '/user' }],
     },
     isAdmin && {
@@ -60,7 +88,7 @@ const _nav = (role) => {
     isAdmin && {
       component: CNavGroup,
       name: 'Border Tax',
-      icon: <CIcon icon={cilPuzzle} customClassName="nav-icon" />,
+      icon: <CIcon icon={cilBell} customClassName="nav-icon" />,
       items: [
         {
           component: CNavItem,
@@ -82,7 +110,7 @@ const _nav = (role) => {
     isAdmin && {
       component: CNavGroup,
       name: 'Road Tax',
-      icon: <CIcon icon={cilPuzzle} customClassName="nav-icon" />,
+      icon: <CIcon icon={cilTruck} customClassName="nav-icon" />,
       items: [
         {
           component: CNavItem,
@@ -104,7 +132,7 @@ const _nav = (role) => {
     isAdmin && {
       component: CNavGroup,
       name: 'Loading Vehicle',
-      icon: <CIcon icon={cilPuzzle} customClassName="nav-icon" />,
+      icon: <CIcon icon={cilChartPie} customClassName="nav-icon" />,
       items: [
         {
           component: CNavItem,

@@ -8,6 +8,7 @@ const COLLECTION_NAMES = {
   TAX_MODE: "TaxMode",
   USER: "User",
   CONSTANTS: "Constants",
+  CITIES: "Cities"
 };
 
 export default COLLECTION_NAMES;

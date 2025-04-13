@@ -256,9 +256,7 @@ const CreatePrice = ({ states, error, loading, mode, stateLoading, stateError })
   }, [mode])
 
   const isVehicleTypeMode = useMemo(() => mode === Constants.MODES.LOADING_VEHICLE, [mode])
-  console.log(isVehicleTypeMode)
-  console.log(mode)
-  console.log(Constants.MODES.LOADING_VEHICLE)
+
   const getModeLabel = useCallback((modeKey) => {
     return (
       Object.entries(Constants.MODES)

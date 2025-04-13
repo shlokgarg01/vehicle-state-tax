@@ -205,7 +205,7 @@ export const searchUsers = asyncHandler(async (req, res) => {
   try {
     const resultsPerPage = Number(req.query.perPage) || 10;
 
-    const apiFeatures = new ApiFeatures(User.find(), req.query)
+    const apiFeatures = new ApiFeatures(User.find().sort("-createdAt"), req.query)
       .search(["contactNumber"])
       .filter()
       .pagination(resultsPerPage);

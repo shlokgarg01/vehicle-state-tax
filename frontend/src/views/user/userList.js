@@ -19,12 +19,13 @@ import {
 
 import TextInput from '../../components/Form/TextInput'
 import Button from '../../components/Form/Button'
-import Modal from '../../components/Modal/Modal'
+// import Modal from '../../components/Modal/Modal'
 import { showToast } from '../../utils/toast'
 import NoData from '../../components/NoData'
 import Pagination from '../../components/Pagination/Pagination'
 import { deleteSingleUser, getAndSearchUsers } from '../../actions/usersAction'
 import Constants from '../../utils/constants'
+import { getDateFromDateString } from '../../helpers/Date'
 
 export default function UserSearch() {
   const dispatch = useDispatch()
@@ -35,12 +36,12 @@ export default function UserSearch() {
   const [search, setSearch] = useState('')
   const [currentPage, setCurrentPage] = useState(1)
   const [isDeleteModalVisible, setIsDeleteModalVisible] = useState(false)
-  const [stateToDelete, setStateToDelete] = useState(null)
+  // const [stateToDelete, setStateToDelete] = useState(null)
 
-  const toggleStateStatus = (id) => {
-    dispatch(deleteSingleUser(id))
-    setIsDeleteModalVisible(false)
-  }
+  // const toggleStateStatus = (id) => {
+  //   dispatch(deleteSingleUser(id))
+  //   setIsDeleteModalVisible(false)
+  // }
 
   const handleSearch = (e) => {
     e.preventDefault()
@@ -122,6 +123,7 @@ export default function UserSearch() {
                   <CTableHeaderCell scope="col">S.No</CTableHeaderCell>
                   {/* <CTableHeaderCell scope="col">Name</CTableHeaderCell> */}
                   <CTableHeaderCell scope="col">Contact Number</CTableHeaderCell>
+                  <CTableHeaderCell scope="col">Last Login</CTableHeaderCell>
                 </CTableRow>
               </CTableHead>
               <CTableBody>
@@ -133,6 +135,9 @@ export default function UserSearch() {
                     </CTableHeaderCell>
                     {/* contact number */}
                     <CTableDataCell>{stateData.contactNumber}</CTableDataCell>
+                    <CTableDataCell>
+                      {stateData.lastLogin ? getDateFromDateString(stateData.lastLogin) : 'N/A'}
+                    </CTableDataCell>
                   </CTableRow>
                 ))}
               </CTableBody>
@@ -146,7 +151,7 @@ export default function UserSearch() {
         )}
       </CCard>
 
-      <Modal
+      {/* <Modal
         visible={isDeleteModalVisible}
         onVisibleToggle={() => setIsDeleteModalVisible(!isDeleteModalVisible)}
         onSubmitBtnClick={() => {
@@ -158,7 +163,7 @@ export default function UserSearch() {
         closeBtnText="Close"
         submitBtnText="Yes"
         submitBtnColor="success"
-      />
+      /> */}
     </>
   )
 }

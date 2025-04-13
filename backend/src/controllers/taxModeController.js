@@ -44,45 +44,30 @@ export const createTaxMode = asyncHandler(async (req, res) => {
   }
 });
 
-//  Get All TaxModes
+// 📄 Get All TaxModes
 export const getAllTaxModes = asyncHandler(async (req, res) => {
   try {
-    const resultPerPage = Number(req.query.perPage) || 10;
-    const totalTaxModes = await TaxMode.countDocuments();
-
-    const filteredQuery = new ApiFeatures(TaxMode.find(), req.query)
-      .search(["taxMode", "mode", "status"]) 
-      .filter();
-
-    const filteredTaxModesCount = await filteredQuery.query
-      .clone()
-      .countDocuments();
-
-    
-    const apiFeatures = new ApiFeatures(
-      TaxMode.find().populate("state"),
+    const resultsPerPage = req.params.perPage || 10;
+    let apiFeature = new ApiFeatures(
+      TaxMode.find().sort({ createdAt: -1 }),
       req.query
-    )
-      .search(["taxMode", "mode", "status"]) 
-      .filter()
-      .sort("-createdAt")
-      .pagination(resultPerPage);
+    ).search(["mode", "state"])
 
-    const taxModes = await apiFeatures.query;
+    const totalTaxModes = await TaxMode.countDocuments(
+      apiFeature.query.getFilter()
+    );
+    apiFeature = apiFeature.pagination(resultsPerPage);
+    const taxModes = await apiFeature.query;
 
     res.status(200).json({
       success: true,
-      taxModes,
       totalTaxModes,
-      filteredTaxModesCount,
+      filteredTaxModesCount: taxModes.length,
+      taxModes,
+      resultsPerPage,
     });
   } catch (error) {
-    console.error(error);
-    res.status(500).json({
-      success: false,
-      message: "Failed to fetch tax modes",
-      error: error.message,
-    });
+    res.status(500).json({ success: false, message: error });
   }
 });
 

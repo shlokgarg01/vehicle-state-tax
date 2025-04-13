@@ -54,7 +54,6 @@ const TaxSearch = () => {
     if (mode) updatedFilters.category = mode
 
     setFilters(updatedFilters)
-    console.log('Filters being applied:', updatedFilters)
 
     dispatch(getAllTaxes({ ...updatedFilters, page: 1, perPage: 10 }))
   }
@@ -62,7 +61,6 @@ const TaxSearch = () => {
   const handlePageChange = (page) => {
     dispatch(getAllTaxes({ ...filters, page, perPage: 10 }))
   }
-  console.log(taxes, totalPages)
   const handleClear = () => {
     setMobile('')
     setVehicleNo('')

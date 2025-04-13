@@ -341,7 +341,7 @@ const CreateTaxMode = ({ states, mode }) => {
                         {taxMode.status}
                       </span>
                     </CTableDataCell>
-                    <CTableDataCell>
+                    {/* <CTableDataCell>
                       <Button
                         title={
                           taxMode.status === Constants.STATUS.ACTIVE ? 'Deactivate' : 'Activate'
@@ -353,7 +353,7 @@ const CreateTaxMode = ({ states, mode }) => {
                           setIsDeleteModalVisible(true)
                         }}
                       />
-                    </CTableDataCell>
+                    </CTableDataCell> */}
                   </CTableRow>
                 ))}
               </CTableBody>

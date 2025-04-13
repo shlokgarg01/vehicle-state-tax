@@ -103,6 +103,7 @@ const TaxCard = ({ data, onUploadComplete, setIsUploading }) => {
                   {formatDate(data.createdAt, 'dd MMM yyyy, hh:mm a')}
                 </p>
               </CCol>
+              <FieldRow label="Tax Mode" value={removeUserScoreAndCapitalize(data.taxMode)} />
             </CRow>
 
             {/* Vehicle Info */}
@@ -118,7 +119,6 @@ const TaxCard = ({ data, onUploadComplete, setIsUploading }) => {
 
             {/* Tax Details */}
             <CRow className="mb-3">
-              <FieldRow label="Tax Mode" value={removeUserScoreAndCapitalize(data.taxMode)} />
               <FieldRow label="Tax From" value={formatDate(data.startDate)} />
               <FieldRow label="Tax Upto" value={formatDate(data.endDate)} />
             </CRow>
@@ -126,15 +126,18 @@ const TaxCard = ({ data, onUploadComplete, setIsUploading }) => {
             <CRow className="mb-3">
               <FieldRow label="Category" value={removeUserScoreAndCapitalize(data.category)} />
               <FieldRow label="Vehicle Type" value={data.vehicleType} />
-              <FieldRow label="Weight" value={data.weight} />
             </CRow>
 
             <CRow className="mb-3">
+              <FieldRow label="Weight" value={data.weight} />
               <FieldRow label="Chassis Number" value={data.chasisNumber} />
             </CRow>
 
             <CRow className="mb-4">
               <FieldRow label="Order ID" value={data.orderId} copyable />
+              {data.whoCompleted && (
+                <FieldRow label="Who Completed" value={data.whoCompleted?.username} />
+              )}
             </CRow>
 
             {/* File Actions */}

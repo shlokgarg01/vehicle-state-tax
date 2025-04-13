@@ -5,6 +5,5 @@ import TaxManager from "../managers/taxManager.js";
 // Finds all taxes from last 1hr which are stuck in CREATED status & checks their payment status.
 // If the payment is completed, move them to CONFIRMED status.
 cron.schedule("*/5 * * * *", async () => {
-  console.log("INSIDE CRON JOB");
   TaxManager.updateTaxStatusViaCron();
 });

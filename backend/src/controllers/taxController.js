@@ -7,8 +7,6 @@ import { uploadFile } from "../helpers/uploadHelpers.js";
 
 // Create a Tax Entry
 export const createTax = async (req, res) => {
-  console.log("USER:", req.user);
-
   try {
     const taxEntry = await TaxManager.createTaxEntry(req.user?._id, req.body);
     res.status(201).json({
@@ -47,7 +45,7 @@ export const getAllTaxes = async (req, res) => {
     const filteredCount = await apiFeatureForCount.query.countDocuments();
 
     // Apply same filters, search, and pagination for paginated results
-    const paginatedQuery = Tax.find();
+    const paginatedQuery = Tax.find().populate("whoCompleted");
     const apiFeature = new ApiFeatures(paginatedQuery, req.query)
       .search([
         "vehicleNumber",
@@ -80,7 +78,7 @@ export const getAllTaxes = async (req, res) => {
 export const getTaxById = async (req, res) => {
   try {
     const { id } = req.params;
-    const tax = await Tax.findById(id).lean();
+    const tax = await Tax.findById(id).lean().populate("whoCompleted");
     if (!tax) {
       return res
         .status(404)
@@ -196,6 +194,7 @@ export const uploadTax = catchAsyncErrors(async (req, res) => {
     tax = await TaxManager.updateTaxByOrderId(orderId, {
       fileUrl: uploadResponse.url,
       isCompleted: true,
+      whoCompleted: req.user._id,
       status: CONSTANTS.ORDER_STATUS.CLOSED,
     });
   }

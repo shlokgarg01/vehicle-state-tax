@@ -25,6 +25,14 @@ const StateSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
+// This will replace the space with underscore in name
+StateSchema.pre("save", function (next) {
+  if (this.name) {
+    this.name = this.name.replace(/\s+/g, "_");
+  }
+  next();
+});
+
 StateSchema.plugin(MongooseDelete, {
   deletedAt: true,
   overrideMethods: "all",

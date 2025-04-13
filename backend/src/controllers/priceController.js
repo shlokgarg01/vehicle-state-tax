@@ -16,36 +16,29 @@ export const createPrice = asyncHandler(async (req, res) => {
   }
 });
 
-//  Get All Prices
+// 📥 Get All Prices
 export const getAllPrices = asyncHandler(async (req, res) => {
   try {
-    const resultPerPage = Number(req.query.perPage) || 10;
+    const resultsPerPage = req.params.perPage || 10;
+    let apiFeature = new ApiFeatures(
+      Price.find().sort({ createdAt: -1 }),
+      req.query
+    ).search(["mode", "state", "seatCapacity", "vehicleType", "weight"])
 
-    const baseQuery = new ApiFeatures(Price.find().populate("state"), req.query)
-      .search(["seatCapacity", "taxMode", "mode"])
-      .filter()
-      .sort("-createdAt")
-      .pagination(resultPerPage);
-
-    const filteredCount = await baseQuery.query.clone().countDocuments();
-
-    const prices = await baseQuery.query;
-
-    const totalCount = await Price.countDocuments();
+    const totalPrices = await Price.countDocuments(
+      apiFeature.query.getFilter()
+    );
+    apiFeature = apiFeature.pagination(resultsPerPage);
+    const prices = await apiFeature.query;
 
     res.status(200).json({
       success: true,
+      totalPrices,
       prices,
-      totalCount,
-      filteredCount,
-      perPage: resultPerPage,
-      totalPages: Math.ceil(filteredCount / resultPerPage),
+      resultsPerPage,
     });
   } catch (error) {
-    res.status(500).json({
-      success: false,
-      message: error.message || "Failed to fetch prices",
-    });
+    res.status(500).json({ success: false, message: error });
   }
 });
 

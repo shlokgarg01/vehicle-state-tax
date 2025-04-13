@@ -6,13 +6,14 @@ import { useDispatch, useSelector } from 'react-redux'
 import { clearErrors, loginUser } from '../../../actions/userActions'
 import Loader from '../../../components/Loader/Loader'
 import { showToast } from '../../../utils/toast'
+import Constants from '../../../utils/constants'
 
 const Login = () => {
   const navigate = useNavigate()
   const dispatch = useDispatch()
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
-  const { error, loading, isAuthenticated } = useSelector((state) => state.user)
+  const { user, error, loading, isAuthenticated } = useSelector((state) => state.user)
 
   const handleSubmit = (e) => {
     e.preventDefault()
@@ -22,7 +23,7 @@ const Login = () => {
   useEffect(() => {
     if (isAuthenticated) {
       showToast('Login Successful')
-      navigate('/')
+      user.role === Constants.ROLES.ADMIN ? navigate('/') : navigate('/orders/new')
     }
 
     if (error) {

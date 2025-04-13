@@ -20,7 +20,7 @@ export const createTaxReducer = (state = {}, action) => {
 export const allTaxesReducer = (state = { taxes: [] }, action) => {
   switch (action.type) {
     case TAX_CONSTANTS.GET_ALL_TAXES_REQUEST:
-      return { loading: true, taxes: [], error: false }
+      return { loading: true, taxes: state.taxes, error: false }
 
     case TAX_CONSTANTS.GET_ALL_TAXES_SUCCESS:
       return {
