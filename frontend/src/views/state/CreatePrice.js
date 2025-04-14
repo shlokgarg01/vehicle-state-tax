@@ -26,7 +26,13 @@ import Loader from '../../components/Loader/Loader'
 import Modal from '../../components/Modal/Modal'
 import { showToast } from '../../utils/toast'
 
-import { getAllPrices, updatePrice, clearPriceErrors, createPrice } from '../../actions/priceAction'
+import {
+  getAllPrices,
+  updatePrice,
+  clearPriceErrors,
+  createPrice,
+  deletePrice,
+} from '../../actions/priceAction'
 import Constants from '../../utils/constants'
 
 const CreatePrice = ({ states, error, loading, mode, stateLoading, stateError }) => {
@@ -50,8 +56,17 @@ const CreatePrice = ({ states, error, loading, mode, stateLoading, stateError })
   const [currentPage, setCurrentPage] = useState(1)
   const [isToggleModalVisible, setIsToggleModalVisible] = useState(false)
   const [priceToToggle, setPriceToToggle] = useState(null)
-  const limit = Constants.ITEMS_PER_PAGE
+  const [isDeleteModalVisible, setIsDeleteModalVisible] = useState(false)
+  const [priceToDelete, setPriceToDelete] = useState(null)
+  const handleDeletePrice = useCallback(() => {
+    if (!priceToDelete) return
+    dispatch(deletePrice(priceToDelete._id))
+    setIsDeleteModalVisible(false)
+    setPriceToDelete(null)
+  }, [dispatch, priceToDelete])
 
+  const limit = Constants.ITEMS_PER_PAGE
+  const { isDeleted, error: deleteError } = useSelector((state) => state.deletePrice)
   const { loading: listLoading, error: errorList, prices } = useSelector((state) => state.allPrices)
 
   const {
@@ -94,7 +109,24 @@ const CreatePrice = ({ states, error, loading, mode, stateLoading, stateError })
       showToast('Price created', 'success')
     }
   }, [loadingCreate, isCreated, dispatch, mode])
+  useEffect(() => {
+    if (isDeleted) {
+      showToast('Price deleted successfully', 'success')
+      dispatch(
+        getAllPrices({
+          page: currentPage,
+          perPage: limit,
+          mode,
+        }),
+      )
+    }
+  }, [isDeleted, dispatch, mode, currentPage])
 
+  useEffect(() => {
+    if (deleteError) {
+      showToast(deleteError?.data?.message || 'Failed to delete price', 'error')
+    }
+  }, [deleteError])
   useEffect(() => {
     if (errorCreate) {
       showToast(
@@ -266,6 +298,8 @@ const CreatePrice = ({ states, error, loading, mode, stateLoading, stateError })
         ?.replace(/^\w/, (c) => c.toUpperCase()) || 'Price'
     )
   }, [])
+  console.log(prices.filteredPricesCount)
+  console.log(prices)
 
   return (
     <>
@@ -444,8 +478,8 @@ const CreatePrice = ({ states, error, loading, mode, stateLoading, stateError })
         <CCardHeader>
           <strong>
             Price List ({(currentPage - 1) * limit + 1}–
-            {Math.min(currentPage * limit, prices?.filteredCount || 0)} of{' '}
-            {prices?.filteredCount || 0})
+            {Math.min(currentPage * limit, prices?.filteredPricesCount || 0)} of{' '}
+            {prices?.filteredPricesCount || 0})
           </strong>
         </CCardHeader>
 
@@ -482,6 +516,7 @@ const CreatePrice = ({ states, error, loading, mode, stateLoading, stateError })
                   {isVehicleTypeMode && <CTableHeaderCell>Weight</CTableHeaderCell>}
                   <CTableHeaderCell>Status</CTableHeaderCell>
                   <CTableHeaderCell>Action</CTableHeaderCell>
+                  <CTableHeaderCell>Delete</CTableHeaderCell>
                 </CTableRow>
               </CTableHead>
 
@@ -539,6 +574,16 @@ const CreatePrice = ({ states, error, loading, mode, stateLoading, stateError })
                         }}
                       />
                     </CTableDataCell>
+                    <CTableDataCell>
+                      <Button
+                        color="danger"
+                        title="Delete"
+                        onClick={() => {
+                          setPriceToDelete(price)
+                          setIsDeleteModalVisible(true)
+                        }}
+                      />
+                    </CTableDataCell>
                   </CTableRow>
                 ))}
               </CTableBody>
@@ -546,7 +591,7 @@ const CreatePrice = ({ states, error, loading, mode, stateLoading, stateError })
 
             <Pagination
               currentPage={currentPage}
-              totalPages={prices?.totalPages || 1}
+              totalPages={Math.ceil(prices?.filteredPricesCount / limit)}
               itemsPerPage={prices?.perPage || limit}
               onPageChange={setCurrentPage}
             />
@@ -574,6 +619,17 @@ const CreatePrice = ({ states, error, loading, mode, stateLoading, stateError })
         closeBtnText="Close"
         submitBtnText="Yes"
         submitBtnColor="success"
+      />
+      <Modal
+        visible={isDeleteModalVisible}
+        onVisibleToggle={() => setIsDeleteModalVisible(!isDeleteModalVisible)}
+        onSubmitBtnClick={handleDeletePrice}
+        onClose={() => setIsDeleteModalVisible(false)}
+        title="Confirm Deletion"
+        body="Are you sure you want to delete this price?"
+        closeBtnText="Close"
+        submitBtnText="Delete"
+        submitBtnColor="danger"
       />
     </>
   )

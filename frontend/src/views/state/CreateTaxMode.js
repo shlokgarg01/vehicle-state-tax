@@ -52,8 +52,10 @@ const CreateTaxMode = ({ states, mode }) => {
   // Redux states
   const {
     taxModes,
-    filteredTaxModesCount,
+    resultsPerPage,
     loading: listLoading,
+    totalTaxModes,
+    filteredTaxModesCount,
     error: listError,
   } = useSelector((state) => state.allTaxModes)
 
@@ -68,14 +70,12 @@ const CreateTaxMode = ({ states, mode }) => {
     loading: loadingCreate,
   } = useSelector((state) => state.createTaxMode)
 
-  const filtered = (taxModes || []).filter(
-    (item) => item.mode === mode && item.state && item.state._id,
-  )
-
+  const filtered = taxModes
+  // console.log('filtered data', filtered)
   useEffect(() => {
     const filters = {}
     if (mode) filters.mode = mode
-    dispatch(getAllTaxModes('', currentPage, limit, filters, { mode }))
+    dispatch(getAllTaxModes('', currentPage, limit, filters, mode, { mode }))
   }, [dispatch, mode, currentPage])
 
   useEffect(() => {
@@ -85,12 +85,12 @@ const CreateTaxMode = ({ states, mode }) => {
       setFormErrors({})
       const filters = {}
       if (mode) filters.mode = mode
-      dispatch(getAllTaxModes('', 1, limit, filters, { mode }))
+      dispatch(getAllTaxModes('', 1, limit, filters, mode, { mode }))
       setCurrentPage(1)
       showToast('Tax mode created', 'success')
     }
   }, [loadingCreate, isCreated, dispatch])
-
+  // console.log(taxModes)
   useEffect(() => {
     if (errorCreate) {
       showToast(errorCreate?.data?.message || 'Failed to create tax mode', 'error')
@@ -164,6 +164,9 @@ const CreateTaxMode = ({ states, mode }) => {
       }),
     )
   }
+  const current = currentPage || 1
+  const perPage = limit || 10
+  const total = totalTaxModes || 0
 
   const allowedTaxModes =
     mode === Constants.MODES.ALL_INDIA_PERMIT || mode === Constants.MODES.ALL_INDIA_TAX
@@ -177,7 +180,7 @@ const CreateTaxMode = ({ states, mode }) => {
 
       const filters = {}
       if (mode) filters.mode = mode
-      dispatch(getAllTaxModes('', currentPage, limit, filters, { mode }))
+      dispatch(getAllTaxModes('', currentPage, limit, filters, mode, { mode }))
     }
   }, [isUpdated, updateLoading, dispatch, currentPage, limit, mode])
   useEffect(() => {
@@ -185,6 +188,7 @@ const CreateTaxMode = ({ states, mode }) => {
       showToast(updateError?.data?.message || 'Failed to update status', 'error')
     }
   }, [updateError])
+  console.log(limit, currentPage)
 
   return (
     <>
@@ -303,8 +307,8 @@ const CreateTaxMode = ({ states, mode }) => {
       <CCard>
         <CCardHeader>
           <strong>
-            Tax Mode List {filteredTaxModesCount === 0 ? 0 : (currentPage - 1) * limit + 1}–
-            {Math.min(currentPage * limit, filteredTaxModesCount)} of {filteredTaxModesCount}
+            Tax Mode List {totalTaxModes === 0 ? 0 : (currentPage - 1) * limit + 1}–
+            {Math.min(currentPage * limit, totalTaxModes)} of {totalTaxModes}
           </strong>
         </CCardHeader>
 
@@ -362,7 +366,7 @@ const CreateTaxMode = ({ states, mode }) => {
 
             <Pagination
               currentPage={currentPage}
-              totalPages={Math.ceil(filteredTaxModesCount / limit)}
+              totalPages={Math.ceil(totalTaxModes / limit)}
               itemsPerPage={limit}
               onPageChange={setCurrentPage}
             />

@@ -1,6 +1,7 @@
 import express from "express";
 import {
   createPrice,
+  deletePrice,
   getAllPrices,
   updatePrice,
 } from "../controllers/priceController.js";
@@ -30,6 +31,12 @@ router.put(
   isAuthenticatedUser,
   authorizeRoles(CONSTANTS.USER_ROLES.ADMIN),
   updatePrice
+);
+router.delete(
+  "/:id",
+  isAuthenticatedUser,
+  authorizeRoles(CONSTANTS.USER_ROLES.ADMIN),
+  deletePrice
 );
 
 export default router;

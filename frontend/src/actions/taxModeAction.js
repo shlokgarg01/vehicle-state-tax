@@ -1,5 +1,6 @@
 import axiosInstance from '../utils/config'
 import TAX_MODE_CONSTANTS from '../constants/taxModeContants'
+// import { error } from 'console'
 
 const PREFIX = '/api/v1/taxMode'
 
@@ -33,17 +34,20 @@ export const getAllTaxModes =
       }).toString()
 
       const { data } = await axiosInstance.get(`${PREFIX}?${queryParams}`)
-
+      console.log(data)
       dispatch({
         type: TAX_MODE_CONSTANTS.GET_ALL_TAX_MODES_SUCCESS,
         payload: {
+          totalTaxModes: data.totalTaxModes,
           taxModes: data.taxModes,
-          total: data.totalTaxModes,
-          filtered: data.filteredTaxModesCount,
           resultsPerPage: perPage,
+          loading: true,
+          error: false,
+          filteredTaxModesCount: data.filteredTaxModesCount,
         },
       })
     } catch (error) {
+      console.log(error)
       dispatch({
         type: TAX_MODE_CONSTANTS.GET_ALL_TAX_MODES_FAIL,
         payload: error?.response?.data?.message || error.message || error,
@@ -51,6 +55,7 @@ export const getAllTaxModes =
     }
   }
 
+3
 // Update Tax Mode
 export const updateTaxMode = (id, updatedData) => async (dispatch) => {
   try {

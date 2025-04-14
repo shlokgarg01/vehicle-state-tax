@@ -23,7 +23,7 @@ export const allTaxModesReducer = (state = initialStateForGet, action) => {
         loading: false,
         taxModes: action.payload.taxModes,
         totalTaxModes: action.payload.total,
-        filteredTaxModesCount: action.payload.filtered,
+        filteredTaxModesCount: action.payload.filteredTaxModesCount,
         resultsPerPage: action.payload.resultsPerPage,
         error: null,
       }

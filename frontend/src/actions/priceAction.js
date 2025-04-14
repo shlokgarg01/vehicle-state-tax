@@ -75,3 +75,22 @@ export const updatePrice = (id, updatedData) => async (dispatch) => {
 export const clearPriceErrors = () => (dispatch) => {
   dispatch({ type: PRICE_CONSTANTS.CLEAR_ERRORS })
 }
+
+// delete price
+export const deletePrice = (id) => async (dispatch) => {
+  try {
+    dispatch({ type: PRICE_CONSTANTS.DELETE_TAX_PRICE_REQUEST })
+
+    const { data } = await axiosInstance.delete(`${PREFIX}/${id}`)
+
+    dispatch({
+      type: PRICE_CONSTANTS.DELETE_TAX_PRICE_SUCCESS,
+      payload: data.message,
+    })
+  } catch (error) {
+    dispatch({
+      type: PRICE_CONSTANTS.DELETE_TAX_PRICE_FAIL,
+      payload: error?.response?.data?.message || error.message || 'Unknown error',
+    })
+  }
+}

@@ -19,26 +19,36 @@ export const createPrice = asyncHandler(async (req, res) => {
 // 📥 Get All Prices
 export const getAllPrices = asyncHandler(async (req, res) => {
   try {
-    const resultsPerPage = req.params.perPage || 10;
-    let apiFeature = new ApiFeatures(
-      Price.find().sort({ createdAt: -1 }),
-      req.query
-    ).search(["mode", "state", "seatCapacity", "vehicleType", "weight"])
+    const resultsPerPage = Number(req.query.perPage) || 10;
 
-    const totalPrices = await Price.countDocuments(
+    let apiFeature = new ApiFeatures(
+      Price.find().sort({ createdAt: -1 }).populate("state"),
+      req.query
+    )
+      .search(["mode", "state", "seatCapacity", "vehicleType", "weight"])
+      .filter();
+
+    // Count after filtering/searching (before pagination)
+    const filteredPricesCount = await Price.countDocuments(
       apiFeature.query.getFilter()
     );
+
+    // Apply pagination
     apiFeature = apiFeature.pagination(resultsPerPage);
     const prices = await apiFeature.query;
+
+    // Total prices in DB (before any filters)
+    const totalPrices = await Price.countDocuments();
 
     res.status(200).json({
       success: true,
       totalPrices,
+      filteredPricesCount,
       prices,
       resultsPerPage,
     });
   } catch (error) {
-    res.status(500).json({ success: false, message: error });
+    res.status(500).json({ success: false, message: error.message });
   }
 });
 
@@ -52,4 +62,24 @@ export const updatePrice = asyncHandler(async (req, res) => {
   Object.assign(price, req.body);
   const updated = await price.save();
   res.status(200).json({ success: true, price: updated });
+});
+
+// delete price
+export const deletePrice = asyncHandler(async (req, res) => {
+  try {
+    const price = await Price.findById(req.params.id);
+
+    if (!price) {
+      res.status(404);
+      throw new Error("Price not found");
+    }
+
+    await price.delete();
+
+    res
+      .status(200)
+      .json({ success: true, message: "Price deleted successfully" });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
 });

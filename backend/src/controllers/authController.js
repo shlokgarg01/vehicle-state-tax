@@ -15,7 +15,8 @@ export const sendOTPForLogin = asyncHandler(async (req, res, next) => {
       return next(new ErrorHandler("Contact number is required", 400));
     }
 
-    const otp = parseInt(contactNumber) === 8307747802 ? "114488" : generateOTP();
+    const otp =
+      parseInt(contactNumber) === 8307747802 ? "114488" : generateOTP();
     const hash = otpHash(otp);
 
     await OTP.deleteMany({ contactNumber });
@@ -28,7 +29,9 @@ export const sendOTPForLogin = asyncHandler(async (req, res, next) => {
 
     await sendOTP(otp, contactNumber);
 
-    res.status(200).json({ success: true, message: "OTP sent successfully", otp });
+    res
+      .status(200)
+      .json({ success: true, message: "OTP sent successfully", otp });
   } catch (error) {
     console.error(" Error in sendOTPForLogin:", error);
     next(new ErrorHandler("Internal Server Error", 500));
@@ -68,7 +71,10 @@ export const authenticateViaOTP = asyncHandler(async (req, res, next) => {
     }
 
     const token = generateToken(user);
-    await User.findByIdAndUpdate(user._id, { lastLogin: new Date(), appVersion })
+    await User.findByIdAndUpdate(user._id, {
+      lastLogin: new Date(),
+      appVersion,
+    });
 
     res.status(200).json({
       success: true,
@@ -147,6 +153,6 @@ export const getUserDetails = asyncHandler(async (req, res, next) => {
     console.error("Error fetching user details:", error);
 
     // Pass error to the global error handler middleware
-    next(new ErrorHandler("Internal Server Error", 500));
+    next(new ErrorHandler("Internal Server Error in user details", 500));
   }
 });

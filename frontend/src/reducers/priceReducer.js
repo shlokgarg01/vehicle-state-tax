@@ -44,3 +44,20 @@ export const updatePriceReducer = (state = {}, action) => {
       return state
   }
 }
+
+// Delete Price Reducer
+export const deletePriceReducer = (state = {}, action) => {
+  switch (action.type) {
+    case PRICE_CONSTANTS.DELETE_TAX_PRICE_REQUEST:
+      return { loading: true }
+
+    case PRICE_CONSTANTS.DELETE_TAX_PRICE_SUCCESS:
+      return { loading: false, isDeleted: true }
+
+    case PRICE_CONSTANTS.DELETE_TAX_PRICE_FAIL:
+      return { loading: false, error: action.payload }
+
+    default:
+      return state
+  }
+}

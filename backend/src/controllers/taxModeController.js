@@ -49,9 +49,9 @@ export const getAllTaxModes = asyncHandler(async (req, res) => {
   try {
     const resultsPerPage = req.params.perPage || 10;
     let apiFeature = new ApiFeatures(
-      TaxMode.find().sort({ createdAt: -1 }),
+      TaxMode.find().sort({ createdAt: -1 }).populate("state"),
       req.query
-    ).search(["mode", "state"])
+    ).search(["mode", "state"]);
 
     const totalTaxModes = await TaxMode.countDocuments(
       apiFeature.query.getFilter()
@@ -84,7 +84,6 @@ export const updateTaxMode = asyncHandler(async (req, res) => {
       });
     }
 
-  
     if (!state || !mode || !taxMode) {
       return res.status(400).json({
         success: false,
@@ -95,7 +94,6 @@ export const updateTaxMode = asyncHandler(async (req, res) => {
     const normalizedMode = mode.trim().toUpperCase();
     const normalizedTaxMode = taxMode.trim().toUpperCase();
 
-  
     const duplicate = await TaxMode.findOne({
       state,
       mode: normalizedMode,
@@ -110,7 +108,6 @@ export const updateTaxMode = asyncHandler(async (req, res) => {
       });
     }
 
- 
     taxModeDoc.state = state;
     taxModeDoc.mode = normalizedMode;
     taxModeDoc.taxMode = normalizedTaxMode;

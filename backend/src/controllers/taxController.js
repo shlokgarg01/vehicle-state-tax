@@ -25,27 +25,39 @@ export const createTax = async (req, res) => {
 // Get All Taxes (With Filters, Search, Pagination)
 export const getAllTaxes = async (req, res) => {
   try {
-    const resultsPerPage = req.query.perPage || 10;
-    let apiFeature = new ApiFeatures(
-      Tax.find().sort({ createdAt: -1 }),
-      req.query
-    )
-    .search(["vehicleNumber", "mobileNumber", "status", "category", ""])
-    .filter();
+    const resultsPerPage = parseInt(req.query.perPage) || 10;
 
-    const totalTaxes = await Tax.countDocuments(
+    // Initial query with deleted: false
+    const baseQuery = Tax.find({ deleted: false }).sort({ createdAt: -1 });
+
+    // Apply filters/search
+    let apiFeature = new ApiFeatures(baseQuery, req.query)
+      .search(["vehicleNumber", "mobileNumber", "status", "category", "mode"])
+      .filter();
+
+    // Get count BEFORE pagination — this is filtered count
+    const filteredTaxesCount = await Tax.countDocuments(
       apiFeature.query.getFilter()
     );
+
+    // Apply pagination after counting
     apiFeature = apiFeature.pagination(resultsPerPage);
     const taxes = await apiFeature.query;
 
     res.status(200).json({
-      totalTaxes,
+      success: true,
+      filteredTaxesCount,
       taxes,
-      resultsPerPage: parseInt(resultsPerPage),
+      resultsPerPage,
     });
   } catch (error) {
-    res.status(500).json({ success: false, message: "Internal server error" });
+    res
+      .status(500)
+      .json({
+        success: false,
+        message: "Internal server error in get all taxes",
+        error,
+      });
   }
 };
 
