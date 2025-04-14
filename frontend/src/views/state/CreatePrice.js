@@ -34,6 +34,7 @@ import {
   deletePrice,
 } from '../../actions/priceAction'
 import Constants from '../../utils/constants'
+import { removeUnderScoreAndCapitalize } from '../../helpers/strings'
 
 const CreatePrice = ({ states, error, loading, mode, stateLoading, stateError }) => {
   const dispatch = useDispatch()
@@ -514,9 +515,7 @@ const CreatePrice = ({ states, error, loading, mode, stateLoading, stateError })
                   <CTableHeaderCell>Service Charge</CTableHeaderCell>
                   {isVehicleTypeMode && <CTableHeaderCell>Vehicle Type</CTableHeaderCell>}
                   {isVehicleTypeMode && <CTableHeaderCell>Weight</CTableHeaderCell>}
-                  <CTableHeaderCell>Status</CTableHeaderCell>
                   <CTableHeaderCell>Action</CTableHeaderCell>
-                  <CTableHeaderCell>Delete</CTableHeaderCell>
                 </CTableRow>
               </CTableHead>
 
@@ -527,9 +526,12 @@ const CreatePrice = ({ states, error, loading, mode, stateLoading, stateError })
                     {!(
                       mode === Constants.MODES.ALL_INDIA_TAX ||
                       mode === Constants.MODES.ALL_INDIA_PERMIT
-                    ) && <CTableDataCell>{price.state?.name || '-'}</CTableDataCell>}
+                    ) && (
+                      <CTableDataCell>
+                        {removeUnderScoreAndCapitalize(price.state?.name) || '-'}
+                      </CTableDataCell>
+                    )}
 
-                    {/* <CTableDataCell>{getModeLabel(price.mode)}</CTableDataCell> */}
                     <CTableDataCell>{price.taxMode || '-'}</CTableDataCell>
                     {!isVehicleTypeMode && (
                       <CTableDataCell>{price.seatCapacity || '-'}</CTableDataCell>
@@ -556,24 +558,6 @@ const CreatePrice = ({ states, error, loading, mode, stateLoading, stateError })
                     {isVehicleTypeMode && (
                       <CTableDataCell>{price.weight != null ? price.weight : '-'}</CTableDataCell>
                     )}
-                    <CTableDataCell>
-                      <span
-                        className={`badge bg-${price.status === 'active' ? 'success' : 'secondary'}`}
-                      >
-                        {price.status}
-                      </span>
-                    </CTableDataCell>
-                    <CTableDataCell>
-                      <Button
-                        title={price.status === Constants.STATUS.ACTIVE ? 'Deactivate' : 'Activate'}
-                        color={price.status === Constants.STATUS.ACTIVE ? 'danger' : 'success'}
-                        btnSmall
-                        onClick={() => {
-                          setPriceToToggle(price)
-                          setIsToggleModalVisible(true)
-                        }}
-                      />
-                    </CTableDataCell>
                     <CTableDataCell>
                       <Button
                         color="danger"

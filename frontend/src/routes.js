@@ -19,7 +19,7 @@ import createAllIndiaTax from './views/allIndiaTax/createAllIndiaTax'
 import CreateLoadingTaxPrice from './views/loadingVehicletax/CreateLoadingTaxPrice'
 import CreateRoadTaxPrice from './views/roadTax/createRoadTaxPrice'
 import newOrder from './views/order/newOrder'
-import CompleteOrder from './views/order/CompleteOrder'
+import CompleteOrder from './views/order/completeOrder'
 import searchOrder from './views/order/searchOrder'
 
 const routes = [
