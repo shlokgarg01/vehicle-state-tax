@@ -28,7 +28,7 @@ export const getAllTaxes = async (req, res) => {
     const resultsPerPage = parseInt(req.query.perPage) || 10;
 
     // Initial query with deleted: false
-    const baseQuery = Tax.find({ deleted: false }).sort({ createdAt: -1 });
+    const baseQuery = Tax.find().sort({ createdAt: -1 });
 
     // Apply filters/search
     let apiFeature = new ApiFeatures(baseQuery, req.query)
@@ -36,7 +36,7 @@ export const getAllTaxes = async (req, res) => {
       .filter();
 
     // Get count BEFORE pagination — this is filtered count
-    const filteredTaxesCount = await Tax.countDocuments(
+    const totalTaxes = await Tax.countDocuments(
       apiFeature.query.getFilter()
     );
 
@@ -46,7 +46,7 @@ export const getAllTaxes = async (req, res) => {
 
     res.status(200).json({
       success: true,
-      filteredTaxesCount,
+      totalTaxes,
       taxes,
       resultsPerPage,
     });
