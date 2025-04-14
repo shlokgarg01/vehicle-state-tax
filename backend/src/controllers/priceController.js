@@ -19,36 +19,41 @@ export const createPrice = asyncHandler(async (req, res) => {
 // 📥 Get All Prices
 export const getAllPrices = asyncHandler(async (req, res) => {
   try {
-    const resultsPerPage = Number(req.query.perPage) || 10;
+    const resultsPerPage = parseInt(req.query.perPage) || 10;
 
-    let apiFeature = new ApiFeatures(
-      Price.find().sort({ createdAt: -1 }).populate("state"),
-      req.query
-    )
-      .search(["mode", "state", "seatCapacity", "vehicleType", "weight"])
+    // Initial query with deleted: false
+    const baseQuery = Price.find().sort({ createdAt: -1 }).populate("state");
+
+    // Apply filters/search
+    let apiFeature = new ApiFeatures(baseQuery, req.query)
+      .search(["status", "taxMode", "mode", "seatCapacity", "vehicleType", "weight"])
       .filter();
 
-    // Count after filtering/searching (before pagination)
-    const filteredPricesCount = await Price.countDocuments(
+    if (req.query.state) {
+      baseQuery.where("state").equals(req.query.state); 
+    }
+
+    // Get count BEFORE pagination — this is filtered count
+    const totalPrices = await Price.countDocuments(
       apiFeature.query.getFilter()
     );
 
-    // Apply pagination
+    // Apply pagination after counting
     apiFeature = apiFeature.pagination(resultsPerPage);
     const prices = await apiFeature.query;
-
-    // Total prices in DB (before any filters)
-    const totalPrices = await Price.countDocuments();
 
     res.status(200).json({
       success: true,
       totalPrices,
-      filteredPricesCount,
       prices,
+      filteredPricesCount: prices.length,
       resultsPerPage,
     });
   } catch (error) {
-    res.status(500).json({ success: false, message: error.message });
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
   }
 });
 

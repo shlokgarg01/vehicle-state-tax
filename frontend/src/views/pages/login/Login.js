@@ -48,7 +48,7 @@ const Login = () => {
 
         <div className="col-md-6 d-flex justify-content-center align-items-center">
           <div>
-            <h2 className="text-center mb-4">Safar Manager</h2>
+            <h2 className="text-center mb-4">Vehicle State Tax</h2>
             <form onSubmit={handleSubmit}>
               <div className="mb-3">
                 <label className="form-label">Username</label>

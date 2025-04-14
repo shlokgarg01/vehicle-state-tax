@@ -117,6 +117,7 @@ const TaxCard = ({ data, onUploadComplete, setIsUploading }) => {
     ),
 
     data.chasisNumber && <FieldRow label="Chassis Number" value={data.chasisNumber} />,
+    data.whoCompleted && <FieldRow label="Who Completed" value={data.whoCompleted?.username} />,
   ]
 
   return (

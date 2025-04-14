@@ -16,7 +16,7 @@ export const createTax = async (req, res) => {
   } catch (error) {
     res.status(500).json({
       success: false,
-      message: "Internal server error in creating atax",
+      message: "Internal server error in creating a tax",
       error: error,
     });
   }
@@ -28,7 +28,7 @@ export const getAllTaxes = async (req, res) => {
     const resultsPerPage = parseInt(req.query.perPage) || 10;
 
     // Initial query with deleted: false
-    const baseQuery = Tax.find().sort({ createdAt: -1 });
+    const baseQuery = Tax.find().sort({ createdAt: -1 }).populate("whoCompleted");
 
     // Apply filters/search
     let apiFeature = new ApiFeatures(baseQuery, req.query)

@@ -47,27 +47,41 @@ export const createTaxMode = asyncHandler(async (req, res) => {
 // 📄 Get All TaxModes
 export const getAllTaxModes = asyncHandler(async (req, res) => {
   try {
-    const resultsPerPage = req.params.perPage || 10;
-    let apiFeature = new ApiFeatures(
-      TaxMode.find().sort({ createdAt: -1 }).populate("state"),
-      req.query
-    ).search(["mode", "state"]);
+    const resultsPerPage = parseInt(req.query.perPage) || 10;
 
+    // Initial query with deleted: false
+    const baseQuery = TaxMode.find().sort({ createdAt: -1 }).populate("state");
+
+    // Apply filters/search
+    let apiFeature = new ApiFeatures(baseQuery, req.query)
+      .search(["status", "taxMode", "mode"])
+      .filter();
+
+    if (req.query.state) { // handling for ObjectId
+      baseQuery.where("state").equals(req.query.state); 
+    }
+
+    // Get count BEFORE pagination — this is filtered count
     const totalTaxModes = await TaxMode.countDocuments(
       apiFeature.query.getFilter()
     );
+
+    // Apply pagination after counting
     apiFeature = apiFeature.pagination(resultsPerPage);
     const taxModes = await apiFeature.query;
 
     res.status(200).json({
       success: true,
       totalTaxModes,
-      filteredTaxModesCount: taxModes.length,
       taxModes,
+      filteredTaxModesCount: taxModes.length,
       resultsPerPage,
     });
   } catch (error) {
-    res.status(500).json({ success: false, message: error });
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
   }
 });
 
