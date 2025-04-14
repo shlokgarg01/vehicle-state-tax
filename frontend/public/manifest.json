@@ -1,6 +1,6 @@
 {
-  "short_name": "CoreUI-React",
-  "name": "CoreUI-React sample",
+  "short_name": "vehicle-state-tax",
+  "name": "Vehicle State Tax",
   "icons": [
     {
       "src": "./assets/img/favicon.png",
