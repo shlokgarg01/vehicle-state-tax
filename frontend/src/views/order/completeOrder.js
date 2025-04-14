@@ -1,18 +1,19 @@
-import React, { useEffect } from 'react'
+import React, { useEffect, useState } from 'react'
 import TaxCard from '../state/TaxCard'
 import { useDispatch, useSelector } from 'react-redux'
 import { getAllTaxes } from '../../actions/orderActions'
 import Loader from '../../components/Loader/Loader'
 import Constants from '../../utils/constants'
+import Pagination from '../../components/Pagination/Pagination'
 
-const completeOrder = () => {
+const CompleteOrder = () => {
   const dispatch = useDispatch()
-
-  const { taxes, loading, error } = useSelector((state) => state.allTaxes)
+  const { taxes, loading, error, totalPages } = useSelector((state) => state.allTaxes)
+  const [currentPage, setCurrentPage] = useState(1)
 
   useEffect(() => {
-    dispatch(getAllTaxes({ status: Constants.ORDER_STATUS.CLOSED }))
-  }, [dispatch])
+    dispatch(getAllTaxes({ status: Constants.ORDER_STATUS.CLOSED, page: currentPage }))
+  }, [dispatch, currentPage])
 
   const completedTaxes = taxes?.filter((tax) => tax.status === Constants.ORDER_STATUS.CLOSED)
   return (
@@ -27,9 +28,15 @@ const completeOrder = () => {
       {completedTaxes?.map((tax) => (
         <TaxCard key={tax._id} data={tax} />
       ))}
+      <Pagination
+        currentPage={currentPage}
+        totalPages={totalPages}
+        itemsPerPage={Constants.ITEMS_PER_PAGE}
+        onPageChange={setCurrentPage}
+      />
     </div>
   )
 }
 
-export default completeOrder
+export default CompleteOrder
 // allTaxes

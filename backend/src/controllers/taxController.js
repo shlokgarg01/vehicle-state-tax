@@ -25,51 +25,26 @@ export const createTax = async (req, res) => {
 // Get All Taxes (With Filters, Search, Pagination)
 export const getAllTaxes = async (req, res) => {
   try {
-    // const { perPage = 10, page = 1 } = req.query;
-    const page = req.query.page ? Number(req.query.page) : null;
-    const perPage = req.query.perPage ? Number(req.query.perPage) : null;
+    const resultsPerPage = req.query.perPage || 10;
+    let apiFeature = new ApiFeatures(
+      Tax.find().sort({ createdAt: -1 }),
+      req.query
+    )
+    .search(["vehicleNumber", "mobileNumber", "status", "category", ""])
+    .filter();
 
-    // Apply filters & search on base query for total count
-    const countQuery = Tax.find();
-    const apiFeatureForCount = new ApiFeatures(countQuery, req.query)
-      .search([
-        "vehicleNumber",
-        "mobileNumber",
-        "state",
-        "category",
-        "isCompleted",
-        "status",
-      ])
-      .filter();
-
-    const filteredCount = await apiFeatureForCount.query.countDocuments();
-
-    // Apply same filters, search, and pagination for paginated results
-    const paginatedQuery = Tax.find().populate("whoCompleted");
-    const apiFeature = new ApiFeatures(paginatedQuery, req.query)
-      .search([
-        "vehicleNumber",
-        "mobileNumber",
-        "state",
-        "category",
-        "isCompleted",
-        "status",
-      ])
-      .filter()
-      .sort("-createdAt")
-      .pagination(Number(perPage));
-
-    const taxes = await apiFeature.query.lean();
+    const totalTaxes = await Tax.countDocuments(
+      apiFeature.query.getFilter()
+    );
+    apiFeature = apiFeature.pagination(resultsPerPage);
+    const taxes = await apiFeature.query;
 
     res.status(200).json({
-      success: true,
-      count: filteredCount,
-      totalPages: Math.ceil(filteredCount / Number(perPage)),
-      currentPage: Number(page),
+      totalTaxes,
       taxes,
+      resultsPerPage: parseInt(resultsPerPage),
     });
   } catch (error) {
-    console.error("getAllTaxes error:", error);
     res.status(500).json({ success: false, message: "Internal server error" });
   }
 };

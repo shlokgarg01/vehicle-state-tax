@@ -1,7 +1,10 @@
 // actions/orderActions.js
 import { TAX_CONSTANTS } from '../constants/taxConstants'
 import axiosInstance from '../utils/config'
+import Constants from '../utils/constants'
+
 const TAX_PREFIX = '/api/v1/tax'
+
 export const createTax = (taxData) => async (dispatch) => {
   try {
     dispatch({ type: TAX_CONSTANTS.CREATE_TAX_REQUEST })
@@ -25,18 +28,29 @@ export const getAllTaxes =
   async (dispatch) => {
     try {
       dispatch({ type: TAX_CONSTANTS.GET_ALL_TAXES_REQUEST })
+      params.perPage = params.perPage || Constants.ITEMS_PER_PAGE
 
-      const query = new URLSearchParams(params).toString()
+      const searchParams = new URLSearchParams()
+      Object.entries(params).forEach(([key, value]) => {
+        if (Array.isArray(value)) {
+          value.forEach((v) => searchParams.append(key, v))
+        } else {
+          searchParams.append(key, value)
+        }
+      })
+
+      const query = searchParams.toString()
       const { data } = await axiosInstance.get(`${TAX_PREFIX}${query ? `?${query}` : ''}`, {
         withCredentials: true,
       })
+
       dispatch({
         type: TAX_CONSTANTS.GET_ALL_TAXES_SUCCESS,
         payload: {
           taxes: data.taxes,
-          count: data.count,
-          totalPages: data.totalPages,
-          currentPage: data.currentPage,
+          totalTaxes: data.totalTaxes,
+          totalPages: Math.ceil(data.totalTaxes / data.resultsPerPage),
+          currentPage: data?.currentPage,
         },
       })
     } catch (error) {

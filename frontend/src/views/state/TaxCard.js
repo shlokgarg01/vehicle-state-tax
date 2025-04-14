@@ -5,9 +5,10 @@ import { cilCloudDownload, cilCloudUpload, cilCopy } from '@coreui/icons'
 import { format } from 'date-fns'
 import { useDispatch, useSelector } from 'react-redux'
 import { getAllTaxes, uploadTax } from '../../actions/orderActions'
-import { removeUserScoreAndCapitalize } from '../../helpers/strings'
+import { removeUnderScoreAndCapitalize } from '../../helpers/strings'
 import { showToast } from '../../utils/toast'
 import { TAX_CONSTANTS } from '../../constants/taxConstants'
+import { getDateFromDateString } from '../../helpers/Date'
 
 const FieldRow = ({ label, value, copyable }) => (
   <CCol xs={12} md={6} className="mb-2 mb-md-0">
@@ -19,7 +20,10 @@ const FieldRow = ({ label, value, copyable }) => (
           icon={cilCopy}
           size="sm"
           style={{ cursor: 'pointer' }}
-          onClick={() => navigator.clipboard.writeText(value)}
+          onClick={() => {
+            navigator.clipboard.writeText(value)
+            showToast('Copied', 'success', 500)
+          }}
         />
       )}
     </div>
@@ -65,6 +69,8 @@ const TaxCard = ({ data, onUploadComplete, setIsUploading }) => {
   }
 
   useEffect(() => {
+    if (uploadError) setIsUploading?.(false)
+
     if (uploaded) {
       dispatch({ type: TAX_CONSTANTS.UPLOAD_TAX_RESET })
       dispatch(getAllTaxes())
@@ -84,11 +90,7 @@ const TaxCard = ({ data, onUploadComplete, setIsUploading }) => {
       onUploadComplete?.()
       setIsUploading?.(false)
     }
-  }, [uploaded])
-
-  useEffect(() => {
-    if (uploadError) setIsUploading?.(false)
-  }, [uploadError])
+  }, [uploaded, uploadError])
 
   return (
     <CContainer fluid className="d-flex justify-content-center px-4">
@@ -98,12 +100,12 @@ const TaxCard = ({ data, onUploadComplete, setIsUploading }) => {
             {/* Header */}
             <CRow className="mb-3">
               <CCol xs={12} md={6}>
-                <h6 className="fw-bold text-uppercase mb-1">{`${data.state} - ${data.border}`}</h6>
+                <h6 className="fw-bold text-uppercase mb-1">{`${removeUnderScoreAndCapitalize(data.state)} - ${removeUnderScoreAndCapitalize(data.border)}`}</h6>
                 <p className="text-muted mb-0">
                   {formatDate(data.createdAt, 'dd MMM yyyy, hh:mm a')}
                 </p>
               </CCol>
-              <FieldRow label="Tax Mode" value={removeUserScoreAndCapitalize(data.taxMode)} />
+              <FieldRow label="Tax Mode" value={removeUnderScoreAndCapitalize(data.taxMode)} />
             </CRow>
 
             {/* Vehicle Info */}
@@ -120,11 +122,14 @@ const TaxCard = ({ data, onUploadComplete, setIsUploading }) => {
             {/* Tax Details */}
             <CRow className="mb-3">
               <FieldRow label="Tax From" value={formatDate(data.startDate)} />
-              <FieldRow label="Tax Upto" value={formatDate(data.endDate)} />
+              <FieldRow
+                label="Tax Upto"
+                value={DataView.endDate ? getDateFromDateString(data.endDate) : ''}
+              />
             </CRow>
 
             <CRow className="mb-3">
-              <FieldRow label="Category" value={removeUserScoreAndCapitalize(data.category)} />
+              <FieldRow label="Category" value={removeUnderScoreAndCapitalize(data.category)} />
               <FieldRow label="Vehicle Type" value={data.vehicleType} />
             </CRow>
 

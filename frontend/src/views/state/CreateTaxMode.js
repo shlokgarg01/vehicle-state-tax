@@ -56,6 +56,7 @@ const CreateTaxMode = ({ states, mode }) => {
     loading: listLoading,
     error: listError,
   } = useSelector((state) => state.allTaxModes)
+
   const {
     isUpdated,
     loading: updateLoading,

@@ -1,9 +1,9 @@
 import { toast } from 'react-toastify'
 
-export const showToast = (message, type = 'success') => {
+export const showToast = (message, type = 'success', timer = 2000) => {
   toast[type](message, {
     position: 'top-right',
-    autoClose: 2000,
+    autoClose: timer,
     hideProgressBar: true,
     closeOnClick: true,
     pauseOnHover: false,

@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 import React, { useEffect, useState } from 'react'
 import {
   CRow,
@@ -21,28 +22,32 @@ import NoData from '../../components/NoData'
 import Loader from '../../components/Loader/Loader'
 import SelectBox from '../../components/Form/SelectBox'
 import Constants from '../../utils/constants'
-import { removeUserScoreAndCapitalize } from '../../helpers/strings'
+import { removeUnderScoreAndCapitalize } from '../../helpers/strings'
 import Pagination from '../../components/Pagination/Pagination'
+import { getDateFromDateString } from '../../helpers/Date'
+import CIcon from '@coreui/icons-react'
+import { cilCloudDownload } from '@coreui/icons'
+
 const TaxSearch = () => {
   const dispatch = useDispatch()
 
   const [mobile, setMobile] = useState('')
   const [vehicleNo, setVehicleNo] = useState('')
   const [mode, setMode] = useState('')
+  const [filterStatus, _] = useState([
+    Constants.ORDER_STATUS.CONFIRMED,
+    Constants.ORDER_STATUS.CLOSED,
+  ])
+
   const {
     loading,
     taxes = [],
     error,
-    count,
     totalPages,
-    currentPage,
+    totalTaxes,
   } = useSelector((state) => state.allTaxes || {})
   const [hasSearched, setHasSearched] = useState(false)
-
-  useEffect(() => {
-    dispatch(getAllTaxes()) // fetch initial list
-  }, [dispatch])
-
+  const [currentPage, setCurrentPage] = useState(1)
   const [filters, setFilters] = useState({})
 
   const handleSearch = (e) => {
@@ -55,27 +60,34 @@ const TaxSearch = () => {
 
     setFilters(updatedFilters)
 
-    dispatch(getAllTaxes({ ...updatedFilters, page: 1, perPage: 10 }))
+    dispatch(
+      getAllTaxes({
+        ...updatedFilters,
+        status: filterStatus,
+        page: 1,
+        perPage: Constants.ITEMS_PER_PAGE,
+      }),
+    )
   }
 
-  const handlePageChange = (page) => {
-    dispatch(getAllTaxes({ ...filters, page, perPage: 10 }))
-  }
   const handleClear = () => {
     setMobile('')
     setVehicleNo('')
     setMode('')
     setHasSearched(false)
     setFilters({})
-    dispatch(getAllTaxes({ page: 1, perPage: 10 }))
+    dispatch(getAllTaxes({ page: 1, perPage: Constants.ITEMS_PER_PAGE, status: filterStatus }))
   }
+
   useEffect(() => {
-    dispatch(getAllTaxes({ page: 1, perPage: 10 }))
-  }, [dispatch])
+    dispatch(
+      getAllTaxes({ ...filters, status: filterStatus, page: 1, perPage: Constants.ITEMS_PER_PAGE }),
+    )
+  }, [dispatch, currentPage])
 
   const modeOptions = Object.entries(Constants.MODES).map(([key, value]) => ({
     value: key,
-    label: removeUserScoreAndCapitalize(value),
+    label: removeUnderScoreAndCapitalize(value),
   }))
 
   return (
@@ -149,7 +161,7 @@ const TaxSearch = () => {
           <CCardHeader>
             <strong>
               Tax Entry List {(currentPage - 1) * 10 + 1}–{(currentPage - 1) * 10 + taxes.length} of{' '}
-              {count}
+              {totalTaxes}
             </strong>
           </CCardHeader>
 
@@ -164,26 +176,19 @@ const TaxSearch = () => {
               <CTable striped hover responsive className="table-sm compact-table">
                 <CTableHead>
                   <CTableRow>
-                    <CTableHeaderCell>S.N</CTableHeaderCell>
+                    <CTableHeaderCell>S.No</CTableHeaderCell>
                     <CTableHeaderCell>State</CTableHeaderCell>
                     <CTableHeaderCell>Border</CTableHeaderCell>
                     <CTableHeaderCell>Vehicle No.</CTableHeaderCell>
-                    <CTableHeaderCell>Vehicle Type</CTableHeaderCell>
                     <CTableHeaderCell>Category</CTableHeaderCell>
-                    <CTableHeaderCell>Weight</CTableHeaderCell>
                     <CTableHeaderCell>Seat Capacity</CTableHeaderCell>
-                    <CTableHeaderCell>Chassis No.</CTableHeaderCell>
                     <CTableHeaderCell>Mobile</CTableHeaderCell>
                     <CTableHeaderCell>Amount</CTableHeaderCell>
                     <CTableHeaderCell>Tax Mode</CTableHeaderCell>
-                    <CTableHeaderCell>Status</CTableHeaderCell>
-                    <CTableHeaderCell>Is Completed</CTableHeaderCell>
                     <CTableHeaderCell>Tax From</CTableHeaderCell>
                     <CTableHeaderCell>Tax Upto</CTableHeaderCell>
                     <CTableHeaderCell>File</CTableHeaderCell>
-                    <CTableHeaderCell>Order ID</CTableHeaderCell>
-                    <CTableHeaderCell>Created At</CTableHeaderCell>
-                    <CTableHeaderCell>Updated At</CTableHeaderCell>
+                    <CTableHeaderCell>Created</CTableHeaderCell>
                   </CTableRow>
                 </CTableHead>
                 <CTableBody>
@@ -191,43 +196,34 @@ const TaxSearch = () => {
                     <CTableRow key={item._id || index}>
                       <CTableDataCell>{(currentPage - 1) * 10 + index + 1}</CTableDataCell>
 
-                      <CTableDataCell>{item.state}</CTableDataCell>
-                      <CTableDataCell>{item.border || 'N/A'}</CTableDataCell>
+                      <CTableDataCell>
+                        {item.state ? removeUnderScoreAndCapitalize(item?.state) : null}
+                      </CTableDataCell>
+                      <CTableDataCell>{item.border || '-'}</CTableDataCell>
                       <CTableDataCell>{item.vehicleNumber}</CTableDataCell>
-                      <CTableDataCell>{item.vehicleType || 'N/A'}</CTableDataCell>
-                      <CTableDataCell>{item.category || 'N/A'}</CTableDataCell>
-                      <CTableDataCell>{item.weight || 'N/A'}</CTableDataCell>
-                      <CTableDataCell>{item.seatCapacity || 'N/A'}</CTableDataCell>
-                      <CTableDataCell>{item.chasisNumber || 'N/A'}</CTableDataCell>
+                      <CTableDataCell>
+                        {removeUnderScoreAndCapitalize(item.category) || '-'}
+                      </CTableDataCell>
+                      <CTableDataCell>{item.seatCapacity || '-'}</CTableDataCell>
                       <CTableDataCell>{item.mobileNumber}</CTableDataCell>
                       <CTableDataCell>{item.amount}</CTableDataCell>
-                      <CTableDataCell>{item.taxMode}</CTableDataCell>
+                      <CTableDataCell>{removeUnderScoreAndCapitalize(item.taxMode)}</CTableDataCell>
                       <CTableDataCell>
-                        <span
-                          className={`badge bg-${item.status === 'active' ? 'success' : 'secondary'}`}
-                        >
-                          {item.status}
-                        </span>
-                      </CTableDataCell>
-                      <CTableDataCell>{item.isCompleted ? 'Yes' : 'No'}</CTableDataCell>
-                      <CTableDataCell>
-                        {item.startDate ? new Date(item.startDate).toLocaleDateString() : 'N/A'}
+                        {item.startDate ? getDateFromDateString(item.startDate) : '-'}
                       </CTableDataCell>
                       <CTableDataCell>
-                        {item.endDate ? new Date(item.endDate).toLocaleDateString() : 'N/A'}
+                        {item.endDate ? getDateFromDateString(item.endDate) : '-'}
                       </CTableDataCell>
                       <CTableDataCell>
                         {item.fileUrl ? (
                           <a href={item.fileUrl} target="_blank" rel="noopener noreferrer">
-                            Download
+                            <CIcon icon={cilCloudDownload} className="me-2" />
                           </a>
                         ) : (
-                          'N/A'
+                          '-'
                         )}
                       </CTableDataCell>
-                      <CTableDataCell>{item.orderId || 'N/A'}</CTableDataCell>
-                      <CTableDataCell>{new Date(item.createdAt).toLocaleString()}</CTableDataCell>
-                      <CTableDataCell>{new Date(item.updatedAt).toLocaleString()}</CTableDataCell>
+                      <CTableDataCell>{getDateFromDateString(item.createdAt)}</CTableDataCell>
                     </CTableRow>
                   ))}
                 </CTableBody>
@@ -240,7 +236,7 @@ const TaxSearch = () => {
         <Pagination
           totalPages={totalPages}
           currentPage={currentPage}
-          onPageChange={handlePageChange}
+          onPageChange={setCurrentPage}
         />
       )}
     </div>

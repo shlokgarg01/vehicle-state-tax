@@ -51,17 +51,22 @@ class ApiFeatures {
         value === null ||
         (typeof value === "string" && value.trim() === "")
       ) {
-        return; // Skip invalid filters
+        return;
       }
 
-      if (typeof value === "object") {
+      if (Array.isArray(value)) { // Handling array values with OR condition
+        mongoFilter[key] = { $in: value };
+      }
+      else if (typeof value === "object") {
         mongoFilter[key] = {};
         Object.entries(value).forEach(([op, val]) => {
           mongoFilter[key][`$${op}`] = val;
         });
-      } else if (typeof value === "string" && isNaN(value)) {
+      }
+      else if (typeof value === "string" && isNaN(value)) { // Handling String values
         mongoFilter[key] = { $regex: value.trim(), $options: "i" };
-      } else {
+      }
+      else { // Handling integer
         mongoFilter[key] = isNaN(value) ? value : Number(value);
       }
     });

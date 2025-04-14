@@ -26,12 +26,10 @@ export const allTaxesReducer = (state = { taxes: [] }, action) => {
       return {
         loading: false,
         taxes: action.payload.taxes,
-        count: action.payload.count,
+        totalTaxes: action.payload.totalTaxes,
         totalPages: action.payload.totalPages,
         error: false,
-        currentPage: action.payload.currentPage,
       }
-
     case TAX_CONSTANTS.GET_ALL_TAXES_FAIL:
       return { loading: false, error: action.payload }
 

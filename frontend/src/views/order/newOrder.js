@@ -14,7 +14,7 @@ const NewOrder = () => {
 
   useEffect(() => {
     const fetchData = async () => {
-      await dispatch(getAllTaxes())
+      await dispatch(getAllTaxes({ status: Constants.ORDER_STATUS.CONFIRMED }))
     }
     fetchData()
 

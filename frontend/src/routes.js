@@ -19,14 +19,14 @@ import createAllIndiaTax from './views/allIndiaTax/createAllIndiaTax'
 import CreateLoadingTaxPrice from './views/loadingVehicletax/CreateLoadingTaxPrice'
 import CreateRoadTaxPrice from './views/roadTax/createRoadTaxPrice'
 import newOrder from './views/order/newOrder'
-import completeOrder from './views/order/completeOrder'
+import CompleteOrder from './views/order/CompleteOrder'
 import searchOrder from './views/order/searchOrder'
 
 const routes = [
   { path: '/', exact: true, name: 'Home', element: Home },
 
   { path: '/orders/new', name: 'Create Price', element: newOrder },
-  { path: '/orders/completed', name: 'Create Price', element: completeOrder },
+  { path: '/orders/completed', name: 'Create Price', element: CompleteOrder },
   { path: '/orders/search', name: 'Create Price', element: searchOrder },
 
   { path: '/border_tax/state', name: 'Create State', element: CreateBorderTaxState },
