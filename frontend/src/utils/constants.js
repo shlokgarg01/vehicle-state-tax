@@ -25,8 +25,8 @@ const Constants = {
     DAYS: 'days',
     WEEKLY: 'weekly',
     MONTHLY: 'monthly',
-    YEARLY: 'yearly',
     QUARTERLY: 'quarterly',
+    YEARLY: 'yearly',
   },
   SEAT_CAPACITY: {
     FOUR_PLUS_ONE: '4+1',

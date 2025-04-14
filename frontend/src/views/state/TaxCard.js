@@ -10,30 +10,33 @@ import { showToast } from '../../utils/toast'
 import { TAX_CONSTANTS } from '../../constants/taxConstants'
 import { getDateFromDateString } from '../../helpers/Date'
 
-const FieldRow = ({ label, value, copyable }) => (
-  <CCol xs={12} md={6} className="mb-2 mb-md-0">
-    <strong>{label}</strong>
-    <div className="d-flex align-items-center justify-content-md-start justify-content-center text-muted">
-      <span className="me-2">{value || 'N/A'}</span>
-      {copyable && value && (
-        <CIcon
-          icon={cilCopy}
-          size="sm"
-          style={{ cursor: 'pointer' }}
-          onClick={() => {
-            navigator.clipboard.writeText(value)
-            showToast('Copied', 'success', 500)
-          }}
-        />
-      )}
+const FieldRow = ({ label, value, copyable }) => {
+  if (!value) return null
+
+  return (
+    <div className="d-flex flex-column">
+      <strong className="text-dark">{label}</strong>
+      <div className="d-flex align-items-center text-muted">
+        <span className="me-2 small">{value}</span>
+        {copyable && (
+          <CIcon
+            icon={cilCopy}
+            size="sm"
+            style={{ cursor: 'pointer' }}
+            onClick={() => {
+              navigator.clipboard.writeText(value)
+              showToast('Copied', 'success', 500)
+            }}
+          />
+        )}
+      </div>
     </div>
-  </CCol>
-)
+  )
+}
 
 const TaxCard = ({ data, onUploadComplete, setIsUploading }) => {
   const dispatch = useDispatch()
   const fileInputRef = useRef(null)
-
   const [localFileUrl, setLocalFileUrl] = useState(data.fileUrl)
 
   const {
@@ -69,7 +72,10 @@ const TaxCard = ({ data, onUploadComplete, setIsUploading }) => {
   }
 
   useEffect(() => {
-    if (uploadError) setIsUploading?.(false)
+    if (uploadError) {
+      showToast(uploadError, 'error')
+      setIsUploading?.(false)
+    }
 
     if (uploaded) {
       dispatch({ type: TAX_CONSTANTS.UPLOAD_TAX_RESET })
@@ -92,67 +98,61 @@ const TaxCard = ({ data, onUploadComplete, setIsUploading }) => {
     }
   }, [uploaded, uploadError])
 
+  const rows = [
+    data.vehicleNumber && <FieldRow label="Vehicle No." value={data.vehicleNumber} copyable />,
+    data.amount && <FieldRow label="Amount" value={`₹${data.amount}`} />,
+
+    data.mobileNumber && <FieldRow label="Mobile" value={data.mobileNumber} copyable />,
+    data.seatCapacity && <FieldRow label="Seating Capacity" value={data.seatCapacity} />,
+    data.startDate && <FieldRow label="Tax From" value={formatDate(data.startDate)} />,
+    data.endDate && <FieldRow label="Tax Upto" value={getDateFromDateString(data.endDate)} />,
+    data.category && (
+      <FieldRow label="Category" value={removeUnderScoreAndCapitalize(data.category)} />
+    ),
+    data.vehicleType && <FieldRow label="Vehicle Type" value={data.vehicleType} />,
+
+    data.weight && <FieldRow label="Weight" value={data.weight} />,
+    data.taxMode && (
+      <FieldRow label="Tax Mode" value={removeUnderScoreAndCapitalize(data.taxMode)} />
+    ),
+
+    data.chasisNumber && <FieldRow label="Chassis Number" value={data.chasisNumber} />,
+  ]
+
   return (
-    <CContainer fluid className="d-flex justify-content-center px-4">
+    <CContainer fluid className="px-2 px-md-4 py-2">
       <div className="w-100" style={{ maxWidth: '600px' }}>
-        <CCard className="mb-4 shadow-sm rounded-4 border-0" style={{ backgroundColor: '#f1f9f6' }}>
+        <CCard className="border-0 shadow-sm rounded-4" style={{ backgroundColor: '#f1f9f6' }}>
           <CCardBody>
             {/* Header */}
             <CRow className="mb-3">
-              <CCol xs={12} md={6}>
-                <h6 className="fw-bold text-uppercase mb-1">{`${removeUnderScoreAndCapitalize(data.state)} - ${removeUnderScoreAndCapitalize(data.border)}`}</h6>
-                <p className="text-muted mb-0">
+              <CCol xs={12} sm={6}>
+                <h6 className="fw-bold text-uppercase mb-1">
+                  {`${removeUnderScoreAndCapitalize(data.state)} - ${removeUnderScoreAndCapitalize(data.border)}`}
+                </h6>
+                <p className="text-muted small mb-0">
                   {formatDate(data.createdAt, 'dd MMM yyyy, hh:mm a')}
                 </p>
               </CCol>
-              <FieldRow label="Tax Mode" value={removeUnderScoreAndCapitalize(data.taxMode)} />
             </CRow>
 
-            {/* Vehicle Info */}
-            <CRow className="mb-3 align-items-center">
-              <FieldRow label="Vehicle No." value={data.vehicleNumber} copyable />
-              <FieldRow label="Amount" value={`₹${data.amount}`} />
+            {/* Dynamic Field Rows */}
+            <CRow className="mb-3 g-3">
+              {rows.filter(Boolean).map((fieldRow, idx) => (
+                <CCol xs={12} sm={6} key={idx}>
+                  {fieldRow}
+                </CCol>
+              ))}
             </CRow>
 
-            <CRow className="mb-3 align-items-center">
-              <FieldRow label="Mobile" value={data.mobileNumber} copyable />
-              <FieldRow label="Seating Capacity" value={data.seatCapacity} />
-            </CRow>
-
-            {/* Tax Details */}
-            <CRow className="mb-3">
-              <FieldRow label="Tax From" value={formatDate(data.startDate)} />
-              <FieldRow
-                label="Tax Upto"
-                value={DataView.endDate ? getDateFromDateString(data.endDate) : ''}
-              />
-            </CRow>
-
-            <CRow className="mb-3">
-              <FieldRow label="Category" value={removeUnderScoreAndCapitalize(data.category)} />
-              <FieldRow label="Vehicle Type" value={data.vehicleType} />
-            </CRow>
-
-            <CRow className="mb-3">
-              <FieldRow label="Weight" value={data.weight} />
-              <FieldRow label="Chassis Number" value={data.chasisNumber} />
-            </CRow>
-
-            <CRow className="mb-4">
-              <FieldRow label="Order ID" value={data.orderId} copyable />
-              {data.whoCompleted && (
-                <FieldRow label="Who Completed" value={data.whoCompleted?.username} />
-              )}
-            </CRow>
-
-            {/* File Actions */}
-            <CRow className="mb-3">
+            {/* File Upload/Download */}
+            <CRow className="mb-3 mt-1">
               <CCol className="text-center text-md-end">
                 {localFileUrl ? (
                   <a
                     href={localFileUrl}
                     download
-                    className="text-decoration-none fw-semibold"
+                    className="text-decoration-none fw-semibold text-dark"
                     onClick={(e) => e.stopPropagation()}
                   >
                     <CIcon icon={cilCloudDownload} className="me-2" />
@@ -161,7 +161,7 @@ const TaxCard = ({ data, onUploadComplete, setIsUploading }) => {
                 ) : (
                   <>
                     <span
-                      className="text-primary text-decoration-none fw-semibold"
+                      className="text-primary fw-semibold"
                       style={{ cursor: 'pointer' }}
                       onClick={() => fileInputRef.current?.click()}
                     >
@@ -182,13 +182,13 @@ const TaxCard = ({ data, onUploadComplete, setIsUploading }) => {
 
             {/* Errors */}
             {uploadError && (
-              <CRow className="mt-2">
-                <CCol className="text-danger text-end">{uploadError}</CCol>
+              <CRow>
+                <CCol className="text-danger text-end small">{uploadError}</CCol>
               </CRow>
             )}
             {data.taxError && (
-              <CRow className="mt-2">
-                <CCol className="text-danger text-end">Fetch Error: {data.taxError}</CCol>
+              <CRow>
+                <CCol className="text-danger text-end small">Fetch Error: {data.taxError}</CCol>
               </CRow>
             )}
           </CCardBody>
