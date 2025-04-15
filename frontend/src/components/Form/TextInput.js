@@ -26,7 +26,7 @@ export default function TextInput({
   showPasswordToggle = false,
   togglePasswordVisibility = () => {},
 }) {
-  const hasError = Boolean(errors[id])
+const hasError = Boolean(errors && id && errors?.[id])
 
   const baseInputStyle = {
     backgroundColor: disabled ? Colors.DISABLED_GRAY : bg_color || '#fff',

@@ -4,76 +4,96 @@ import axiosInstance from '../utils/config'
 
 const PREFIX = '/api/v1/admin/employee'
 
-// create employee
+// Create Employee
 export const createEmployee = (employeeData) => async (dispatch) => {
   try {
     dispatch({ type: EMPLOYEE_CONSTANTS.NEW_EMPLOYEE_REQUEST })
 
     const { data } = await axiosInstance.post(`${PREFIX}/create`, employeeData)
-
-    dispatch({ type: EMPLOYEE_CONSTANTS.NEW_EMPLOYEE_SUCCESS, payload: data })
+    dispatch({
+      type: EMPLOYEE_CONSTANTS.NEW_EMPLOYEE_SUCCESS,
+      payload: data,
+    })
   } catch (error) {
+    console.log(error)
     dispatch({
       type: EMPLOYEE_CONSTANTS.NEW_EMPLOYEE_FAIL,
-      payload: error.response || error.message,
+      payload: error?.response?.data?.message || error.message,
     })
   }
 }
 
-// get all users
-export const getAndSearchEmployee = (params) => async (dispatch) => {
-  try {
-    dispatch({ type: EMPLOYEE_CONSTANTS.GET_EMPLOYEE_REQUEST })
+// actions/employeeAction.js
+export const getAllEmployees =
+  (params = {}) =>
+  async (dispatch) => {
+    try {
+      dispatch({ type: EMPLOYEE_CONSTANTS.GET_EMPLOYEE_REQUEST })
 
-    const {
-      page = 1,
-      perPage = Constants.ITEMS_PER_PAGE,
-      contactNumber = '',
-      email = '',
-      username = '',
-    } = params
+      const {
+        page = 1,
+        perPage = Constants.ITEMS_PER_PAGE,
+        search = '', // generic search
+        // assuming you want to filter managers
+        sort = '-createdAt',
+      } = params
 
-    let url = `${PREFIX}?page=${page}&perPage=${perPage}`
+      const queryParams = new URLSearchParams({
+        page,
+        perPage,
+        sort,
+        ...(search && { search }),
+      })
 
-    if (contactNumber) url += `&contactNumber=${contactNumber}`
-    if (email) url += `&email=${email}`
-    if (username) url += `&username=${username}`
-
-    const { data } = await axiosInstance.get(url)
-    dispatch({ type: EMPLOYEE_CONSTANTS.GET_EMPLOYEE_SUCCESS, payload: data })
-  } catch (error) {
-    dispatch({
-      type: EMPLOYEE_CONSTANTS.GET_EMPLOYEE_FAIL,
-      payload: error?.response?.data?.message || 'Something went wrong!',
-    })
+      const { data } = await axiosInstance.get(`${PREFIX}?${queryParams.toString()}`)
+      console.log(data)
+      dispatch({
+        type: EMPLOYEE_CONSTANTS.GET_EMPLOYEE_SUCCESS,
+        payload: data,
+      })
+    } catch (error) {
+      console.log(error)
+      dispatch({
+        type: EMPLOYEE_CONSTANTS.GET_EMPLOYEE_FAIL,
+        payload: error?.response?.data?.message || 'Something went wrong!',
+      })
+    }
   }
-}
 
-// update employee
+// Update Employee
 export const updateSingleEmployee = (id, params) => async (dispatch) => {
   try {
     dispatch({ type: EMPLOYEE_CONSTANTS.UPDATE_EMPLOYEE_REQUEST })
+
     const { data } = await axiosInstance.put(`${PREFIX}/${id}`, params)
-    dispatch({ type: EMPLOYEE_CONSTANTS.UPDATE_EMPLOYEE_SUCCESS, payload: data.employee })
+
+    dispatch({
+      type: EMPLOYEE_CONSTANTS.UPDATE_EMPLOYEE_SUCCESS,
+      payload: data.employee,
+    })
   } catch (error) {
     dispatch({
       type: EMPLOYEE_CONSTANTS.UPDATE_EMPLOYEE_FAIL,
-      payload: error.response || 'Update failed',
+      payload: error?.response?.data?.message || 'Update failed',
     })
   }
 }
 
-// delete user
+// Delete Employee
 export const deleteSingleEmployee = (id) => async (dispatch) => {
   try {
     dispatch({ type: EMPLOYEE_CONSTANTS.DELETE_EMPLOYEE_REQUEST })
+
     await axiosInstance.delete(`${PREFIX}/${id}`)
 
-    dispatch({ type: EMPLOYEE_CONSTANTS.DELETE_EMPLOYEE_SUCCESS, payload: id })
+    dispatch({
+      type: EMPLOYEE_CONSTANTS.DELETE_EMPLOYEE_SUCCESS,
+      payload: id,
+    })
   } catch (error) {
     dispatch({
       type: EMPLOYEE_CONSTANTS.DELETE_EMPLOYEE_FAIL,
-      payload: error.response,
+      payload: error?.response?.data?.message || 'Delete failed',
     })
   }
 }
