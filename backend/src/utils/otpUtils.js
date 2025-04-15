@@ -1,4 +1,5 @@
 import crypto from "crypto";
+import { sendOtpSMS } from "./sendNotifications.js";
 
 // Generate 6-digit OTP
 export const generateOTP = () => {
@@ -10,7 +11,6 @@ export const otpHash = (otp) => {
   return String(crypto.createHash("sha256").update(otp).digest("hex"));
 };
 
-// Mock SMS sending function
 export const sendOTP = async (otp, contactNumber) => {
-  // In production, integrate with SMS gateway like Twilio, AWS SNS, etc.
+  sendOtpSMS({contactNumbers: contactNumber, otp});
 };

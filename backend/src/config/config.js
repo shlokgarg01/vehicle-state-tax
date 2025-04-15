@@ -14,6 +14,7 @@ const config = {
     username: process.env.SMS_USERNAME,
     senderName: process.env.SMS_SENDER_NAME,
     apiKey: process.env.SMS_API_KEY,
+    smsType: process.env.SMS_TYPE,
   },
   nodeEnv: process.env.NODE_ENV || "development",
   payment: {
