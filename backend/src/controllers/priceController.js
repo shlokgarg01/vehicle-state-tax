@@ -26,7 +26,7 @@ export const getAllPrices = asyncHandler(async (req, res) => {
 
     // Apply filters/search
     let apiFeature = new ApiFeatures(baseQuery, req.query)
-      .search(["status", "taxMode", "mode", "seatCapacity", "vehicleType", "weight"])
+      .search()
       .filter();
 
     if (req.query.state) {

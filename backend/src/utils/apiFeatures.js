@@ -9,6 +9,11 @@ class ApiFeatures {
       const keyword = this.queryStr.search.trim();
 
       const searchConditions = fields.map((field) => {
+        if (field === "seatCapacity") {
+          // Exact match for seatCapacity
+          return { [field]: keyword };
+        }
+
         if (["string", "text"].includes(typeof this.queryStr[field])) {
           return { [field]: { $regex: keyword, $options: "i" } };
         }
@@ -53,8 +58,10 @@ class ApiFeatures {
       ) {
         return;
       }
-
-      if (Array.isArray(value)) { // Handling array values with OR condition
+      
+      if(key === 'seatCapacity') {
+        mongoFilter[key] = value
+      } else if (Array.isArray(value)) { // Handling array values with OR condition
         mongoFilter[key] = { $in: value };
       }
       else if (typeof value === "object") {

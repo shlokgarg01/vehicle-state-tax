@@ -35,7 +35,6 @@ const Constants = {
     SEVEN_PLUS_ONE: '7+1',
     TWELVE_PLUS_ONE: '12+1',
   },
-
   VEHICLE_TYPES: {
     LIGHT: 'light goods vehicle',
     MEDIUM: 'medium goods vehicle',

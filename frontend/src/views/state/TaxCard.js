@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 import React, { useEffect, useRef, useState } from 'react'
 import { CCard, CCardBody, CRow, CCol, CContainer } from '@coreui/react'
 import CIcon from '@coreui/icons-react'
@@ -151,6 +152,7 @@ const TaxCard = ({ data, onUploadComplete, setIsUploading }) => {
               <CCol className="text-center text-md-end">
                 {localFileUrl ? (
                   <a
+                    target="_blank"
                     href={localFileUrl}
                     download
                     className="text-decoration-none fw-semibold text-dark"
