@@ -299,8 +299,6 @@ const CreatePrice = ({ states, error, loading, mode, stateLoading, stateError })
         ?.replace(/^\w/, (c) => c.toUpperCase()) || 'Price'
     )
   }, [])
-  console.log(prices.filteredPricesCount)
-  console.log(prices)
 
   return (
     <>
@@ -479,8 +477,7 @@ const CreatePrice = ({ states, error, loading, mode, stateLoading, stateError })
         <CCardHeader>
           <strong>
             Price List ({(currentPage - 1) * limit + 1}–
-            {Math.min(currentPage * limit, prices?.filteredPricesCount || 0)} of{' '}
-            {prices?.filteredPricesCount || 0})
+            {Math.min(currentPage * limit, prices?.totalPrices || 0)} of {prices?.totalPrices || 0})
           </strong>
         </CCardHeader>
 
@@ -575,7 +572,7 @@ const CreatePrice = ({ states, error, loading, mode, stateLoading, stateError })
 
             <Pagination
               currentPage={currentPage}
-              totalPages={Math.ceil(prices?.filteredPricesCount / limit)}
+              totalPages={Math.ceil(prices?.totalPrices / limit)}
               itemsPerPage={prices?.perPage || limit}
               onPageChange={setCurrentPage}
             />

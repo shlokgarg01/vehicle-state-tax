@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import {
   CCard,
   CCardBody,
@@ -25,6 +25,7 @@ import {
   getAllTaxModes,
   createTaxMode,
   updateTaxMode,
+  deleteTaxMode,
 } from '../../actions/taxModeAction'
 import Loader from '../../components/Loader/Loader'
 import NoData from '../../components/NoData'
@@ -47,7 +48,8 @@ const CreateTaxMode = ({ states, mode }) => {
   const [currentPage, setCurrentPage] = useState(1)
   const limit = Constants.ITEMS_PER_PAGE
   const [isDeleteModalVisible, setIsDeleteModalVisible] = useState(false)
-  const [stateToDelete, setStateToDelete] = useState(null)
+  const [taxModeToDelete, setTaxModeToDelete] = useState(null)
+  const { isDeleted, error: deleteError } = useSelector((state) => state.deleteTaxMode)
 
   // Redux states
   const {
@@ -71,7 +73,7 @@ const CreateTaxMode = ({ states, mode }) => {
   } = useSelector((state) => state.createTaxMode)
 
   const filtered = taxModes
-  // console.log('filtered data', filtered)
+
   useEffect(() => {
     const filters = {}
     if (mode) filters.mode = mode
@@ -90,7 +92,7 @@ const CreateTaxMode = ({ states, mode }) => {
       showToast('Tax mode created', 'success')
     }
   }, [loadingCreate, isCreated, dispatch])
-  // console.log(taxModes)
+
   useEffect(() => {
     if (errorCreate) {
       showToast(errorCreate?.data?.message || 'Failed to create tax mode', 'error')
@@ -102,6 +104,25 @@ const CreateTaxMode = ({ states, mode }) => {
     const updatedValue = ['taxMode', 'mode'].includes(name) ? value.toLowerCase() : value
     setFormData((prev) => ({ ...prev, [name]: updatedValue }))
   }
+
+  useEffect(() => {
+    if (isDeleted) {
+      showToast('Tax Mode deleted successfully', 'success')
+      dispatch(
+        getAllTaxModes({
+          page: currentPage,
+          perPage: limit,
+          mode,
+        }),
+      )
+    }
+  }, [isDeleted, dispatch, mode, currentPage])
+
+  useEffect(() => {
+    if (deleteError) {
+      showToast(deleteError?.data?.message || 'Failed to delete Tax Mode', 'error')
+    }
+  }, [deleteError])
 
   const validateForm = () => {
     const errors = {}
@@ -146,32 +167,17 @@ const CreateTaxMode = ({ states, mode }) => {
     )
   }
 
-  const toggleStateStatus = (id, newStatus) => {
-    const existing = taxModes.find((tm) => tm._id === id)
-    if (!existing) return
-
-    if (!existing.state?._id) {
-      showToast('Cannot update tax mode with missing state', 'error')
-      return
-    }
-
-    dispatch(
-      updateTaxMode(id, {
-        state: existing.state._id,
-        mode: existing.mode,
-        taxMode: existing.taxMode,
-        status: newStatus,
-      }),
-    )
-  }
-  const current = currentPage || 1
-  const perPage = limit || 10
-  const total = totalTaxModes || 0
+  const handleTaxModeDelete = useCallback(() => {
+    dispatch(deleteTaxMode(taxModeToDelete._id))
+    setIsDeleteModalVisible(false)
+    setTaxModeToDelete({})
+  }, [dispatch, taxModeToDelete])
 
   const allowedTaxModes =
     mode === Constants.MODES.ALL_INDIA_PERMIT || mode === Constants.MODES.ALL_INDIA_TAX
       ? [Constants.TAX_MODES.YEARLY]
       : Object.values(Constants.TAX_MODES)
+
   useEffect(() => {
     if (!updateLoading && isUpdated) {
       showToast('Tax mode status updated', 'success')
@@ -183,12 +189,12 @@ const CreateTaxMode = ({ states, mode }) => {
       dispatch(getAllTaxModes('', currentPage, limit, filters, mode, { mode }))
     }
   }, [isUpdated, updateLoading, dispatch, currentPage, limit, mode])
+
   useEffect(() => {
     if (updateError) {
       showToast(updateError?.data?.message || 'Failed to update status', 'error')
     }
   }, [updateError])
-  console.log(limit, currentPage)
 
   return (
     <>
@@ -329,7 +335,7 @@ const CreateTaxMode = ({ states, mode }) => {
                   <CTableHeaderCell>State</CTableHeaderCell>
                   <CTableHeaderCell>Mode</CTableHeaderCell>
                   <CTableHeaderCell>Tax Mode</CTableHeaderCell>
-                  <CTableHeaderCell>Status</CTableHeaderCell>
+                  <CTableHeaderCell>Action</CTableHeaderCell>
                 </CTableRow>
               </CTableHead>
               <CTableBody>
@@ -340,25 +346,16 @@ const CreateTaxMode = ({ states, mode }) => {
                     <CTableDataCell>{getModeLabel(taxMode.mode)}</CTableDataCell>
                     <CTableDataCell>{taxMode.taxMode || '-'}</CTableDataCell>
                     <CTableDataCell>
-                      <span
-                        className={`badge bg-${taxMode.status === 'active' ? 'success' : 'secondary'}`}
-                      >
-                        {taxMode.status}
-                      </span>
-                    </CTableDataCell>
-                    {/* <CTableDataCell>
                       <Button
-                        title={
-                          taxMode.status === Constants.STATUS.ACTIVE ? 'Deactivate' : 'Activate'
-                        }
-                        color={taxMode.status === Constants.STATUS.ACTIVE ? 'danger' : 'success'}
+                        title="Delete"
+                        color="danger"
                         btnSmall
                         onClick={() => {
-                          setStateToDelete(taxMode)
+                          setTaxModeToDelete(taxMode)
                           setIsDeleteModalVisible(true)
                         }}
                       />
-                    </CTableDataCell> */}
+                    </CTableDataCell>
                   </CTableRow>
                 ))}
               </CTableBody>
@@ -373,20 +370,14 @@ const CreateTaxMode = ({ states, mode }) => {
           </CCardBody>
         )}
       </CCard>
+
       <Modal
         visible={isDeleteModalVisible}
         onVisibleToggle={() => setIsDeleteModalVisible(!isDeleteModalVisible)}
-        onSubmitBtnClick={() => {
-          toggleStateStatus(
-            stateToDelete._id,
-            stateToDelete.status === Constants.STATUS.ACTIVE
-              ? Constants.STATUS.INACTIVE
-              : Constants.STATUS.ACTIVE,
-          )
-        }}
+        onSubmitBtnClick={handleTaxModeDelete}
         onClose={() => setIsDeleteModalVisible(false)}
-        title={`${stateToDelete?.status === Constants.STATUS.ACTIVE ? 'Deactivate' : 'Activate'} State`}
-        body={`Are you sure you want to ${stateToDelete?.status === Constants.STATUS.ACTIVE ? 'deactivate' : 'activate'} this state?`}
+        title="Delete Tax Mode"
+        body={`Are you sure you want to delete this Tax Mode?`}
         closeBtnText="Close"
         submitBtnText="Yes"
         submitBtnColor="success"

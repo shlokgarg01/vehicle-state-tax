@@ -34,7 +34,6 @@ export const getAllTaxModes =
       }).toString()
 
       const { data } = await axiosInstance.get(`${PREFIX}?${queryParams}`)
-      console.log(data)
       dispatch({
         type: TAX_MODE_CONSTANTS.GET_ALL_TAX_MODES_SUCCESS,
         payload: {
@@ -47,7 +46,6 @@ export const getAllTaxModes =
         },
       })
     } catch (error) {
-      console.log(error)
       dispatch({
         type: TAX_MODE_CONSTANTS.GET_ALL_TAX_MODES_FAIL,
         payload: error?.response?.data?.message || error.message || error,
@@ -74,4 +72,22 @@ export const updateTaxMode = (id, updatedData) => async (dispatch) => {
 // Clear Errors
 export const clearErrors = () => (dispatch) => {
   dispatch({ type: TAX_MODE_CONSTANTS.CLEAR_ERRORS })
+}
+
+// delete taxMode
+export const deleteTaxMode = (id) => async (dispatch) => {
+  try {
+    dispatch({ type: TAX_MODE_CONSTANTS.DELETE_TAX_MODE_REQUEST })
+    const { data } = await axiosInstance.delete(`${PREFIX}/${id}`)
+
+    dispatch({
+      type: TAX_MODE_CONSTANTS.DELETE_TAX_MODE_SUCCESS,
+      payload: data.message,
+    })
+  } catch (error) {
+    dispatch({
+      type: TAX_MODE_CONSTANTS.DELETE_TAX_MODE_FAIL,
+      payload: error?.response?.data?.message || error.message || 'Unknown error',
+    })
+  }
 }

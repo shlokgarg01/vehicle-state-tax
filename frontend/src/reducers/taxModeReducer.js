@@ -22,7 +22,7 @@ export const allTaxModesReducer = (state = initialStateForGet, action) => {
         ...state,
         loading: false,
         taxModes: action.payload.taxModes,
-        totalTaxModes: action.payload.total,
+        totalTaxModes: action.payload.totalTaxModes,
         filteredTaxModesCount: action.payload.filteredTaxModesCount,
         resultsPerPage: action.payload.resultsPerPage,
         error: null,
@@ -129,6 +129,23 @@ export const createTaxModeReducer = (state = initialStateForCreate, action) => {
         ...state,
         error: null,
       }
+
+    default:
+      return state
+  }
+}
+
+// Delete Tax Mode Reducer
+export const deleteTaxModeReducer = (state = {}, action) => {
+  switch (action.type) {
+    case TAX_MODE_CONSTANTS.DELETE_TAX_MODE_REQUEST:
+      return { loading: true, isDeleted: false }
+
+    case TAX_MODE_CONSTANTS.DELETE_TAX_MODE_SUCCESS:
+      return { loading: false, isDeleted: true }
+
+    case TAX_MODE_CONSTANTS.DELETE_TAX_MODE_FAIL:
+      return { loading: false, error: action.payload, isDeleted: false }
 
     default:
       return state

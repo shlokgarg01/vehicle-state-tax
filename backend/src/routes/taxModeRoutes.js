@@ -3,6 +3,7 @@ import {
   createTaxMode,
   getAllTaxModes,
   updateTaxMode,
+  deleteTaxMode,
 } from "../controllers/taxModeController.js";
 import {
   isAuthenticatedUser,
@@ -30,6 +31,13 @@ router.put(
   isAuthenticatedUser,
   authorizeRoles(CONSTANTS.USER_ROLES.ADMIN),
   updateTaxMode
+);
+
+router.delete(
+  "/:id",
+  isAuthenticatedUser,
+  authorizeRoles(CONSTANTS.USER_ROLES.ADMIN),
+  deleteTaxMode
 );
 
 export default router;

@@ -28,7 +28,9 @@ export const getAllTaxes = async (req, res) => {
     const resultsPerPage = parseInt(req.query.perPage) || 10;
 
     // Initial query with deleted: false
-    const baseQuery = Tax.find().sort({ createdAt: -1 }).populate("whoCompleted");
+    const baseQuery = Tax.find()
+      .sort({ createdAt: -1 })
+      .populate("whoCompleted");
 
     // Apply filters/search
     let apiFeature = new ApiFeatures(baseQuery, req.query)
@@ -36,9 +38,7 @@ export const getAllTaxes = async (req, res) => {
       .filter();
 
     // Get count BEFORE pagination — this is filtered count
-    const totalTaxes = await Tax.countDocuments(
-      apiFeature.query.getFilter()
-    );
+    const totalTaxes = await Tax.countDocuments(apiFeature.query.getFilter());
 
     // Apply pagination after counting
     apiFeature = apiFeature.pagination(resultsPerPage);
@@ -51,13 +51,11 @@ export const getAllTaxes = async (req, res) => {
       resultsPerPage,
     });
   } catch (error) {
-    res
-      .status(500)
-      .json({
-        success: false,
-        message: "Internal server error in get all taxes",
-        error,
-      });
+    res.status(500).json({
+      success: false,
+      message: "Internal server error in get all taxes",
+      error,
+    });
   }
 };
 
@@ -83,7 +81,10 @@ export const getTaxById = async (req, res) => {
 export const getUserTaxHistory = async (req, res) => {
   try {
     const userId = req.user?._id;
-    const taxes = await Tax.find({ userId }).sort({ createdAt: -1 });
+    const taxes = await Tax.find({
+      userId,
+      status: { $in: ["confirmed", "closed"] },
+    }).sort({ createdAt: -1 });
 
     res.status(200).json({
       success: true,

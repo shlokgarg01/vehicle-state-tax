@@ -142,3 +142,22 @@ export const updateTaxMode = asyncHandler(async (req, res) => {
     });
   }
 });
+
+// delete taxMode
+export const deleteTaxMode = asyncHandler(async (req, res) => {
+  try {
+    const taxMode = await TaxMode.findById(req.params.id);
+
+    if (!taxMode) {
+      res.status(404);
+      throw new Error("Tax Mode not found");
+    }
+    await taxMode.delete();
+
+    res
+      .status(200)
+      .json({ success: true, message: "Tax Mode deleted successfully" });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+});

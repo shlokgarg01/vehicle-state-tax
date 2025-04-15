@@ -48,6 +48,7 @@ const rootReducer = combineReducers({
   createTaxMode: taxModeReducer.createTaxModeReducer,
   updateTaxMode: taxModeReducer.updateTaxModeReducer,
   allTaxModes: taxModeReducer.allTaxModesReducer,
+  deleteTaxMode: taxModeReducer.deleteTaxModeReducer,
 
   createPrice: priceReducer.createPriceReducer,
   allPrices: priceReducer.priceListReducer,
