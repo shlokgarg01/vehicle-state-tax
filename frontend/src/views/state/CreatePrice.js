@@ -283,9 +283,11 @@ const CreatePrice = ({ states, error, loading, mode, stateLoading, stateError })
   }, [prices?.prices, mode])
 
   const allowedTaxModes = useMemo(() => {
-    return mode === Constants.MODES.ALL_INDIA_TAX || mode === Constants.MODES.ALL_INDIA_PERMIT
-      ? [Constants.TAX_MODES.YEARLY]
-      : Object.values(Constants.TAX_MODES)
+    return mode === Constants.MODES.ALL_INDIA_TAX
+      ? [Constants.TAX_MODES.QUARTERLY, Constants.TAX_MODES.YEARLY]
+      : mode === Constants.MODES.ALL_INDIA_PERMIT
+        ? [Constants.TAX_MODES.YEARLY]
+        : Object.values(Constants.TAX_MODES)
   }, [mode])
 
   const isVehicleTypeMode = useMemo(() => mode === Constants.MODES.LOADING_VEHICLE, [mode])
