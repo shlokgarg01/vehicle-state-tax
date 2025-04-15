@@ -2,129 +2,70 @@ import TaxMode from "../models/TaxMode.js";
 import asyncHandler from "express-async-handler";
 import CONSTANTS from "../constants/constants.js";
 import ApiFeatures from "../utils/apiFeatures.js";
+import { updateOne } from "../helpers/updateOne.js";
+import { ErrorHandler } from "../utils/errorHandlerUtils.js";
+import { createOne } from "../helpers/createOne.js";
+import { getFeatures } from "../helpers/getFeautres.js";
 
 //  Create TaxMode
-export const createTaxMode = asyncHandler(async (req, res) => {
-  try {
-    let { state, mode, taxMode, status } = req.body;
-
-    if (!state || !mode || !taxMode) {
-      return res.status(400).json({
-        success: false,
-        message: "State, mode, and taxMode are required fields.",
-      });
-    }
-
-    mode = mode.trim().toUpperCase();
-    taxMode = taxMode.trim().toUpperCase();
-
-    const existing = await TaxMode.findOne({ state, mode, taxMode });
-    if (existing) {
-      return res.status(400).json({
-        success: false,
-        message: `TaxMode already exists for state: ${state}, mode: ${mode}, taxMode: ${taxMode}`,
-      });
-    }
-
-    const newTaxMode = await TaxMode.create({
-      state,
-      mode,
-      taxMode,
-      status: status || CONSTANTS.STATUS.ACTIVE,
-    });
-
-    res.status(201).json({ success: true, taxMode: newTaxMode });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({
-      success: false,
-      message: "Failed to create TaxMode",
-      error: error.message,
-    });
-  }
+export const createTaxMode = createOne(TaxMode, "TaxMode", {
+  requiredFields: ["state", "mode", "taxMode"],
+  sanitizeFields: ["mode", "taxMode"],
+  uniqueConditions: [
+    {
+      type: "and",
+      condition: { state: true, mode: true, taxMode: true },
+      message: "TaxMode already exists for this state, mode, and taxMode.",
+    },
+  ],
+  defaultFields: { status: CONSTANTS.STATUS.ACTIVE },
+  caseInsensitiveFields: ["state", "mode", "taxMode"],
 });
-
 // 📄 Get All TaxModes
 export const getAllTaxModes = asyncHandler(async (req, res) => {
-  try {
-    const resultsPerPage = req.params.perPage || 10;
-    let apiFeature = new ApiFeatures(
-      TaxMode.find().sort({ createdAt: -1 }).populate("state"),
-      req.query
-    ).search(["mode", "state"]);
+  const result = await getFeatures({
+    Model: TaxMode,
+    req,
+    res,
+    searchFields: ["mode", "state"],
+    populate: "state",
+    projection: "-__v",
+    defaultLimit: 10,
+  });
 
-    const totalTaxModes = await TaxMode.countDocuments(
-      apiFeature.query.getFilter()
-    );
-    apiFeature = apiFeature.pagination(resultsPerPage);
-    const taxModes = await apiFeature.query;
-
-    res.status(200).json({
-      success: true,
-      totalTaxModes,
-      filteredTaxModesCount: taxModes.length,
-      taxModes,
-      resultsPerPage,
-    });
-  } catch (error) {
-    res.status(500).json({ success: false, message: error });
-  }
+  if (res.headersSent) return; // Ensure response wasn't already handled on error
+  res.status(200).json(result);
 });
 
 // ✏️ Update TaxMode
-export const updateTaxMode = asyncHandler(async (req, res) => {
-  try {
-    const { state, mode, taxMode, status } = req.body;
-    const taxModeDoc = await TaxMode.findById(req.params.id);
-
-    if (!taxModeDoc) {
-      return res.status(404).json({
-        success: false,
-        message: "TaxMode not found",
-      });
-    }
+export const updateTaxMode = updateOne(TaxMode, "TaxMode", {
+  sanitizeFields: ["mode", "taxMode"],
+  customValidation: async ({ body, doc, req }) => {
+    const { state, mode, taxMode } = body;
 
     if (!state || !mode || !taxMode) {
-      return res.status(400).json({
-        success: false,
-        message: "State, mode, and taxMode are required fields.",
-      });
+      throw new ErrorHandler(
+        "State, mode, and taxMode are required fields",
+        400
+      );
     }
 
-    const normalizedMode = mode.trim().toUpperCase();
-    const normalizedTaxMode = taxMode.trim().toUpperCase();
+    // Normalize mode and taxMode to uppercase
+    body.mode = mode.trim().toUpperCase();
+    body.taxMode = taxMode.trim().toUpperCase();
 
     const duplicate = await TaxMode.findOne({
-      state,
-      mode: normalizedMode,
-      taxMode: normalizedTaxMode,
       _id: { $ne: req.params.id },
+      state,
+      mode: body.mode,
+      taxMode: body.taxMode,
     });
 
     if (duplicate) {
-      return res.status(400).json({
-        success: false,
-        message: "A TaxMode with this state, mode, and taxMode already exists",
-      });
+      throw new ErrorHandler(
+        "A TaxMode with this state, mode, and taxMode already exists",
+        400
+      );
     }
-
-    taxModeDoc.state = state;
-    taxModeDoc.mode = normalizedMode;
-    taxModeDoc.taxMode = normalizedTaxMode;
-    taxModeDoc.status = status || taxModeDoc.status;
-
-    const updated = await taxModeDoc.save();
-
-    res.status(200).json({
-      success: true,
-      taxMode: updated,
-    });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({
-      success: false,
-      message: "Failed to update TaxMode",
-      error: error.message,
-    });
-  }
+  },
 });

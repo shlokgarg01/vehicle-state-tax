@@ -4,62 +4,58 @@ import TaxManager from "../managers/taxManager.js";
 import CONSTANTS from "../constants/constants.js";
 import catchAsyncErrors from "../middlewares/catchAsyncErrors.js";
 import { uploadFile } from "../helpers/uploadHelpers.js";
+import expressAsyncHandler from "express-async-handler";
+import { getFeatures } from "../helpers/getFeautres.js";
+import { createOne } from "../helpers/createOne.js";
 
 // Create a Tax Entry
-export const createTax = async (req, res) => {
-  try {
-    const taxEntry = await TaxManager.createTaxEntry(req.user?._id, req.body);
-    res.status(201).json({
-      success: true,
-      taxEntry,
-    });
-  } catch (error) {
-    res.status(500).json({
-      success: false,
-      message: "Internal server error in creating atax",
-      error: error,
-    });
-  }
-};
+// export const createTax = async (req, res) => {
+//   try {
+//     const taxEntry = await TaxManager.createTaxEntry(req.user?._id, req.body);
+//     res.status(201).json({
+//       success: true,
+//       taxEntry,
+//     });
+//   } catch (error) {
+//     res.status(500).json({
+//       success: false,
+//       message: "Internal server error in creating atax",
+//       error: error,
+//     });
+//   }
+// };
+export const createTax = createOne(Tax, "Tax", {
+  requiredFields: [
+    "vehicleNumber",
+    "mobileNumber",
+    "startDate",
+    "amount",
+    "orderId",
+    "status",
+  ],
+  uniqueFields: ["orderId"],
+  sanitizeFields: ["orderId"], //trim whitespace
+});
 
 // Get All Taxes (With Filters, Search, Pagination)
-export const getAllTaxes = async (req, res) => {
-  try {
-    const resultsPerPage = parseInt(req.query.perPage) || 10;
+export const getAllTaxes = expressAsyncHandler(async (req, res) => {
+  const data = await getFeatures({
+    Model: Tax,
+    req,
+    res,
+    searchFields: [
+      "vehicleNumber",
+      "mobileNumber",
+      "status",
+      "category",
+      "mode",
+    ],
+    defaultSort: "-createdAt",
+    customFilter: { deleted: false },
+  });
 
-    // Initial query with deleted: false
-    const baseQuery = Tax.find({ deleted: false }).sort({ createdAt: -1 });
-
-    // Apply filters/search
-    let apiFeature = new ApiFeatures(baseQuery, req.query)
-      .search(["vehicleNumber", "mobileNumber", "status", "category", "mode"])
-      .filter();
-
-    // Get count BEFORE pagination — this is filtered count
-    const filteredTaxesCount = await Tax.countDocuments(
-      apiFeature.query.getFilter()
-    );
-
-    // Apply pagination after counting
-    apiFeature = apiFeature.pagination(resultsPerPage);
-    const taxes = await apiFeature.query;
-
-    res.status(200).json({
-      success: true,
-      filteredTaxesCount,
-      taxes,
-      resultsPerPage,
-    });
-  } catch (error) {
-    res
-      .status(500)
-      .json({
-        success: false,
-        message: "Internal server error in get all taxes",
-        error,
-      });
-  }
-};
+  res.status(200).json(data);
+});
 
 // Get a Tax Entry by ID
 export const getTaxById = async (req, res) => {

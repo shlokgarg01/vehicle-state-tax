@@ -30,5 +30,6 @@ bannerRoutes.delete(
   authorizeRoles([CONSTANTS.USER_ROLES.ADMIN]),
   deleteBanner
 );
+// update banner
 
 export default bannerRoutes;

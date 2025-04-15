@@ -1,87 +1,43 @@
 import CONSTANTS from "../constants/constants.js";
 import State from "../models/State.js";
 import asyncHandler from "express-async-handler";
-import ApiFeatures from "../utils/apiFeatures.js";
+import { getFeatures } from "../helpers/getFeautres.js";
+import { createOne } from "../helpers/createOne.js";
+import { deleteOne } from "../helpers/deleteOne.js";
+import { updateOne } from "../helpers/updateOne.js";
 
-//  Create a new state
-export const createState = asyncHandler(async (req, res) => {
-  const { name, mode, status } = req.body;
-
-  const isExistingState = await State.findOne({ name: name.trim(), mode });
-  if (isExistingState) {
-    return res.status(400).json({
-      success: false,
-      message: "State with this name and mode already exists",
-    });
-  }
-
-  const state = await State.create({
-    name: name.trim(),
-    mode,
-    status: status || CONSTANTS.STATUS.ACTIVE,
-  });
-  res.status(201).json({ success: true, state });
+// Create a new state
+export const createState = createOne(State, "State", {
+  requiredFields: ["mode", "name"],
+  sanitizeFields: ["mode", "name"],
+  uniqueConditions: [
+    {
+      type: "and",
+      condition: { mode: true, name: true }, // ← this tells createOne to pull these fields from req.body
+      message: "State with this mode and name combination already exists",
+    },
+  ],
 });
 
-//  Get all states
+// Get all states
 export const getAllStates = asyncHandler(async (req, res) => {
-  try {
-    const resultsPerPage = req.query.perPage || 10;
-    const filter = {};
-    if (req.query.mode) {
-      filter.mode = req.query.mode;
-    }
+  const data = await getFeatures({
+    Model: State,
+    req,
+    res,
+    searchFields: ["name", "mode"],
+    defaultSort: "-createdAt",
+  });
 
-    const filteredStatesCount = await State.countDocuments(filter);
-    let apiFeature = new ApiFeatures(State.find(), req.query)
-
-      .filter()
-      .sort("-createdAt")
-      .pagination(resultsPerPage);
-
-    const totalStates = await State.countDocuments(
-      apiFeature.query.getFilter?.() || {}
-    );
-    const states = await apiFeature.query;
-
-    res.status(200).json({
-      success: true,
-      totalStates,
-      states,
-      filteredStatesCount,
-      resultsPerPage,
-    });
-  } catch (error) {
-    res.status(500).json({ success: false, message: error.message });
-  }
+  res.status(200).json(data);
 });
+
+// Delete (soft or hard) a state
+export const deleteState = deleteOne(State, "State");
 
 // Update a state
-export const updateState = asyncHandler(async (req, res) => {
-  const { id } = req.params;
-
-  const state = await State.findById(id);
-  if (!state) {
-    return res.status(404).json({
-      success: false,
-      message: "State not found",
-    });
-  }
-
-  try {
-    const updatedState = await State.findByIdAndUpdate(id, req.body, {
-      new: true,
-      runValidators: true,
-    });
-
-    res.status(200).json({
-      success: true,
-      state: updatedState,
-    });
-  } catch (error) {
-    res.status(500).json({
-      success: false,
-      message: error.message || "Something went wrong while updating the state",
-    });
-  }
-});
+export const updateState = updateOne(State, "State", [
+  "name",
+  "mode",
+  "status",
+]);
