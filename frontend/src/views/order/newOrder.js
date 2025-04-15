@@ -14,7 +14,7 @@ const NewOrder = () => {
 
   useEffect(() => {
     const fetchData = async () => {
-      await dispatch(getAllTaxes({ status: Constants.ORDER_STATUS.CONFIRMED }))
+      dispatch(getAllTaxes({ status: Constants.ORDER_STATUS.CONFIRMED, sort: 'asc' }))
     }
     fetchData()
 
@@ -33,7 +33,7 @@ const NewOrder = () => {
   }, [taxes])
 
   const handleRefresh = () => {
-    dispatch(getAllTaxes({ status: Constants.ORDER_STATUS.CONFIRMED }))
+    dispatch(getAllTaxes({ status: Constants.ORDER_STATUS.CONFIRMED, sort: 'asc' }))
   }
 
   return (

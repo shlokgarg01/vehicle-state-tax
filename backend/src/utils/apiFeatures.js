@@ -48,7 +48,7 @@ class ApiFeatures {
     const queryCopy = { ...this.queryStr };
     ["search", "page", "perPage"].forEach((key) => delete queryCopy[key]);
 
-    const mongoFilter = {};
+    const mongoFilter = [];
 
     Object.entries(queryCopy).forEach(([key, value]) => {
       if (
@@ -58,27 +58,53 @@ class ApiFeatures {
       ) {
         return;
       }
-      
-      if(key === 'seatCapacity') {
-        mongoFilter[key] = value
-      } else if (Array.isArray(value)) { // Handling array values with OR condition
-        mongoFilter[key] = { $in: value };
+
+      // Exact match override (e.g., seatCapacity)
+      if (key === "seatCapacity") {
+        mongoFilter.push({ [key]: value });
       }
+
+      // Array of values → OR of regex matches
+      else if (Array.isArray(value)) {
+        const orConditions = value.map((val) => ({
+          $expr: {
+            $regexMatch: {
+              input: { $toString: `$${key}` },
+              regex: val.toString(),
+              options: "i",
+            },
+          },
+        }));
+        mongoFilter.push({ $or: orConditions });
+      }
+
+      // Object-based filters like { price: { gte: 1000 } }
       else if (typeof value === "object") {
-        mongoFilter[key] = {};
+        const ops = {};
         Object.entries(value).forEach(([op, val]) => {
-          mongoFilter[key][`$${op}`] = val;
+          ops[`$${op}`] = val;
         });
+        mongoFilter.push({ [key]: ops });
       }
-      else if (typeof value === "string" && isNaN(value)) { // Handling String values
-        mongoFilter[key] = { $regex: value.trim(), $options: "i" };
-      }
-      else { // Handling integer
-        mongoFilter[key] = isNaN(value) ? value : Number(value);
+
+      // Partial string or number match
+      else {
+        mongoFilter.push({
+          $expr: {
+            $regexMatch: {
+              input: { $toString: `$${key}` },
+              regex: value.toString(),
+              options: "i",
+            },
+          },
+        });
       }
     });
 
-    this.query = this.query.find(mongoFilter);
+    if (mongoFilter.length > 0) {
+      this.query = this.query.find({ $and: mongoFilter });
+    }
+
     return this;
   }
 

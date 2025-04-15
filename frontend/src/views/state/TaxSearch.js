@@ -1,32 +1,16 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import React, { useEffect, useState } from 'react'
-import {
-  CRow,
-  CCol,
-  CTable,
-  CTableHead,
-  CTableRow,
-  CTableHeaderCell,
-  CTableBody,
-  CTableDataCell,
-  CForm,
-  CCard,
-  CCardHeader,
-  CCardBody,
-} from '@coreui/react'
+import { CRow, CCol, CForm } from '@coreui/react'
 import { useDispatch, useSelector } from 'react-redux'
 import TextInput from '../../components/Form/TextInput'
 import Button from '../../components/Form/Button'
 import { getAllTaxes } from '../../actions/orderActions'
-import NoData from '../../components/NoData'
 import Loader from '../../components/Loader/Loader'
 import SelectBox from '../../components/Form/SelectBox'
 import Constants from '../../utils/constants'
 import { removeUnderScoreAndCapitalize } from '../../helpers/strings'
 import Pagination from '../../components/Pagination/Pagination'
-import { getDateFromDateString } from '../../helpers/Date'
-import CIcon from '@coreui/icons-react'
-import { cilCloudDownload } from '@coreui/icons'
+import TaxCard from './TaxCard.js'
 
 const TaxSearch = () => {
   const dispatch = useDispatch()
@@ -39,13 +23,7 @@ const TaxSearch = () => {
     Constants.ORDER_STATUS.CLOSED,
   ])
 
-  const {
-    loading,
-    taxes = [],
-    error,
-    totalPages,
-    totalTaxes,
-  } = useSelector((state) => state.allTaxes || {})
+  const { loading, taxes = [], totalPages } = useSelector((state) => state.allTaxes || {})
   const [hasSearched, setHasSearched] = useState(false)
   const [currentPage, setCurrentPage] = useState(1)
   const [filters, setFilters] = useState({})
@@ -90,7 +68,9 @@ const TaxSearch = () => {
     label: removeUnderScoreAndCapitalize(value),
   }))
 
-  return (
+  return loading ? (
+    <Loader />
+  ) : (
     <div className="p-4">
       <CForm onSubmit={handleSearch}>
         <CRow className="mb-4 g-3 align-items-end">
@@ -155,83 +135,7 @@ const TaxSearch = () => {
         </CRow>
       </CForm>
 
-      {/* Error / Loading */}
-      {hasSearched && (
-        <CCard>
-          <CCardHeader>
-            <strong>
-              Tax Entry List {(currentPage - 1) * 10 + 1}–{(currentPage - 1) * 10 + taxes.length} of{' '}
-              {totalTaxes}
-            </strong>
-          </CCardHeader>
-
-          {loading ? (
-            <Loader />
-          ) : error ? (
-            <div className="text-danger text-center fw-semibold py-3">{error}</div>
-          ) : taxes.length === 0 ? (
-            <NoData title="No Tax Entries Found" />
-          ) : (
-            <CCardBody>
-              <CTable striped hover responsive className="table-sm compact-table">
-                <CTableHead>
-                  <CTableRow>
-                    <CTableHeaderCell>S.No</CTableHeaderCell>
-                    <CTableHeaderCell>State</CTableHeaderCell>
-                    <CTableHeaderCell>Border</CTableHeaderCell>
-                    <CTableHeaderCell>Vehicle No.</CTableHeaderCell>
-                    <CTableHeaderCell>Category</CTableHeaderCell>
-                    <CTableHeaderCell>Seat Capacity</CTableHeaderCell>
-                    <CTableHeaderCell>Mobile</CTableHeaderCell>
-                    <CTableHeaderCell>Amount</CTableHeaderCell>
-                    <CTableHeaderCell>Tax Mode</CTableHeaderCell>
-                    <CTableHeaderCell>Tax From</CTableHeaderCell>
-                    <CTableHeaderCell>Tax Upto</CTableHeaderCell>
-                    <CTableHeaderCell>File</CTableHeaderCell>
-                    <CTableHeaderCell>Created</CTableHeaderCell>
-                  </CTableRow>
-                </CTableHead>
-                <CTableBody>
-                  {taxes.map((item, index) => (
-                    <CTableRow key={item._id || index}>
-                      <CTableDataCell>{(currentPage - 1) * 10 + index + 1}</CTableDataCell>
-
-                      <CTableDataCell>
-                        {item.state ? removeUnderScoreAndCapitalize(item?.state) : null}
-                      </CTableDataCell>
-                      <CTableDataCell>{item.border || '-'}</CTableDataCell>
-                      <CTableDataCell>{item.vehicleNumber}</CTableDataCell>
-                      <CTableDataCell>
-                        {removeUnderScoreAndCapitalize(item.category) || '-'}
-                      </CTableDataCell>
-                      <CTableDataCell>{item.seatCapacity || '-'}</CTableDataCell>
-                      <CTableDataCell>{item.mobileNumber}</CTableDataCell>
-                      <CTableDataCell>{item.amount}</CTableDataCell>
-                      <CTableDataCell>{removeUnderScoreAndCapitalize(item.taxMode)}</CTableDataCell>
-                      <CTableDataCell>
-                        {item.startDate ? getDateFromDateString(item.startDate) : '-'}
-                      </CTableDataCell>
-                      <CTableDataCell>
-                        {item.endDate ? getDateFromDateString(item.endDate) : '-'}
-                      </CTableDataCell>
-                      <CTableDataCell>
-                        {item.fileUrl ? (
-                          <a href={item.fileUrl} target="_blank" rel="noopener noreferrer">
-                            <CIcon icon={cilCloudDownload} className="me-2" />
-                          </a>
-                        ) : (
-                          '-'
-                        )}
-                      </CTableDataCell>
-                      <CTableDataCell>{getDateFromDateString(item.createdAt)}</CTableDataCell>
-                    </CTableRow>
-                  ))}
-                </CTableBody>
-              </CTable>
-            </CCardBody>
-          )}
-        </CCard>
-      )}
+      {hasSearched && taxes.map((tax) => <TaxCard key={tax._id} data={tax} />)}
       {hasSearched && taxes.length > 0 && totalPages > 1 && (
         <Pagination
           totalPages={totalPages}
