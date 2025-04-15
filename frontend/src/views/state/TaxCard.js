@@ -14,6 +14,19 @@ import { getDateFromDateString } from '../../helpers/Date'
 const FieldRow = ({ label, value, copyable }) => {
   if (!value) return null
 
+  const copyTextFallback = (text) => {
+    const textArea = document.createElement('textarea')
+    textArea.value = text
+    textArea.style.position = 'fixed' // Avoid scrolling to bottom
+    document.body.appendChild(textArea)
+    textArea.focus()
+    textArea.select()
+    try {
+      document.execCommand('copy')
+    } catch (err) {}
+    document.body.removeChild(textArea)
+  }
+
   return (
     <div className="d-flex flex-column">
       <strong className="text-dark">{label}</strong>
@@ -25,7 +38,7 @@ const FieldRow = ({ label, value, copyable }) => {
             size="sm"
             style={{ cursor: 'pointer' }}
             onClick={() => {
-              navigator.clipboard.writeText(value)
+              navigator.clipboard ? navigator.clipboard.writeText(value) : copyTextFallback(value) // navigator.clipboard is null on apps deployed on HTTP, so in our case we were not able to copy on production, but it works on localhost. Hence using a fallback way.
               showToast('Copied', 'success', 500)
             }}
           />
