@@ -226,12 +226,12 @@ export default function EmployeeList() {
       <CCard className="mb-4">
         <CCardHeader className="fw-bold">Create Employee</CCardHeader>
         <CCardBody>
-          <CForm onSubmit={handleCreateEmployee}>
+          <CForm onSubmit={handleCreateEmployee} >
             <CRow className="justify-content-center">
               <CCol md={8}>
                 {createError?.data?.message && (
                   <p className="text-danger text-center fw-semibold">
-                    {createError?.data?.message}
+                    {createError?.data?.message || createError}
                   </p>
                 )}
 

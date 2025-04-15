@@ -22,7 +22,7 @@ export const createTaxMode = asyncHandler(async (req, res) => {
     if (existing) {
       return res.status(400).json({
         success: false,
-        message: `TaxMode already exists for state: ${state}, mode: ${mode}, taxMode: ${taxMode}`,
+        message: `A tax mode for "${taxMode}" already exists in ${state} under "${mode}" mode. Please choose a different combination.`,
       });
     }
 
@@ -57,8 +57,9 @@ export const getAllTaxModes = asyncHandler(async (req, res) => {
       .search(["status", "taxMode", "mode"])
       .filter();
 
-    if (req.query.state) { // handling for ObjectId
-      baseQuery.where("state").equals(req.query.state); 
+    if (req.query.state) {
+      // handling for ObjectId
+      baseQuery.where("state").equals(req.query.state);
     }
 
     // Get count BEFORE pagination — this is filtered count

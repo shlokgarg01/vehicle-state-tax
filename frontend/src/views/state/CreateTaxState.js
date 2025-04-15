@@ -25,7 +25,7 @@ import Constants from '../../utils/constants'
 import { showToast } from '../../utils/toast'
 import NoData from '../../components/NoData'
 import Pagination from '../../components/Pagination/Pagination'
-
+import { removeUnderScoreAndCapitalize } from '../../helpers/strings'
 export default function CreateTaxState({ mode, navigateTo }) {
   const dispatch = useDispatch()
   const navigate = useNavigate()
@@ -60,8 +60,10 @@ export default function CreateTaxState({ mode, navigateTo }) {
   const validateState = () => {
     let tempErrors = {}
 
-    if (!state.name) tempErrors.name = 'State Name is required'
+    if (!state.name.trim()) tempErrors.name = 'State Name is required'
+
     setErrors(tempErrors)
+
     return Object.keys(tempErrors).length === 0
   }
 
@@ -83,13 +85,8 @@ export default function CreateTaxState({ mode, navigateTo }) {
 
   useEffect(() => {
     if (stateCreationError) {
-      if (
-        typeof stateCreationError === 'string' &&
-        stateCreationError.toLowerCase().includes('state with this name')
-      ) {
+      if (showToast(stateCreationError, 'error')) {
         setErrors((prev) => ({ ...prev, name: stateCreationError }))
-      } else {
-        showToast(stateCreationError, 'error')
       }
       dispatch(clearErrors())
     }
@@ -130,7 +127,7 @@ export default function CreateTaxState({ mode, navigateTo }) {
         )}
 
         <CCardBody>
-          <CForm>
+          <CForm onSubmit={handleStateCreate}>
             <CRow>
               <CCol sm={4}>
                 <TextInput
@@ -143,17 +140,17 @@ export default function CreateTaxState({ mode, navigateTo }) {
                       setErrors((prev) => ({ ...prev, name: '' }))
                     }
                   }}
-                  id="name"
-                  label="Name"
+                  id="state"
+                  label="State"
                   name="state"
                   errors={errors.name}
                 />
+                {errors.name && <p className="text-danger">{errors.name}</p>}
               </CCol>
             </CRow>
 
             <Button
               title="Create State"
-              onClick={handleStateCreate}
               type="submit"
               color="success"
               btnSmall
@@ -191,7 +188,7 @@ export default function CreateTaxState({ mode, navigateTo }) {
                     <CTableDataCell>
                       {(currentPage - 1) * resultsPerPage + index + 1}
                     </CTableDataCell>
-                    <CTableDataCell>{stateData.name}</CTableDataCell>
+                    <CTableDataCell>{removeUnderScoreAndCapitalize(stateData.name)}</CTableDataCell>
                     <CTableDataCell>
                       <span
                         className={`badge bg-${stateData.status === Constants.STATUS.ACTIVE ? 'success' : 'secondary'}`}
