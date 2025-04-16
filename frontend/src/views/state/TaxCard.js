@@ -3,13 +3,12 @@ import React, { useEffect, useRef, useState } from 'react'
 import { CCard, CCardBody, CRow, CCol, CContainer } from '@coreui/react'
 import CIcon from '@coreui/icons-react'
 import { cilCloudDownload, cilCloudUpload, cilCopy } from '@coreui/icons'
-import { format } from 'date-fns'
 import { useDispatch, useSelector } from 'react-redux'
 import { getAllTaxes, uploadTax } from '../../actions/orderActions'
-import { removeUnderScoreAndCapitalize } from '../../helpers/strings'
+import { removeSpaces, removeUnderScoreAndCapitalize } from '../../helpers/strings'
 import { showToast } from '../../utils/toast'
 import { TAX_CONSTANTS } from '../../constants/taxConstants'
-import { getDateFromDateString } from '../../helpers/Date'
+import { getDateFromDateString, getDateTimeFromDateString } from '../../helpers/Date'
 
 const FieldRow = ({ label, value, copyable }) => {
   if (!value) return null
@@ -35,7 +34,7 @@ const FieldRow = ({ label, value, copyable }) => {
         {copyable && (
           <CIcon
             icon={cilCopy}
-            size="sm"
+            size="md"
             style={{ cursor: 'pointer' }}
             onClick={() => {
               navigator.clipboard ? navigator.clipboard.writeText(value) : copyTextFallback(value) // navigator.clipboard is null on apps deployed on HTTP, so in our case we were not able to copy on production, but it works on localhost. Hence using a fallback way.
@@ -58,14 +57,6 @@ const TaxCard = ({ data, onUploadComplete, setIsUploading }) => {
     uploaded,
     error: uploadError,
   } = useSelector((state) => state.uploadTax || {})
-
-  const formatDate = (dateStr, formatStr = 'dd MMM yyyy') => {
-    try {
-      return format(new Date(dateStr), formatStr)
-    } catch {
-      return 'Invalid Date'
-    }
-  }
 
   const handleFileChange = (e) => {
     const file = e.target.files[0]
@@ -93,7 +84,7 @@ const TaxCard = ({ data, onUploadComplete, setIsUploading }) => {
 
     if (uploaded) {
       dispatch({ type: TAX_CONSTANTS.UPLOAD_TAX_RESET })
-      dispatch(getAllTaxes())
+      dispatch(getAllTaxes({ sort: 'asc' }))
       showToast('File uploaded successfully', 'success')
 
       if (fileInputRef.current) fileInputRef.current.value = ''
@@ -113,16 +104,15 @@ const TaxCard = ({ data, onUploadComplete, setIsUploading }) => {
   }, [uploaded, uploadError])
 
   const rows = [
-    data.vehicleNumber && <FieldRow label="Vehicle No." value={data.vehicleNumber} copyable />,
+    data.vehicleNumber && (
+      <FieldRow label="Vehicle No." value={removeSpaces(data.vehicleNumber)} copyable />
+    ),
     data.amount && <FieldRow label="Amount" value={`₹${data.amount}`} />,
 
     data.mobileNumber && <FieldRow label="Mobile" value={data.mobileNumber} copyable />,
     data.seatCapacity && <FieldRow label="Seating Capacity" value={data.seatCapacity} />,
-    data.startDate && <FieldRow label="Tax From" value={formatDate(data.startDate)} />,
+    data.startDate && <FieldRow label="Tax From" value={getDateFromDateString(data.startDate)} />,
     data.endDate && <FieldRow label="Tax Upto" value={getDateFromDateString(data.endDate)} />,
-    data.category && (
-      <FieldRow label="Category" value={removeUnderScoreAndCapitalize(data.category)} />
-    ),
     data.vehicleType && <FieldRow label="Vehicle Type" value={data.vehicleType} />,
 
     data.weight && <FieldRow label="Weight" value={data.weight} />,
@@ -141,13 +131,16 @@ const TaxCard = ({ data, onUploadComplete, setIsUploading }) => {
           <CCardBody>
             {/* Header */}
             <CRow className="mb-3">
-              <CCol xs={12} sm={6}>
-                <h6 className="fw-bold text-uppercase mb-1">
-                  {`${removeUnderScoreAndCapitalize(data.state)} - ${removeUnderScoreAndCapitalize(data.border)}`}
-                </h6>
-                <p className="text-muted small mb-0">
-                  {formatDate(data.createdAt, 'dd MMM yyyy, hh:mm a')}
-                </p>
+              <CCol>
+                <div className="d-flex justify-content-between">
+                  <h6 className="fw-bold text-uppercase mb-1">
+                    {`${removeUnderScoreAndCapitalize(data.state)} - ${removeUnderScoreAndCapitalize(data.border)}`}
+                  </h6>
+                  <h6 className="fw-bold text-uppercase mb-1">
+                    {removeUnderScoreAndCapitalize(data.category)}
+                  </h6>
+                </div>
+                <p className="text-muted small mb-0">{getDateTimeFromDateString(data.createdAt)}</p>
               </CCol>
             </CRow>
 
