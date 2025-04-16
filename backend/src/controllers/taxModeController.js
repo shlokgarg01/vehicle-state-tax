@@ -18,11 +18,16 @@ export const createTaxMode = asyncHandler(async (req, res) => {
     mode = mode.trim().toUpperCase();
     taxMode = taxMode.trim().toUpperCase();
 
-    const existing = await TaxMode.findOne({ state, mode, taxMode });
+    const existing = await TaxMode.findOne({ state, mode, taxMode }).populate(
+      "state",
+      "name"
+    );
     if (existing) {
       return res.status(400).json({
         success: false,
-        message: `A tax mode for "${taxMode}" already exists in ${state} under "${mode}" mode. Please choose a different combination.`,
+        message: `A tax mode for "${taxMode}" already exists in  "${
+          existing.state?.name || "the selected state"
+        }" under "${mode}" mode. Please choose a different combination.`,
       });
     }
 
@@ -35,7 +40,6 @@ export const createTaxMode = asyncHandler(async (req, res) => {
 
     res.status(201).json({ success: true, taxMode: newTaxMode });
   } catch (error) {
-    console.error(error);
     res.status(500).json({
       success: false,
       message: "Failed to create TaxMode",
@@ -44,7 +48,7 @@ export const createTaxMode = asyncHandler(async (req, res) => {
   }
 });
 
-// 📄 Get All TaxModes
+//  Get All TaxModes
 export const getAllTaxModes = asyncHandler(async (req, res) => {
   try {
     const resultsPerPage = parseInt(req.query.perPage) || 10;
@@ -86,7 +90,7 @@ export const getAllTaxModes = asyncHandler(async (req, res) => {
   }
 });
 
-// ✏️ Update TaxMode
+//  Update TaxMode
 export const updateTaxMode = asyncHandler(async (req, res) => {
   try {
     const { state, mode, taxMode, status } = req.body;
@@ -135,7 +139,6 @@ export const updateTaxMode = asyncHandler(async (req, res) => {
       taxMode: updated,
     });
   } catch (error) {
-    console.error(error);
     res.status(500).json({
       success: false,
       message: "Failed to update TaxMode",

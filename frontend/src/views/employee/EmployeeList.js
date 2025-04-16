@@ -77,12 +77,16 @@ export default function EmployeeList() {
     email: '',
     password: '',
     contactNumber: '',
+    image: '',
+    name: '',
   })
   const [editUser, setEditUser] = useState({
     username: '',
     email: '',
     contactNumber: '',
     status: '',
+    image: '',
+    name: '',
   })
   const [editErrors, setEditErrors] = useState({})
   const [isEditModalVisible, setIsEditModalVisible] = useState(false)
@@ -104,7 +108,7 @@ export default function EmployeeList() {
     if (employee.email && !/^\S+@\S+\.\S+$/.test(employee.email)) newErrors.email = 'Invalid email'
     if (employee.contactNumber && !/^\d{10}$/.test(employee.contactNumber))
       newErrors.contactNumber = 'Must be 10 digits'
-
+    // if (employee.name)
     if (Object.keys(newErrors).length > 0) {
       setEditErrors(newErrors)
       return
@@ -113,33 +117,41 @@ export default function EmployeeList() {
     dispatch(createEmployee(employee))
   }
 
-  //  Update Employee
   const handleUpdateUser = () => {
     const newErrors = {}
 
-    if (!editUser.username?.trim()) newErrors.username = 'Required'
+    // Basic validations
+    if (!editUser.username?.trim()) newErrors.username = 'Username is required'
     if (editUser.contactNumber && !/^\d{10}$/.test(editUser.contactNumber))
-      newErrors.contactNumber = 'Must be 10 digits'
+      newErrors.contactNumber = 'Contact number must be 10 digits'
     if (editUser.email && !/^\S+@\S+\.\S+$/.test(editUser.email))
       newErrors.email = 'Invalid email format'
     if (!editUser.status) newErrors.status = 'Status is required'
-
-    if (Object.keys(newErrors).length) {
+    if (editUser.name && !editUser.name.trim()) {
+      newErrors.name = 'Name cannot be just whitespace'
+    }
+    // If there are errors, set and return
+    if (Object.keys(newErrors).length > 0) {
       setEditErrors(newErrors)
       return
     }
 
+    // Construct the update payload
     const updatePayload = {
-      username: editUser.username,
-      email: editUser.email || null,
-      contactNumber: editUser.contactNumber || null,
+      username: editUser.username.trim(),
+      name: editUser.name?.trim() || '',
+      email: editUser.email?.trim() || null,
+      contactNumber: editUser.contactNumber?.trim() || null,
       status: editUser.status,
+      image: editUser.image || null,
     }
 
+    // Include password only if entered
     if (editUser.password?.trim()) {
-      updatePayload.password = editUser.password
+      updatePayload.password = editUser.password.trim()
     }
 
+    // Dispatch the update
     dispatch(updateSingleEmployee(editUser._id, updatePayload))
     setIsEditModalVisible(false)
   }
@@ -169,6 +181,8 @@ export default function EmployeeList() {
         email: '',
         password: '',
         contactNumber: '',
+        image: '',
+        name: '',
       })
       dispatch(getAndSearchEmployee({ page: 1 }))
     }
@@ -218,6 +232,7 @@ export default function EmployeeList() {
 
   const loading = createLoading || getLoading || updateLoading || deleteLoading
   const error = updateError
+
   return loading ? (
     <Loader />
   ) : (
@@ -226,7 +241,7 @@ export default function EmployeeList() {
       <CCard className="mb-4">
         <CCardHeader className="fw-bold">Create Employee</CCardHeader>
         <CCardBody>
-          <CForm onSubmit={handleCreateEmployee} >
+          <CForm onSubmit={handleCreateEmployee}>
             <CRow className="justify-content-center">
               <CCol md={8}>
                 {createError?.data?.message && (
@@ -254,6 +269,28 @@ export default function EmployeeList() {
                     {editErrors?.username && (
                       <p className="text-danger small mt-1">{editErrors.username}</p>
                     )}
+                  </CCol>
+                </CRow>
+                {/* name */}
+                <CRow className="mb-3 align-items-center">
+                  <CCol md={3}>
+                    <label htmlFor="name" className="form-label fw-semibold">
+                      Name
+                    </label>
+                  </CCol>
+                  <CCol md={9}>
+                    <TextInput
+                      type="text"
+                      id="create-name"
+                      placeholder="Enter Name"
+                      // name="name"
+                      value={employee.name}
+                      onChange={(e) => setEmployee({ ...employee, name: e.target.value })}
+                      errors={error?.name}
+                    />
+                    {/* {editErrors?.name && (
+                      <p className="text-danger small mt-1">{editErrors.name}</p>
+                    )} */}
                   </CCol>
                 </CRow>
 
@@ -330,6 +367,35 @@ export default function EmployeeList() {
                   </CCol>
                 </CRow>
 
+                <CRow className="justify-content-center">
+                  <CCol md={8}>
+                    {/* Image */}
+                    <label className="form-label fw-semibold">Upload Image</label>
+                    <TextInput
+                      type="file"
+                      accept="image/*"
+                      className="form-control mb-3"
+                      onChange={(e) => setEmployee({ ...employee, image: e.target.files[0] })}
+                    />
+                    {/* Preview */}
+                    {employee.image && (
+                      <CCard className="p-3 text-center shadow-sm">
+                        <img
+                          src={URL.createObjectURL(employee.image)}
+                          alt="Preview"
+                          className="img-fluid rounded"
+                          style={{ maxHeight: '250px', objectFit: 'contain', cursor: 'pointer' }}
+                          onClick={(e) => {
+                            e.preventDefault() // 🔒 Prevent any default form or navigation
+                            const blobUrl = URL.createObjectURL(employee.image)
+                            window.open(blobUrl, '_blank', 'noopener,noreferrer')
+                          }}
+                        />
+                        <p className="mt-2 text-muted">Click to enlarge</p>
+                      </CCard>
+                    )}
+                  </CCol>
+                </CRow>
                 {/* Buttons */}
                 <div className="d-flex justify-content-center gap-2 pb-4">
                   <Button
@@ -430,6 +496,7 @@ export default function EmployeeList() {
                 <CTableRow>
                   <CTableHeaderCell scope="col">S.No</CTableHeaderCell>
                   <CTableHeaderCell scope="col">Email</CTableHeaderCell>
+                  <CTableHeaderCell scope="col">Name</CTableHeaderCell>
                   <CTableHeaderCell scope="col">Username</CTableHeaderCell>
                   <CTableHeaderCell scope="col">Contact Number</CTableHeaderCell>
                   <CTableHeaderCell scope="col">Status</CTableHeaderCell>
@@ -442,6 +509,7 @@ export default function EmployeeList() {
                   <CTableRow key={stateData._id}>
                     <CTableDataCell>{(currentPage - 1) * limit + index + 1}</CTableDataCell>
                     <CTableDataCell>{stateData.email || '-'}</CTableDataCell>
+                    <CTableDataCell>{stateData.name || '-'}</CTableDataCell>
                     <CTableDataCell>{stateData.username}</CTableDataCell>
                     <CTableDataCell>{stateData.contactNumber || '-'}</CTableDataCell>
                     <CTableDataCell>

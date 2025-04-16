@@ -8,8 +8,10 @@ const PREFIX = '/api/v1/admin/employee'
 export const createEmployee = (employeeData) => async (dispatch) => {
   try {
     dispatch({ type: EMPLOYEE_CONSTANTS.NEW_EMPLOYEE_REQUEST })
-
-    const { data } = await axiosInstance.post(`${PREFIX}/create`, employeeData)
+    const config = {
+      isMultipart: true,
+    }
+    const { data } = await axiosInstance.post(`${PREFIX}/create`, employeeData, config)
 
     dispatch({ type: EMPLOYEE_CONSTANTS.NEW_EMPLOYEE_SUCCESS, payload: data })
   } catch (error) {
@@ -53,7 +55,10 @@ export const getAndSearchEmployee = (params) => async (dispatch) => {
 export const updateSingleEmployee = (id, params) => async (dispatch) => {
   try {
     dispatch({ type: EMPLOYEE_CONSTANTS.UPDATE_EMPLOYEE_REQUEST })
-    const { data } = await axiosInstance.put(`${PREFIX}/${id}`, params)
+    const config = {
+      isMultipart: true,
+    }
+    const { data } = await axiosInstance.put(`${PREFIX}/${id}`, params, config)
     dispatch({ type: EMPLOYEE_CONSTANTS.UPDATE_EMPLOYEE_SUCCESS, payload: data.employee })
   } catch (error) {
     dispatch({

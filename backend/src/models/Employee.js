@@ -13,7 +13,7 @@ const employeeSchema = new Schema(
     username: {
       type: String,
       unique: true,
-      required: [true, "Please enter your username."],
+      // required: [true, "Please enter your username."],
       trim: true,
     },
     email: {
@@ -30,6 +30,8 @@ const employeeSchema = new Schema(
       required: [true, "Password is required"],
       select: false,
     },
+    name: { type: String },
+    image: { type: String },
     role: {
       type: String,
       enum: Object.values(CONSTANTS.USER_ROLES),

@@ -38,18 +38,26 @@ export const allTaxesReducer = (state = { taxes: [] }, action) => {
   }
 }
 
-export const uploadTaxReducer = (state = {}, action) => {
+const initialState = {
+  loading: false,
+  uploaded: false,
+  error: null,
+}
+
+export const uploadTaxReducer = (state = initialState, action) => {
   switch (action.type) {
     case TAX_CONSTANTS.UPLOAD_TAX_REQUEST:
-      return { loading: true }
+      return { ...state, loading: true, uploaded: false, error: null }
 
     case TAX_CONSTANTS.UPLOAD_TAX_SUCCESS:
-      return { loading: false, uploaded: true, data: action.payload }
+      return { ...state, loading: false, uploaded: true }
 
     case TAX_CONSTANTS.UPLOAD_TAX_FAIL:
-      return { loading: false, error: action.payload, uploaded: false }
+      return { ...state, loading: false, error: action.payload, uploaded: false }
+
     case TAX_CONSTANTS.UPLOAD_TAX_RESET:
-      return {}
+      return initialState
+
     default:
       return state
   }

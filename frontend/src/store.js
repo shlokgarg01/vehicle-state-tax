@@ -12,7 +12,7 @@ import * as bannerReducer from './reducers/bannerReducer'
 import * as taxModeReducer from './reducers/taxModeReducer'
 import * as priceReducer from './reducers/priceReducer'
 import * as orderReducer from './reducers/orderReducer'
-
+import * as dashboardReducer from './reducers/dashboardReducer'
 const initialState = { sidebarShow: true }
 
 const toggleSidebar = (state = initialState, { type, ...rest }) => {
@@ -58,6 +58,8 @@ const rootReducer = combineReducers({
   createTax: orderReducer.createTaxReducer,
   allTaxes: orderReducer.allTaxesReducer,
   uploadTax: orderReducer.uploadTaxReducer,
+
+  dashboard: dashboardReducer.dashboardReducer,
 })
 
 // ✅ persist config

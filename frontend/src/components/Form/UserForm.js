@@ -7,8 +7,26 @@ const UserForm = ({ userData, setUserData, errors }) => {
   const handlePasswordToggle = () => {
     setShowPassword((prev) => !prev)
   }
+
   return (
     <div className="d-flex flex-column gap-2">
+      {/* Image preview */}
+      {userData.preview || userData.imageUrl ? (
+        <img
+          src={userData.preview || userData.imageUrl || userData.image || userData?.image?.name}
+          alt="profile"
+          style={{ width: 80, height: 80, borderRadius: '50%', objectFit: 'cover' }}
+        />
+      ) : null}
+      {/* Upload Image */}
+      <label className="form-label fw-semibold">Upload Image</label>
+      <input
+        type="file"
+        accept="image/*"
+        className="form-control"
+        onChange={(e) => setUserData({ ...userData, image: e.target.files[0] })}
+      />
+      {errors?.image && <p className="text-danger m-0">{errors?.image}</p>}
       <TextInput
         label="Username"
         disabled
@@ -16,6 +34,14 @@ const UserForm = ({ userData, setUserData, errors }) => {
         onChange={(e) => setUserData({ ...userData, username: e.target.value })}
         placeholder="Enter username"
         id="username"
+        errors={errors}
+      />
+      <TextInput
+        label="Name"
+        value={userData.name}
+        onChange={(e) => setUserData({ ...userData, name: e.target.value })}
+        placeholder="Enter name"
+        id="name"
         errors={errors}
       />
       <TextInput

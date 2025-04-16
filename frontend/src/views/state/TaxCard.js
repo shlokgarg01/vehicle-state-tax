@@ -168,11 +168,11 @@ const TaxCard = ({ data, onUploadComplete, setIsUploading }) => {
                     target="_blank"
                     href={localFileUrl}
                     download
-                    className="text-decoration-none fw-semibold text-dark"
+                    className="text-decoration-none text-primary fw-semibold text-dark"
                     onClick={(e) => e.stopPropagation()}
                   >
                     <CIcon icon={cilCloudDownload} className="me-2" />
-                    Download File
+                    <span className="text-primary"> Download File</span>
                   </a>
                 ) : (
                   <>

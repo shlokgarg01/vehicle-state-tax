@@ -68,6 +68,7 @@ export const uploadTax = (formData) => async (dispatch) => {
     const { data } = await axiosInstance.post(`${TAX_PREFIX}/upload_tax`, formData, {
       isMultipart: true, // Triggers multipart handling in interceptor
     })
+
     dispatch({
       type: TAX_CONSTANTS.UPLOAD_TAX_SUCCESS,
       payload: data,

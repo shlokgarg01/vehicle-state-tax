@@ -5,12 +5,14 @@ import CIcon from '@coreui/icons-react'
 import { cilMenu } from '@coreui/icons'
 import { logoutUser } from '../actions/userActions'
 import { showToast } from '../utils/toast'
+import { AppHeaderDropdown } from './header'
+import { removeUnderScoreAndCapitalize } from '../helpers/strings'
 
 const AppHeader = () => {
   const headerRef = useRef()
   const dispatch = useDispatch()
   const { sidebarShow } = useSelector((state) => state.sidebarShow)
-
+  const { user } = useSelector((state) => state.user)
   useEffect(() => {
     document.addEventListener('scroll', () => {
       headerRef.current &&
@@ -27,16 +29,8 @@ const AppHeader = () => {
         >
           <CIcon icon={cilMenu} size="lg" />
         </CHeaderToggler>
-        <div
-          onClick={() => {
-            dispatch(logoutUser())
-            showToast('Logout Success', 'success')
-          }}
-          style={{ fontSize: 16 }}
-          className="text-danger"
-        >
-          Logout
-        </div>
+        <div className="fw-bold fs-5">{removeUnderScoreAndCapitalize(user?.name)}</div>
+        <AppHeaderDropdown />
       </CContainer>
     </CHeader>
   )

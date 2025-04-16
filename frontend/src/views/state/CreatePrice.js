@@ -212,8 +212,20 @@ const CreatePrice = ({ states, error, loading, mode, stateLoading, stateError })
       }
     }
 
-    if (formData.serviceCharge && parseFloat(formData.serviceCharge) < 0) {
-      errors.serviceCharge = 'Service charge cannot be negative'
+    if (
+      formData.serviceCharge === undefined ||
+      formData.serviceCharge === null ||
+      formData.serviceCharge.toString().trim() === ''
+    ) {
+      errors.serviceCharge = 'Service charge is required'
+    } else {
+      const value = parseFloat(formData.serviceCharge)
+
+      if (isNaN(value)) {
+        errors.serviceCharge = 'Service charge must be a valid number'
+      } else if (value < 1) {
+        errors.serviceCharge = 'Service charge cannot be negative'
+      }
     }
 
     return errors
@@ -422,7 +434,7 @@ const CreatePrice = ({ states, error, loading, mode, stateLoading, stateError })
                   id="price1"
                   value={formData.price1}
                   onChange={handleChange}
-                  errors={formErrors.price1}
+                  errors={formErrors}
                 />
                 {/* Field: Price 2 (only for Days tax mode) */}
                 {formData.taxMode === Constants.TAX_MODES.DAYS && (
@@ -432,6 +444,7 @@ const CreatePrice = ({ states, error, loading, mode, stateLoading, stateError })
                     label="Price 2"
                     value={formData.price2}
                     onChange={handleChange}
+                    errors={formErrors}
                   />
                 )}
                 {/* Field: Service Charge */}

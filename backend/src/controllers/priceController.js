@@ -6,9 +6,36 @@ import ApiFeatures from "../utils/apiFeatures.js";
 export const createPrice = asyncHandler(async (req, res) => {
   const data = req.body;
   data.status = data.status || CONSTANTS.STATUS.ACTIVE;
+
+  // Remove empty fields so they don't cause validation issues
   if (!data.state) delete data.state;
+  if (!data.seatCapacity) delete data.seatCapacity;
+  if (!data.vehicleType) delete data.vehicleType;
+  if (!data.weight) delete data.weight;
 
   try {
+    // Build a dynamic duplicate query
+    const duplicateQuery = {
+      taxMode: data.taxMode,
+      mode: data.mode,
+    };
+
+    if (data.state) duplicateQuery.state = data.state;
+    if (data.seatCapacity) duplicateQuery.seatCapacity = data.seatCapacity;
+    if (data.vehicleType) duplicateQuery.vehicleType = data.vehicleType;
+    if (data.weight) duplicateQuery.weight = data.weight;
+
+    duplicateQuery.deleted = false;
+
+    const duplicate = await Price.findOne(duplicateQuery);
+
+    if (duplicate) {
+      return res.status(400).json({
+        success: false,
+        message: `Price with same combination already exists.`,
+      });
+    }
+
     const price = await Price.create(data);
     res.status(201).json({ success: true, price });
   } catch (error) {
@@ -16,29 +43,23 @@ export const createPrice = asyncHandler(async (req, res) => {
   }
 });
 
-// 📥 Get All Prices
+//  Get All Prices
 export const getAllPrices = asyncHandler(async (req, res) => {
   try {
     const resultsPerPage = parseInt(req.query.perPage) || 10;
 
-    // Initial query with deleted: false
     const baseQuery = Price.find().sort({ createdAt: -1 }).populate("state");
 
-    // Apply filters/search
-    let apiFeature = new ApiFeatures(baseQuery, req.query)
-      .search()
-      .filter();
+    let apiFeature = new ApiFeatures(baseQuery, req.query).search().filter();
 
     if (req.query.state) {
-      baseQuery.where("state").equals(req.query.state); 
+      baseQuery.where("state").equals(req.query.state);
     }
 
-    // Get count BEFORE pagination — this is filtered count
     const totalPrices = await Price.countDocuments(
       apiFeature.query.getFilter()
     );
 
-    // Apply pagination after counting
     apiFeature = apiFeature.pagination(resultsPerPage);
     const prices = await apiFeature.query;
 

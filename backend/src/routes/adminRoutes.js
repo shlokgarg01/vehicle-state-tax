@@ -5,6 +5,7 @@ import {
   updateEmployee,
   viewManagers,
   createEmployee,
+  dashboardAnalytics,
 } from "../controllers/adminController.js";
 import {
   isAuthenticatedUser,
@@ -52,6 +53,15 @@ adminRoutes.get(
   isAuthenticatedUser,
   authorizeRoles([CONSTANTS.USER_ROLES.ADMIN]),
   searchUsers
+);
+
+// dashboard
+
+adminRoutes.get(
+  "/dashboard",
+  isAuthenticatedUser,
+  authorizeRoles([CONSTANTS.USER_ROLES.ADMIN, CONSTANTS.USER_ROLES.MANAGER]),
+  dashboardAnalytics
 );
 
 export default adminRoutes;

@@ -5,17 +5,21 @@ import Employee from "../models/Employee.js";
 import CONSTANTS from "../constants/constants.js";
 import { ErrorHandler } from "../utils/errorHandlerUtils.js";
 import bcrypt from "bcryptjs";
-
+import { getDateRange } from "../utils/getDataRange.js";
+import Tax from "../models/Tax.js";
+import State from "../models/State.js";
+import { deleteFile, uploadFile } from "../helpers/uploadHelpers.js";
 // create employee
 export const createEmployee = asyncHandler(async (req, res, next) => {
   try {
-    const { username, email, password, contactNumber } = req.body;
+    const { username, email, password, contactNumber, name } = req.body;
+    const { image } = req?.files || {};
 
     if (!username || !password) {
       return next(new ErrorHandler("Username and password are required", 400));
     }
 
-    const employeeExists = await Employee.findOne({ username });
+    const employeeExists = await Employee.findOne({ username, deleted: false });
     if (employeeExists) {
       return next(
         new ErrorHandler("Employee already exists with this username", 400)
@@ -23,7 +27,7 @@ export const createEmployee = asyncHandler(async (req, res, next) => {
     }
 
     if (email) {
-      const emailExists = await Employee.findOne({ email });
+      const emailExists = await Employee.findOne({ email, deleted: false });
       if (emailExists) {
         return next(
           new ErrorHandler("Employee already exists with this email", 400)
@@ -32,7 +36,10 @@ export const createEmployee = asyncHandler(async (req, res, next) => {
     }
 
     if (contactNumber) {
-      const contactExists = await Employee.findOne({ contactNumber });
+      const contactExists = await Employee.findOne({
+        contactNumber,
+        deleted: false,
+      });
       if (contactExists) {
         return next(
           new ErrorHandler(
@@ -43,11 +50,16 @@ export const createEmployee = asyncHandler(async (req, res, next) => {
       }
     }
 
+    const uploadResponse = image ? await uploadFile(image, "new_image") : null;
+    const employeeImage = uploadResponse?.url || null;
+
     const employee = await Employee.create({
       username,
       email,
       password,
       contactNumber,
+      image: employeeImage,
+      name,
     });
 
     res.status(201).json({
@@ -60,6 +72,9 @@ export const createEmployee = asyncHandler(async (req, res, next) => {
         contactNumber: employee.contactNumber,
         role: employee.role,
         status: employee.status,
+        employeeImage: employee.image,
+
+        name: employee.name,
       },
     });
   } catch (error) {
@@ -104,65 +119,74 @@ export const viewManagers = asyncHandler(async (req, res) => {
 });
 
 // update employee
-export const updateEmployee = asyncHandler(async (req, res) => {
+export const updateEmployee = asyncHandler(async (req, res, next) => {
   const { id } = req.params;
-  const { username, email, password, contactNumber, status } = req.body;
+  const { username, email, password, contactNumber, status, name } = req.body;
+  const { image } = req.files || {};
 
   const employee = await Employee.findById(id).select("+password");
-  if (!employee) {
-    res.status(404);
-    throw new Error("Employee not found");
-  }
+  if (!employee) return next(new ErrorHandler("Employee not found", 404));
 
   const isSelfUpdate = req.user._id.toString() === employee._id.toString();
   const isAdminEditingAdmin =
     employee.role === CONSTANTS.USER_ROLES.ADMIN && !isSelfUpdate;
+
   if (isAdminEditingAdmin && req.user.role !== CONSTANTS.USER_ROLES.ADMIN) {
-    res.status(403);
-    throw new Error("You are not allowed to modify another admin");
+    return next(
+      new ErrorHandler("You are not allowed to modify another admin", 403)
+    );
+  }
+  if (name !== undefined) {
+    employee.name = name;
+  }
+  // Username update
+  if (username && username !== employee.username) {
+    const existingUser = await Employee.findOne({ username });
+    if (existingUser)
+      return next(new ErrorHandler("Username is already taken", 400));
+    employee.username = username;
   }
 
-  if (username !== undefined) employee.username = username;
-
-  if (email !== undefined) {
-    const trimmedEmail = typeof email === "string" ? email.trim() : "";
-
-    if (trimmedEmail !== employee.email) {
-      if (trimmedEmail !== "") {
-        const existingEmployee = await Employee.findOne({
-          email: trimmedEmail,
-        });
-        if (existingEmployee) {
-          res.status(400);
-          throw new Error("Email is already taken.");
-        }
-      }
-      employee.email = trimmedEmail || null;
-    }
+  // Email update
+  if (email && email.trim() !== employee.email) {
+    const existingEmail = await Employee.findOne({ email: email.trim() });
+    if (existingEmail)
+      return next(new ErrorHandler("Email is already taken", 400));
+    employee.email = email.trim();
   }
 
-  if (contactNumber !== undefined) {
-    const trimmedContact =
-      typeof contactNumber === "string" ? contactNumber.trim() : "";
-
-    if (trimmedContact !== employee.contactNumber) {
-      if (trimmedContact !== "") {
-        const existingEmployee = await Employee.findOne({
-          contactNumber: trimmedContact,
-        });
-        if (existingEmployee) {
-          res.status(400);
-          throw new Error("Contact number is already taken.");
-        }
-      }
-      employee.contactNumber = trimmedContact || null;
-    }
+  // Contact update
+  if (contactNumber && contactNumber.trim() !== employee.contactNumber) {
+    const existingContact = await Employee.findOne({
+      contactNumber: contactNumber.trim(),
+    });
+    if (existingContact)
+      return next(new ErrorHandler("Contact number is already taken", 400));
+    employee.contactNumber = contactNumber.trim();
   }
 
-  if (status !== undefined) employee.status = status || null;
-
+  // Password update
   if (password) {
     employee.password = await bcrypt.hash(password, 10);
+  }
+
+  // Status update
+  if (status !== undefined) {
+    employee.status = status;
+  }
+  if (employee.image) {
+    await deleteFile(employee.image);
+  }
+
+  // Image update
+  if (image) {
+    // Optional: delete old image if needed
+    const uploaded = await uploadFile(image, "employee_images");
+    if (uploaded.isUploaded) {
+      employee.image = uploaded.url;
+    } else {
+      console.error("Image upload failed:", uploaded.message);
+    }
   }
 
   await employee.save();
@@ -177,6 +201,8 @@ export const updateEmployee = asyncHandler(async (req, res) => {
       contactNumber: employee.contactNumber,
       role: employee.role,
       status: employee.status,
+      image: employee.image,
+      name: employee.name,
     },
   });
 });
@@ -205,7 +231,10 @@ export const searchUsers = asyncHandler(async (req, res) => {
   try {
     const resultsPerPage = Number(req.query.perPage) || 10;
 
-    const apiFeatures = new ApiFeatures(User.find().sort("-createdAt"), req.query)
+    const apiFeatures = new ApiFeatures(
+      User.find().sort("-createdAt"),
+      req.query
+    )
       .search(["contactNumber"])
       .filter()
       .pagination(resultsPerPage);
@@ -230,3 +259,76 @@ export const searchUsers = asyncHandler(async (req, res) => {
     });
   }
 });
+
+export const dashboardAnalytics = async (req, res) => {
+  try {
+    const { filter, fromDate, toDate } = req.query;
+
+    // Apply default date range (last month if no filter)
+    const dateFilter = getDateRange(filter || "lastMonth", fromDate, toDate);
+
+    // Base query applied to all
+    const dateQuery = dateFilter ? { createdAt: { ...dateFilter } } : {};
+    console.log("FILTER:", filter);
+    console.log("DATE FILTER GENERATED:", dateFilter);
+    const [
+      userCount,
+      employeeCount,
+      adminCount,
+      totalTaxes,
+      borderTaxCount,
+      roadTaxCount,
+      allIndiaTaxCount,
+      allIndiaPermitCount,
+      loadingVehicleCount,
+      // managerCount,
+    ] = await Promise.all([
+      User.countDocuments(dateQuery),
+      Employee.countDocuments(dateQuery),
+      Employee.countDocuments({
+        ...dateQuery,
+        role: CONSTANTS.USER_ROLES.ADMIN,
+      }),
+      Tax.countDocuments(dateQuery),
+      Tax.countDocuments({
+        ...dateQuery,
+      }),
+      Tax.countDocuments({
+        ...dateQuery,
+        taxMode: CONSTANTS.TAX_CATEGORIES.ROAD_TAX,
+      }),
+      Tax.countDocuments({
+        ...dateQuery,
+        taxMode: CONSTANTS.TAX_CATEGORIES.ALL_INDIA_TAX,
+      }),
+      Tax.countDocuments({
+        ...dateQuery,
+        taxMode: CONSTANTS.TAX_CATEGORIES.ALL_INDIA_PERMIT,
+      }),
+      Tax.countDocuments({
+        ...dateQuery,
+        vehicleMode: CONSTANTS.TAX_CATEGORIES.LOADING_VEHICLE,
+      }),
+    ]);
+    console.log("Date Query:", dateQuery);
+    res.status(200).json({
+      success: true,
+      counts: {
+        users: userCount,
+        employees: employeeCount,
+        admin: adminCount,
+        totalOrders: totalTaxes,
+        borderTax: borderTaxCount,
+        roadTax: roadTaxCount,
+        allIndiaTax: allIndiaTaxCount,
+        allIndiaPermit: allIndiaPermitCount,
+        loadingVehicle: loadingVehicleCount,
+      },
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
