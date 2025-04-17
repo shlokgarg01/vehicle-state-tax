@@ -9,12 +9,10 @@ export const getDashboardData =
   async (dispatch) => {
     try {
       dispatch({ type: DASHBOARD_CONSTANTS.DASHBOARD_REQUEST })
-      const query = new URLSearchParams(
-        Object.entries(filters).map(([key, val]) => [key, encodeURIComponent(val)]),
-      ).toString()
+      const query = new URLSearchParams(filters).toString() // no need for encodeURIComponent again
 
-      const { data } = await axiosInstance.get(`${PREFIX}`)
-
+      const { data } = await axiosInstance.get(`${PREFIX}?${query}`)
+      console.log('dashboard data', data)
       dispatch({
         type: DASHBOARD_CONSTANTS.DASHBOARD_SUCCESS,
         payload: data,
