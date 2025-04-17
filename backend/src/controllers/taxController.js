@@ -4,7 +4,6 @@ import TaxManager from "../managers/taxManager.js";
 import CONSTANTS from "../constants/constants.js";
 import catchAsyncErrors from "../middlewares/catchAsyncErrors.js";
 import { uploadFile } from "../helpers/uploadHelpers.js";
-import Constants from "../models/Constants.js";
 
 // Create a Tax Entry
 export const createTax = async (req, res) => {
@@ -85,7 +84,7 @@ export const getUserTaxHistory = async (req, res) => {
     const userId = req.user?._id;
     const taxes = await Tax.find({
       userId,
-      status: { $in: [Constants.ORDER_STATUS.CLOSED, Constants.ORDER_STATUS.CONFIRMED] },
+      status: { $in: [CONSTANTS.ORDER_STATUS.CLOSED, CONSTANTS.ORDER_STATUS.CONFIRMED] },
     }).sort({ createdAt: -1 });
 
     res.status(200).json({
@@ -94,7 +93,7 @@ export const getUserTaxHistory = async (req, res) => {
       data: { taxes },
     });
   } catch (error) {
-    res.status(500).json({ success: false, message: "Internal server error" });
+    res.status(500).json({ success: false, message: error.message });
   }
 };
 

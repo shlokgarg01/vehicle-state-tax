@@ -1,17 +1,16 @@
 const CONSTANTS = {
+  ITEMS_PER_PAGE: 10,
   ORDER_STATUS: {
     CREATED: "created",
     CONFIRMED: "confirmed",
     CLOSED: "closed",
     CANCELLED: "cancelled",
   },
-
   PAYMENT: {
     TRANSACTION_STATUS: {
       SUCCESS: "SUCCESS",
     },
   },
-
   TAX_CATEGORIES: {
     ROAD_TAX: "road_tax",
     BORDER_TAX: "border_tax",
@@ -19,17 +18,14 @@ const CONSTANTS = {
     ALL_INDIA_TAX: "all_india_tax",
     LOADING_VEHICLE: "loading_vehicle",
   },
-
   STATUS: {
     ACTIVE: "active",
     INACTIVE: "inactive",
   },
-
   USER_ROLES: {
     ADMIN: "admin",
     MANAGER: "manager",
   },
-
   MODES: {
     BORDER_TAX: "border_tax",
     ROAD_TAX: "road_tax",
@@ -37,7 +33,6 @@ const CONSTANTS = {
     ALL_INDIA_TAX: "all_india_tax",
     LOADING_VEHICLE: "loading_vehicle",
   },
-
   TAX_MODES: {
     DAYS: "days",
     WEEKLY: "weekly",
@@ -45,7 +40,6 @@ const CONSTANTS = {
     YEARLY: "yearly",
     QUARTERLY: "quarterly",
   },
-
   SEAT_CAPACITY: {
     FOUR_PLUS_ONE: "4+1",
     FIVE_PLUS_ONE: "5+1",
@@ -53,7 +47,6 @@ const CONSTANTS = {
     SEVEN_PLUS_ONE: "7+1",
     TWELVE_PLUS_ONE: "12+1",
   },
-
   VEHICLE_TYPES: {
     LIGHT: "light goods vehicle",
     MEDIUM: "medium goods vehicle",

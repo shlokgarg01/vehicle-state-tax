@@ -1,6 +1,5 @@
 ### TODO
-- [ ] Write an API which checks App version & gives response for hard update or not & integrate it on app.
-
+- [ ] Add linters in both backend & frontend
 
 ### TODO (less priority)
 - [ ] Create the callback API.
@@ -13,3 +12,4 @@
 - [x] Add a cron job which will fetch orders from last 1 or 2 hrs in CREATED status & check the payment status for them. This will help to reduce the number of missing orders.
 - [x] Also add some mechanism so that once the order is placed, I'll check the status of the payment continuously as soon as the order gets placed.
 - [x] Handle Auto token creation
+- [x] Write an API which checks App version & gives response for hard update or not & integrate it on app.

@@ -2,12 +2,11 @@ import React, { useEffect, useRef, useState } from 'react'
 import TaxCard from '../state/TaxCard'
 import { useDispatch, useSelector } from 'react-redux'
 import { getAllTaxes } from '../../actions/orderActions'
-import Loader from '../../components/Loader/Loader'
 import Constants from '../../utils/constants'
 
 const NewOrder = () => {
   const dispatch = useDispatch()
-  const { taxes, loading, error } = useSelector((state) => state.allTaxes)
+  const { taxes, error } = useSelector((state) => state.allTaxes)
   const [isUploading, setIsUploading] = useState(false)
 
   const [displayedTaxes, setDisplayedTaxes] = useState([])
