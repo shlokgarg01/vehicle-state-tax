@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react'
 import DataTable from '../../components/Form/DataTable'
 import FormCard from '../../components/Form/FormCard'
 import FilterSearchBar from '../../components/Form/FilterSearchBar'
+import fieldConfigs from '../../components/Form/FieldConfig'
 
 export default function Home() {
   const STATES = [
@@ -37,25 +38,25 @@ export default function Home() {
     { key: 'status', label: 'Status' },
   ]
 
-  const fieldConfigs = [
-    { name: 'username', label: 'Username', type: 'text', placeholder: 'Enter Username' },
-    { name: 'email', label: 'Email', type: 'email', placeholder: 'Enter Email' },
-    { name: 'password', label: 'Password', type: 'password', placeholder: 'Enter Password' },
-    {
-      name: 'contactNumber',
-      label: 'Contact Number',
-      type: 'number',
-      placeholder: 'Enter Contact Number',
-    },
-    { name: 'state', label: 'Select State', type: 'select', options: STATES },
-    {
-      name: 'district',
-      label: 'District',
-      type: 'text',
-      placeholder: 'Enter District',
-      condition: { name: 'state', value: 'guj' },
-    },
-  ]
+  // const fieldConfigs = [
+  //   { name: 'username', label: 'Username', type: 'text', placeholder: 'Enter Username' },
+  //   { name: 'email', label: 'Email', type: 'email', placeholder: 'Enter Email' },
+  //   { name: 'password', label: 'Password', type: 'password', placeholder: 'Enter Password' },
+  //   {
+  //     name: 'contactNumber',
+  //     label: 'Contact Number',
+  //     type: 'number',
+  //     placeholder: 'Enter Contact Number',
+  //   },
+  //   { name: 'state', label: 'Select State', type: 'select', options: STATES },
+  //   {
+  //     name: 'district',
+  //     label: 'District',
+  //     type: 'text',
+  //     placeholder: 'Enter District',
+  //     condition: { name: 'state', value: 'guj' },
+  //   },
+  // ]
 
   const [employee, setEmployee] = useState({
     username: '',
@@ -92,11 +93,9 @@ export default function Home() {
     setShowPassword((prev) => !prev)
   }
 
-  // FILTER FORM START
   const [searchValues, setSearchValues] = useState({
     username: '',
     email: '',
-    role: '',
   })
 
   const filterFields = [
@@ -113,18 +112,6 @@ export default function Home() {
       label: 'Email',
       showLabel: true,
       placeholder: 'Enter email',
-    },
-    {
-      name: 'role',
-      type: 'select',
-      label: 'Role',
-      showLabel: true,
-      options: [
-        { label: 'All', value: '' },
-        { label: 'Admin', value: 'Admin' },
-        { label: 'Editor', value: 'Editor' },
-        { label: 'Viewer', value: 'Viewer' },
-      ],
     },
   ]
 
@@ -178,7 +165,7 @@ export default function Home() {
         errors={editErrors}
         showPassword={showPassword}
         handlePasswordToggle={handlePasswordToggle}
-        fieldConfigs={fieldConfigs}
+        fieldConfigs={fieldConfigs.employeeForm}
       />
 
       <FilterSearchBar

@@ -119,7 +119,7 @@ const EmployeeList = () => {
           contactNumber: '',
           password: '',
         }}
-        fieldConfigs={fieldConfigs}
+        fieldConfigs={fieldConfigs.employeeForm}
         submitLabel="Submit"
         cancelLabel="Cancel"
         isSubmitting={createLoading}

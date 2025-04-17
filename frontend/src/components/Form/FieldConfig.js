@@ -1,120 +1,74 @@
-// fieldConfigs.js
-
 import Constants from '../../utils/constants'
-
 const fieldConfigs = {
-  state: {
-    id: 'state',
-    type: 'select',
-    label: 'State',
-    getOptions: (_, extraData = {}) =>
-      (extraData.states || [])
-        .filter((s) => s.mode === extraData.mode && s.status === Constants.STATUS.ACTIVE)
-        .map((s) => ({
-          value: s._id,
-          key: s._id,
-          label: s.name,
-        })),
-    show: (_, extraData = {}) =>
-      extraData.mode !== Constants.MODES.ALL_INDIA_PERMIT &&
-      extraData.mode !== Constants.MODES.ALL_INDIA_TAX,
-  },
-
-  taxMode: {
-    id: 'taxMode',
-    type: 'select',
-    label: 'Tax Mode',
-    getOptions: (_, extraData = {}) =>
-      (extraData.taxModes || []).map((tm) => ({
-        value: tm,
-        key: tm,
-        label: tm,
-      })),
-  },
-
-  seatCapacity: {
-    id: 'seatCapacity',
-    type: 'select',
-    label: 'Seat Capacity',
-    show: (_, __, isVehicleTypeMode = false) => !isVehicleTypeMode,
-    options: Object.values(Constants.SEAT_CAPACITY).map((val) => ({
-      value: val,
-      key: val,
-      label: val,
-    })),
-  },
-
-  vehicleType: {
-    id: 'vehicleType',
-    type: 'select',
-    label: 'Vehicle Type',
-    show: (_, __, isVehicleTypeMode = false) => isVehicleTypeMode,
-    options: Object.values(Constants.VEHICLE_TYPES).map((val) => ({
-      value: val,
-      key: val,
-      label: val,
-    })),
-  },
-
-  weight: {
-    id: 'weight',
-    type: 'select',
-    label: 'Weight',
-    show: (_, __, isVehicleTypeMode = false) => isVehicleTypeMode,
-    options: Object.entries(Constants.WEIGHT).map(([_, val]) => ({
-      value: val,
-      label: val.toString(),
-    })),
-  },
-
-  price1: {
-    id: 'price1',
-    type: 'number',
-    label: 'Price 1',
-  },
-
-  price2: {
-    id: 'price2',
-    type: 'number',
-    label: 'Price 2',
-    show: (_, formData = {}) => formData.taxMode === Constants.TAX_MODES.DAYS,
-  },
-
-  serviceCharge: {
-    id: 'serviceCharge',
-    type: 'number',
-    label: 'Service Charge',
-  },
-
-  mobileNumber: {
-    id: 'mobileNumber',
-    type: 'number',
-    label: 'Mobile Number',
-  },
-
-  extraCharge: {
-    id: 'extraCharge',
-    type: 'number',
-    label: 'Extra Charge',
-  },
-
-  lateFee: {
-    id: 'lateFee',
-    type: 'number',
-    label: 'Late Fee',
-  },
-
-  penalty: {
-    id: 'penalty',
-    type: 'number',
-    label: 'Penalty',
-  },
-
-  discount: {
-    id: 'discount',
-    type: 'number',
-    label: 'Discount',
-  },
+  employeeForm: [
+    {
+      name: 'name',
+      label: 'Name',
+      type: 'text',
+      placeholder: 'Enter Name',
+      required: true,
+      showLabel: true,
+    },
+    {
+      name: 'email',
+      label: 'Email',
+      type: 'email',
+      placeholder: 'Enter Email',
+      showLabel: true,
+      required: true,
+      validation: {
+        pattern: /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/,
+        error: 'Invalid email format',
+      },
+    },
+    {
+      name: 'username',
+      label: 'Username',
+      showLabel: true,
+      type: 'text',
+      required: true,
+      validation: {
+        minLength: 3,
+        maxLength: 15,
+        error: 'Username must be between 3 and 15 characters',
+      },
+    },
+    {
+      name: 'password',
+      label: 'Password',
+      type: 'password',
+      showLabel: true,
+      required: true,
+      validation: { minLength: 6, error: 'Password must be at least 6 characters' },
+    },
+    {
+      name: 'contactNumber',
+      label: 'Contact Number',
+      showLabel: true,
+      type: 'number',
+      validation: { pattern: /^[0-9]{10}$/, error: 'Enter a valid 10-digit contact number' },
+    },
+  ],
+  userForm: [
+    {
+      name: 'contactNumber',
+      label: 'Contact Number',
+      type: 'number',
+      validation: { pattern: /^[0-9]{10}$/, error: 'Enter a valid 10-digit contact number' },
+    },
+  ],
+  state: [
+    {
+      name: 'state',
+      label: 'State',
+      type: 'select',
+      required: true,
+      getOptions: (_, extraData = {}) =>
+        (extraData.states || [])
+          .filter((s) => s.mode === extraData.mode && s.status === Constants.STATUS.ACTIVE)
+          .map((s) => ({ value: s._id, label: s.name })),
+    },
+  ],
 }
 
 export default fieldConfigs
