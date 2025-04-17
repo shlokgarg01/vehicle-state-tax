@@ -1,6 +1,12 @@
 import { CPagination, CPaginationItem } from '@coreui/react'
+import { useEffect } from 'react'
 
 const Pagination = ({ totalPages, currentPage, onPageChange }) => {
+  // Use this to direct the customer to the top of the page whenever the currentPage changes.
+  // useEffect(() => {
+  //   window.scrollTo({ top: 0, behavior: 'smooth' })
+  // }, [currentPage])
+
   const getPageNumbers = () => {
     const pages = []
     const startPage = Math.max(2, currentPage - 2)
