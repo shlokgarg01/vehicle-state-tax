@@ -1,101 +1,195 @@
-import React, { useEffect, useState } from 'react'
+/* eslint-disable react-hooks/exhaustive-deps */
+import React, { useEffect, useRef, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
-import {
-  CCard,
-  CCardBody,
-  CCol,
-  CRow,
-  CSpinner,
-  CContainer,
-  CFormSelect,
-  CButton,
-  CFormLabel,
-} from '@coreui/react'
+import { CWidgetStatsA, CCol, CRow, CSpinner, CContainer } from '@coreui/react'
+import { CChartLine } from '@coreui/react-chartjs'
+import { getStyle } from '@coreui/utils'
 import { getDashboardData } from '../../actions/dashboardAction'
 import SelectBox from '../../components/Form/SelectBox'
 import Button from '../../components/Form/Button'
-const DashboardCard = ({ title, value }) => (
-  <CCol sm={6} md={4} lg={3} className="mb-4">
-    <CCard className="text-center shadow-sm border-0 h-100">
-      <CCardBody>
-        <div className="text-muted mb-1" style={{ fontSize: '0.9rem' }}>
-          {title}
-        </div>
-        <h3 className="fw-semibold">{value ?? 0}</h3>
-      </CCardBody>
-    </CCard>
-  </CCol>
-)
+// import CIcon from '@coreui/icons-react'
+
+const getRandomNumbers = () =>
+  Array.from({ length: 7 }, () => Math.floor(Math.random() * (79 - 40 + 1)) + 40)
+
+const DashboardCard = ({ title, value, color }) => {
+  const widgetChartRef1 = useRef(null)
+
+  return (
+    <CCol sm={6} md={4} lg={3} className="mb-4">
+      <CWidgetStatsA
+        color={color}
+        value={
+          <>
+            {value} <div className="fs-8 fw-normal">{title}</div>
+          </>
+        }
+        chart={
+          <CChartLine
+            ref={widgetChartRef1}
+            className="mt-3 mx-3"
+            style={{ height: '70px' }}
+            data={{
+              labels: ['', '', '', '', '', '', ''],
+              datasets: [
+                {
+                  label: '',
+                  backgroundColor: 'transparent',
+                  borderColor: 'rgba(255,255,255,.55)',
+                  pointBackgroundColor: getStyle(`--cui-${color}`),
+                  data: getRandomNumbers(),
+                },
+              ],
+            }}
+            options={{
+              plugins: {
+                legend: {
+                  display: false,
+                },
+              },
+              maintainAspectRatio: false,
+              scales: {
+                x: {
+                  border: {
+                    display: false,
+                  },
+                  grid: {
+                    display: false,
+                    drawBorder: false,
+                  },
+                  ticks: {
+                    display: false,
+                  },
+                },
+                y: {
+                  min: 30,
+                  max: 89,
+                  display: false,
+                  grid: {
+                    display: false,
+                  },
+                  ticks: {
+                    display: false,
+                  },
+                },
+              },
+              elements: {
+                line: {
+                  borderWidth: 1,
+                  tension: 0.4,
+                },
+                point: {
+                  radius: 4,
+                  hitRadius: 10,
+                  hoverRadius: 4,
+                },
+              },
+            }}
+          />
+        }
+      />
+    </CCol>
+  )
+}
 
 const Home = () => {
   const dispatch = useDispatch()
   const { loading, data, error } = useSelector((state) => state.dashboard)
 
-  const [filters, setFilters] = useState({
-    filter: '',
-  })
+  const formatDate = (date) => {
+    const year = date.getFullYear()
+    const month = String(date.getMonth() + 1).padStart(2, '0')
+    const day = String(date.getDate()).padStart(2, '0')
+    return `${year}-${month}-${day}`
+  }
+
+  const getStartEndDate = (daysBefore = 0, end = new Date()) => {
+    let end_date = formatDate(end)
+    let start_date = formatDate(new Date(new Date().setDate(new Date().getDate() - daysBefore)))
+    return { start_date, end_date }
+  }
+
+  const initial_filters = {
+    startDate: formatDate(new Date(new Date().setDate(new Date().getDate() - 30))),
+    endDate: formatDate(new Date()),
+  }
+
+  // const [startDate, setStartDate] = useState(initial_filters.startDate)
+  // const [endDate, setEndDate] = useState(initial_filters.endDate)
+  const [filters, setFilters] = useState(initial_filters)
 
   const cards = [
-    { title: 'Total Orders', value: data?.counts?.totalOrders },
-    { title: 'Border Tax', value: data?.counts?.borderTax },
-    { title: 'Road Tax', value: data?.counts?.roadTax },
-    { title: 'All India Tax', value: data?.counts?.allIndiaTax },
-    { title: 'All India Permit', value: data?.counts?.allIndiaPermit },
-    { title: 'Loading Vehicle', value: data?.counts?.loadingVehicle },
-    { title: 'Admins', value: data?.counts?.admin },
-    { title: 'Users', value: data?.counts?.users },
-    { title: 'Employees', value: data?.counts?.employees },
+    { title: 'Total Orders', value: data?.counts?.totalOrders, color: 'primary' },
+    { title: 'Border Tax', value: data?.counts?.borderTax, color: 'warning' },
+    { title: 'Road Tax', value: data?.counts?.roadTax, color: 'secondary' },
+    { title: 'All India Tax', value: data?.counts?.allIndiaTax, color: 'info' },
+    { title: 'All India Permit', value: data?.counts?.allIndiaPermit, color: 'danger' },
+    { title: 'Loading Vehicle', value: data?.counts?.loadingVehicle, color: 'success' },
+    { title: 'Users', value: data?.counts?.users, color: 'dark' },
+    { title: 'Employees', value: data?.counts?.employees, color: 'primary' },
   ]
 
   const rangeOptions = [
-    { label: 'Last 1 Day', value: '1d' },
-    { label: 'Last 5 Days', value: '5d' },
-    { label: 'Last 7 Days', value: '7d' },
-    { label: 'Last 30 Days', value: '30d' },
-    { label: 'Last Week', value: 'lastWeek' },
-    { label: 'Last Month', value: 'lastMonth' },
+    { label: 'Last 1 Day', value: 1 },
+    { label: 'Last 5 Days', value: 5 },
+    { label: 'Last 7 Days', value: 7 },
+    { label: 'Last 30 Days', value: 30 },
   ]
-  useEffect(() => {
-    dispatch(getDashboardData(filters))
-  }, [dispatch, filters])
+
+  const handleSubmit = () => {
+    dispatch(getDashboardData({ ...filters }))
+  }
 
   const handleFilterChange = (e) => {
-    const { name, value } = e.target
-    setFilters((prev) => ({
-      ...prev,
-      [name]: value,
-    }))
+    let startEndDate = getStartEndDate(e.target.value)
+    // setStartDate(startEndDate.start_date)
+    // setEndDate(startEndDate.end_date)
+
+    setFilters({
+      startDate: startEndDate.start_date,
+      endDate: startEndDate.end_date,
+    })
   }
 
-  const handleReset = () => {
-    setFilters({ filter: '' })
-  }
+  useEffect(() => {
+    handleSubmit()
+  }, [])
 
   return (
     <CContainer fluid className="py-4">
-      <div className="d-flex justify-content-between align-items-center mb-4">
-        <h2 className="fw-bold mb-0">Admin Dashboard</h2>
-      </div>
-
       {/* Filters */}
-      <CRow className="mb-3 align-items-end">
+      <CRow className="mb-3">
         <CCol md={3}>
           <SelectBox
             id="rangeType"
             name="rangeType"
-            label="Select Range"
             value={filters.rangeType}
             onChange={handleFilterChange}
             options={rangeOptions}
             defaultOption="Select Range"
           />
         </CCol>
-        <CCol md={3}>
-          <Button onClick={handleReset} title="Reset Filters" color="danger"></Button>
+        <CCol md={2}>
+          <Button
+            marginBottom
+            fullWidth
+            btnSmall
+            onClick={handleSubmit}
+            title="Submit"
+            color="success"
+          ></Button>
+        </CCol>
+        <CCol md={2}>
+          <Button
+            fullWidth
+            btnSmall
+            onClick={() => setFilters(initial_filters)}
+            title="Reset Filters"
+            color="danger"
+          ></Button>
         </CCol>
       </CRow>
 
-      {/* Dashboard Stats */}
       {loading ? (
         <div
           className="d-flex justify-content-center align-items-center"
@@ -108,7 +202,7 @@ const Home = () => {
       ) : (
         <CRow>
           {cards.map((card, idx) => (
-            <DashboardCard key={idx} title={card.title} value={card.value} />
+            <DashboardCard key={idx} title={card.title} value={card.value} color={card.color} />
           ))}
         </CRow>
       )}

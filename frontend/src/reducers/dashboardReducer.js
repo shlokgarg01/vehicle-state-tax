@@ -1,5 +1,4 @@
-// ignore this page
-import DASHBOARD_CONSTANTS from '../constants/dashboardContants'
+import DASHBOARD_CONSTANTS from '../constants/dashboardConstants'
 
 const initialState = {
   loading: false,

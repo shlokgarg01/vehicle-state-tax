@@ -5,11 +5,9 @@ import Employee from "../models/Employee.js";
 import CONSTANTS from "../constants/constants.js";
 import { ErrorHandler } from "../utils/errorHandlerUtils.js";
 import bcrypt from "bcryptjs";
-import { getDateRange } from "../utils/getDataRange.js";
 import Tax from "../models/Tax.js";
-import State from "../models/State.js";
 import { deleteFile, uploadFile } from "../helpers/uploadHelpers.js";
-// create employee
+
 export const createEmployee = asyncHandler(async (req, res, next) => {
   try {
     const { username, email, password, contactNumber, name } = req.body;
@@ -78,7 +76,6 @@ export const createEmployee = asyncHandler(async (req, res, next) => {
       },
     });
   } catch (error) {
-    console.error("Error in creating employee:", error);
     next(new ErrorHandler("Error in creating employee:", 500));
   }
 });
@@ -113,7 +110,7 @@ export const viewManagers = asyncHandler(async (req, res) => {
     console.error("Error in viewManagers:", error);
     res.status(500).json({
       success: false,
-      message: "Internal Server Error in view manager",
+      message: error.message,
     });
   }
 });
@@ -184,9 +181,7 @@ export const updateEmployee = asyncHandler(async (req, res, next) => {
     const uploaded = await uploadFile(image, "employee_images");
     if (uploaded.isUploaded) {
       employee.image = uploaded.url;
-    } else {
-      console.error("Image upload failed:", uploaded.message);
-    }
+    } else {}
   }
 
   await employee.save();
@@ -252,71 +247,73 @@ export const searchUsers = asyncHandler(async (req, res) => {
       filteredUsersCount,
     });
   } catch (error) {
-    console.error("Error in searchUsers:", error);
     res.status(500).json({
       success: false,
-      message: "Internal Server Error in admin search user",
+      message: error.message,
     });
   }
 });
 
 export const dashboardAnalytics = async (req, res) => {
   try {
-    const { filter, fromDate, toDate } = req.query;
+    let { startDate, endDate } = req.query;
+    if (!startDate || !endDate) {
+      return res.status(400).json({
+        success: false,
+        message: "startDate and endDate are required",
+      });
+    }
 
-    // Apply default date range (last month if no filter)
-    const dateFilter = getDateRange(filter || "lastMonth", fromDate, toDate);
+    startDate = new Date(startDate);
+    endDate = new Date(endDate);
+    let baseQuery = {
+      createdAt: {
+        $gte: startDate,
+        $lte: endDate,
+      },
+    }
 
-    // Base query applied to all
-    const dateQuery = dateFilter ? { createdAt: { ...dateFilter } } : {};
-    console.log("FILTER:", filter);
-    console.log("DATE FILTER GENERATED:", dateFilter);
     const [
       userCount,
       employeeCount,
-      adminCount,
       totalTaxes,
       borderTaxCount,
       roadTaxCount,
       allIndiaTaxCount,
       allIndiaPermitCount,
       loadingVehicleCount,
-      // managerCount,
     ] = await Promise.all([
-      User.countDocuments(dateQuery),
-      Employee.countDocuments(dateQuery),
-      Employee.countDocuments({
-        ...dateQuery,
-        role: CONSTANTS.USER_ROLES.ADMIN,
-      }),
-      Tax.countDocuments(dateQuery),
+      User.countDocuments(baseQuery),
+      Employee.countDocuments(baseQuery),
+      Tax.countDocuments(baseQuery),
       Tax.countDocuments({
-        ...dateQuery,
+        ...baseQuery,
+        category: CONSTANTS.TAX_CATEGORIES.BORDER_TAX,
       }),
       Tax.countDocuments({
-        ...dateQuery,
-        taxMode: CONSTANTS.TAX_CATEGORIES.ROAD_TAX,
+        ...baseQuery,
+        category: CONSTANTS.TAX_CATEGORIES.ROAD_TAX,
       }),
       Tax.countDocuments({
-        ...dateQuery,
-        taxMode: CONSTANTS.TAX_CATEGORIES.ALL_INDIA_TAX,
+        ...baseQuery,
+        category: CONSTANTS.TAX_CATEGORIES.ALL_INDIA_TAX,
       }),
       Tax.countDocuments({
-        ...dateQuery,
-        taxMode: CONSTANTS.TAX_CATEGORIES.ALL_INDIA_PERMIT,
+        ...baseQuery,
+        category: CONSTANTS.TAX_CATEGORIES.ALL_INDIA_PERMIT,
       }),
       Tax.countDocuments({
-        ...dateQuery,
-        vehicleMode: CONSTANTS.TAX_CATEGORIES.LOADING_VEHICLE,
+        ...baseQuery,
+        category: CONSTANTS.TAX_CATEGORIES.LOADING_VEHICLE,
       }),
     ]);
-    console.log("Date Query:", dateQuery);
+
     res.status(200).json({
       success: true,
+      message: "Data fetch success",
       counts: {
         users: userCount,
         employees: employeeCount,
-        admin: adminCount,
         totalOrders: totalTaxes,
         borderTax: borderTaxCount,
         roadTax: roadTaxCount,
