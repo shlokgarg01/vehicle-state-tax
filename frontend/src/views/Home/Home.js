@@ -7,7 +7,7 @@ import { getStyle } from '@coreui/utils'
 import { getDashboardData } from '../../actions/dashboardAction'
 import SelectBox from '../../components/Form/SelectBox'
 import Button from '../../components/Form/Button'
-// import CIcon from '@coreui/icons-react'
+import DateSelector from '../../components/Form/DateSelector'
 
 const getRandomNumbers = () =>
   Array.from({ length: 7 }, () => Math.floor(Math.random() * (79 - 40 + 1)) + 40)
@@ -114,9 +114,8 @@ const Home = () => {
     endDate: formatDate(new Date()),
   }
 
-  // const [startDate, setStartDate] = useState(initial_filters.startDate)
-  // const [endDate, setEndDate] = useState(initial_filters.endDate)
-  const [filters, setFilters] = useState(initial_filters)
+  const [startDate, setStartDate] = useState(initial_filters.startDate)
+  const [endDate, setEndDate] = useState(initial_filters.endDate)
 
   const cards = [
     { title: 'Total Orders', value: data?.counts?.totalOrders, color: 'primary' },
@@ -137,18 +136,13 @@ const Home = () => {
   ]
 
   const handleSubmit = () => {
-    dispatch(getDashboardData({ ...filters }))
+    dispatch(getDashboardData({ startDate, endDate }))
   }
 
   const handleFilterChange = (e) => {
     let startEndDate = getStartEndDate(e.target.value)
-    // setStartDate(startEndDate.start_date)
-    // setEndDate(startEndDate.end_date)
-
-    setFilters({
-      startDate: startEndDate.start_date,
-      endDate: startEndDate.end_date,
-    })
+    setStartDate(startEndDate.start_date)
+    setEndDate(startEndDate.end_date)
   }
 
   useEffect(() => {
@@ -163,10 +157,27 @@ const Home = () => {
           <SelectBox
             id="rangeType"
             name="rangeType"
-            value={filters.rangeType}
             onChange={handleFilterChange}
             options={rangeOptions}
             defaultOption="Select Range"
+          />
+        </CCol>
+        <CCol md={2}>
+          <DateSelector
+            placeholder="Start Date"
+            value={startDate}
+            id="startDate"
+            onChange={(e) => setStartDate(e.target.value)}
+            marginBottom
+          />
+        </CCol>
+        <CCol md={2}>
+          <DateSelector
+            placeholder="End Date"
+            value={endDate}
+            id="startDate"
+            onChange={(e) => setEndDate(e.target.value)}
+            marginBottom
           />
         </CCol>
         <CCol md={2}>
@@ -175,17 +186,8 @@ const Home = () => {
             fullWidth
             btnSmall
             onClick={handleSubmit}
-            title="Submit"
+            title="Search"
             color="success"
-          ></Button>
-        </CCol>
-        <CCol md={2}>
-          <Button
-            fullWidth
-            btnSmall
-            onClick={() => setFilters(initial_filters)}
-            title="Reset Filters"
-            color="danger"
           ></Button>
         </CCol>
       </CRow>

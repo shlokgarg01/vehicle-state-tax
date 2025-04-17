@@ -15,7 +15,7 @@ const AppHeaderDropdown = () => {
     dispatch(logoutUser())
     showToast('Logout Success', 'success')
   }
-  console.log(user)
+
   return (
     <CDropdown
       variant="nav-item"
