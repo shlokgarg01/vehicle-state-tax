@@ -5,14 +5,7 @@ import FilterSearchBar from '../../components/Form/FilterSearchBar'
 import fieldConfigs from '../../components/Form/FieldConfig'
 
 export default function Home() {
-  const STATES = [
-    { label: 'Gujarat', value: 'guj' },
-    { label: 'Maharashtra', value: 'mh' },
-    { label: 'Rajasthan', value: 'raj' },
-    { label: 'Punjab', value: 'pun' },
-    { label: 'Karnataka', value: 'kar' },
-  ]
-
+  // data from backend
   const allEmployees = Array.from({ length: 47 }).map((_, i) => ({
     _id: `${i + 1}`,
     name: `Employee ${i + 1}`,

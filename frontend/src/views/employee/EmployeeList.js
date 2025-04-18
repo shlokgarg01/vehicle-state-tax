@@ -1,155 +1,198 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState, useMemo } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
-import {
-  getAllEmployees,
-  createEmployee,
-  updateSingleEmployee,
-  deleteSingleEmployee,
-} from '../../actions/employeeAction'
-import { EMPLOYEE_CONSTANTS } from '../../constants/employeeConstants'
+
 import FormCard from '../../components/Form/FormCard'
+import FilterSearchBar from '../../components/Form/FilterSearchBar'
 import DataTable from '../../components/Form/DataTable'
+
+import fieldConfigs from '../../components/Form/FieldConfig'
+import { createEmployee, getAllEmployees, deleteSingleEmployee } from '../../actions/employeeAction'
+import { EMPLOYEE_CONSTANTS } from '../../constants/employeeConstants'
 import { showToast } from '../../utils/toast'
-import TextInput from '../../components/Form/TextInput'
-import Button from '../../components/Form/Button'
-import Loader from '../../components/Loader/Loader'
 
 const EmployeeList = () => {
   const dispatch = useDispatch()
 
+  // Fetch employee list
   const {
-    employee,
-    loading: createLoading,
-    error: createError,
-  } = useSelector((state) => state.createEmployee)
-
-  const {
-    employees,
     loading: getLoading,
+    employees = [],
     error: getError,
   } = useSelector((state) => state.getEmployee)
 
-  const [formData, setFormData] = useState({
+  // Create employee state
+  const {
+    loading: createLoading,
+    employee: createdEmployee,
+    error: createError,
+    success: createSuccess,
+  } = useSelector((state) => state.createEmployee)
+
+  // Delete employee state
+  const {
+    loading: deleteLoading,
+    error: deleteError,
+    isDeleted,
+  } = useSelector((state) => state.deleteEmployee || {})
+
+  const [employee, setEmployee] = useState({
+    username: '',
+    email: '',
+    password: '',
+    contactNumber: '',
+    name: '',
+  })
+
+  const [searchValues, setSearchValues] = useState({
     username: '',
     email: '',
     contactNumber: '',
-    password: '',
   })
 
-  const [search, setSearch] = useState('')
-  const [pagination, setPagination] = useState({ page: 1, perPage: 10 })
+  const [currentPage, setCurrentPage] = useState(1)
+  const itemsPerPage = 10
 
-  const fieldConfigs = [
-    { name: 'username', label: 'Username', type: 'text', required: true },
-    { name: 'email', label: 'Email', type: 'email', required: true },
-    {
-      name: 'contactNumber',
-      label: 'Contact Number',
-      type: 'number',
-      required: true,
-      validate: (val) => (val?.toString().length < 10 ? 'Must be at least 10 digits' : null),
-    },
-    {
-      name: 'password',
-      label: 'Password',
-      type: 'password',
-      required: true,
-      minLength: 6,
-    },
-  ]
-  const tableColumns = [
-    { key: 'username', label: 'Username' },
-    { key: 'email', label: 'Email' },
-    { key: 'contactNumber', label: 'Contact Number' },
-  ]
+  // Load employees
+  useEffect(() => {
+    dispatch(
+      getAllEmployees({
+        page: currentPage,
+        perPage: itemsPerPage,
+        search: searchValues.username || searchValues.email || searchValues.contactNumber || '',
+      }),
+    )
+  }, [dispatch, currentPage, searchValues])
 
-  const handleCreateEmployeeSubmit = (e) => {
+  // Show success toast
+  useEffect(() => {
+    if (createSuccess) {
+      showToast('Employee created successfully', 'success')
+      setEmployee({
+        username: '',
+        email: '',
+        password: '',
+        contactNumber: '',
+        name: '',
+      })
+      dispatch({ type: EMPLOYEE_CONSTANTS.RESET_NEW_EMPLOYEE })
+      dispatch(
+        getAllEmployees({
+          page: currentPage,
+          perPage: itemsPerPage,
+          search: searchValues.username || searchValues.email || searchValues.contactNumber || '',
+        }),
+      )
+    }
+  }, [createSuccess, dispatch])
+
+  useEffect(() => {
+    if (isDeleted) {
+      showToast('Employee deleted successfully', 'success')
+      dispatch(
+        getAllEmployees({
+          page: currentPage,
+          perPage: itemsPerPage,
+          search: searchValues.username || searchValues.email || searchValues.contactNumber || '',
+        }),
+      )
+      dispatch({ type: EMPLOYEE_CONSTANTS.DELETE_EMPLOYEE_RESET })
+    }
+  }, [isDeleted, dispatch])
+
+  // Filter logic
+  console.log(employees)
+  const filteredData = employees?.managers || []
+
+  const totalPages = Math.ceil(filteredData.length / itemsPerPage)
+
+  const paginatedData = useMemo(() => {
+    const start = (currentPage - 1) * itemsPerPage
+    return filteredData.slice(start, start + itemsPerPage)
+  }, [filteredData, currentPage])
+
+  const handleCreateEmployee = (e) => {
     e.preventDefault()
-    dispatch(createEmployee(formData))
+    dispatch(createEmployee(employee))
   }
 
-  const handleCancel = () => {
-    setFormData({
+  const handleDelete = (emp) => {
+    if (window.confirm(`Are you sure you want to delete ${emp.username}?`)) {
+      dispatch(deleteSingleEmployee(emp._id))
+    }
+  }
+
+  const handleResetForm = () => {
+    setEmployee({
       username: '',
       email: '',
-      contactNumber: '',
       password: '',
+      contactNumber: '',
+      name: '',
     })
+    dispatch({ type: EMPLOYEE_CONSTANTS.RESET_NEW_EMPLOYEE })
   }
 
   const handleSearch = (e) => {
     e.preventDefault()
-    dispatch(getAllEmployees({ search, ...pagination }))
+    setCurrentPage(1)
   }
 
-  useEffect(() => {
-    dispatch(getAllEmployees({ ...pagination }))
-  }, [dispatch, pagination.page, pagination.perPage])
+  const handleResetFilter = () => {
+    setSearchValues({
+      username: '',
+      email: '',
+      contactNumber: '',
+    })
+    setCurrentPage(1)
+  }
 
-  useEffect(() => {
-    if (employee) {
-      showToast('Employee created successfully!', 'success')
-      setFormData({
-        username: '',
-        email: '',
-        contactNumber: '',
-        password: '',
-      })
-      dispatch({ type: EMPLOYEE_CONSTANTS.RESET_NEW_EMPLOYEE })
-      dispatch(getAllEmployees({ ...pagination })) // refresh list
-    }
-  }, [employee, dispatch])
-  console.log('Employees:', employees) //here data show  but in table data not show
-  console.log(employees?.managers)
+  const columns = [
+    { key: 'username', label: 'Username' },
+    { key: 'email', label: 'Email' },
+    { key: 'contactNumber', label: 'Contact Number' },
+    { key: 'name', label: 'Name' },
+  ]
 
   return (
     <>
       <FormCard
         title="Create Employee"
-        columns={tableColumns}
-        onSubmit={handleCreateEmployeeSubmit}
-        onCancel={handleCancel}
-        loading={createLoading}
-        errors={createError}
-        formData={formData}
-        setFormData={setFormData}
-        initialFormData={{
-          username: '',
-          email: '',
-          contactNumber: '',
-          password: '',
-        }}
+        onSubmit={handleCreateEmployee}
+        onCancel={handleResetForm}
         fieldConfigs={fieldConfigs.employeeForm}
-        submitLabel="Submit"
-        cancelLabel="Cancel"
+        errors={createError}
+        formData={employee}
+        setFormData={setEmployee}
         isSubmitting={createLoading}
       />
 
-      <form onSubmit={handleSearch} className="flex gap-2 items-center mb-4">
-        <TextInput
-          name="search"
-          label="Search"
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          placeholder="Search by name, email, contact"
-        />
-        <Button type="submit" label="Search" />
-      </form>
+      <FilterSearchBar
+        fields={fieldConfigs.employeeForm.filter((f) =>
+          ['username', 'email', 'contactNumber'].includes(f.name),
+        )}
+        searchValues={searchValues}
+        setSearchValues={setSearchValues}
+        onSearch={handleSearch}
+        onReset={handleResetFilter}
+        loading={getLoading}
+        noDataMessage={filteredData.length === 0 ? 'No employees found' : ''}
+        error={getError}
+      />
 
-      {getLoading ? (
-        <Loader />
-      ) : (
-        <DataTable
-          columns={tableColumns}
-          data={employees?.managers || []}
-          error={getError}
-          currentPage={employees?.currentPage || 1}
-          totalPages={employees?.totalPages || 1}
-          totalItems={employees?.totalManagers || 0}
-          itemsPerPage={pagination.perPage}
-          onPageChange={(newPage) => setPagination((prev) => ({ ...prev, page: newPage }))}
-        />
-      )}
+      <DataTable
+        columns={columns}
+        data={filteredData}
+        currentPage={currentPage}
+        totalPages={employees?.totalPages}
+        itemsPerPage={itemsPerPage}
+        totalItems={employees.totalCount}
+        loading={getLoading || deleteLoading}
+        onPageChange={(newPage) => setCurrentPage(newPage)}
+        onEdit={(item) => console.log('Edit clicked:', item)}
+        onDelete={handleDelete}
+        enableActions
+        errorMessage="No employees found."
+      />
     </>
   )
 }
