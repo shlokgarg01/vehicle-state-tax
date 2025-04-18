@@ -3,17 +3,24 @@ import TaxCard from '../state/TaxCard'
 import { useDispatch, useSelector } from 'react-redux'
 import { getAllTaxes } from '../../actions/orderActions'
 import Constants from '../../utils/constants'
+import { showToast } from '../../utils/toast'
 
 const NewOrder = () => {
   const dispatch = useDispatch()
   const { taxes, error } = useSelector((state) => state.allTaxes)
+  const { uploaded } = useSelector((state) => state.uploadTax || {})
+  const { user } = useSelector((state) => state.user)
   const [isUploading, setIsUploading] = useState(false)
 
   const [displayedTaxes, setDisplayedTaxes] = useState([])
+  const [taxFilters, _] = useState({
+    status: Constants.ORDER_STATUS.CONFIRMED,
+    sort: 'asc',
+  })
 
   useEffect(() => {
     const fetchData = async () => {
-      dispatch(getAllTaxes({ status: Constants.ORDER_STATUS.CONFIRMED, sort: 'asc' }))
+      dispatch(getAllTaxes({ ...taxFilters, state: user?.states }))
     }
     fetchData()
 
@@ -31,8 +38,14 @@ const NewOrder = () => {
     setDisplayedTaxes(confirmed)
   }, [taxes])
 
+  useEffect(() => {
+    if (uploaded) {
+      showToast('Tax Uploaded successfully.')
+    }
+  }, [uploaded])
+
   const handleRefresh = () => {
-    dispatch(getAllTaxes({ status: Constants.ORDER_STATUS.CONFIRMED, sort: 'asc' }))
+    dispatch(getAllTaxes({ ...taxFilters, state: user?.states }))
   }
 
   return (

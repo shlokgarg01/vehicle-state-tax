@@ -85,7 +85,6 @@ const TaxCard = ({ data, onUploadComplete, setIsUploading }) => {
     if (uploaded) {
       dispatch({ type: TAX_CONSTANTS.UPLOAD_TAX_RESET })
       dispatch(getAllTaxes({ sort: 'asc' }))
-      showToast('File uploaded successfully', 'success')
 
       if (fileInputRef.current) fileInputRef.current.value = ''
 

@@ -533,7 +533,7 @@ const CreatePrice = ({ states, error, loading, mode, stateLoading, stateError })
 
               <CTableBody>
                 {filteredPrices.map((price, index) => (
-                  <CTableRow key={price._id}>
+                  <CTableRow key={price._id} className="align-middle">
                     <CTableDataCell>{(currentPage - 1) * limit + index + 1}</CTableDataCell>
                     {!(
                       mode === Constants.MODES.ALL_INDIA_TAX ||

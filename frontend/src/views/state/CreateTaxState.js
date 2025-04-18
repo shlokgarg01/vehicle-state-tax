@@ -184,7 +184,7 @@ export default function CreateTaxState({ mode, navigateTo }) {
               </CTableHead>
               <CTableBody>
                 {filteredStates.map((stateData, index) => (
-                  <CTableRow key={stateData._id || index}>
+                  <CTableRow key={stateData._id || index} className="align-middle">
                     <CTableDataCell>
                       {(currentPage - 1) * resultsPerPage + index + 1}
                     </CTableDataCell>

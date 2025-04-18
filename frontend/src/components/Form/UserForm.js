@@ -1,6 +1,10 @@
 import React, { useState } from 'react'
 import TextInput from './TextInput'
 import Constants from '../../utils/constants'
+import MultiSelectedBox from './MultiSelectedBox'
+import SelectBox from './SelectBox'
+import States from '../../utils/states'
+import { removeUnderScoreAndCapitalize } from '../../helpers/strings'
 
 const UserForm = ({ userData, setUserData, errors }) => {
   const [showPassword, setShowPassword] = useState(false)
@@ -10,23 +14,6 @@ const UserForm = ({ userData, setUserData, errors }) => {
 
   return (
     <div className="d-flex flex-column gap-2">
-      {/* Image preview */}
-      {userData.preview || userData.imageUrl ? (
-        <img
-          src={userData.preview || userData.imageUrl || userData.image || userData?.image?.name}
-          alt="profile"
-          style={{ width: 80, height: 80, borderRadius: '50%', objectFit: 'cover' }}
-        />
-      ) : null}
-      {/* Upload Image */}
-      <label className="form-label fw-semibold">Upload Image</label>
-      <input
-        type="file"
-        accept="image/*"
-        className="form-control"
-        onChange={(e) => setUserData({ ...userData, image: e.target.files[0] })}
-      />
-      {errors?.image && <p className="text-danger m-0">{errors?.image}</p>}
       <TextInput
         label="Username"
         disabled
@@ -61,6 +48,19 @@ const UserForm = ({ userData, setUserData, errors }) => {
         id="contactNumber"
         errors={errors}
       />
+      {/* <MultiSelectedBox
+        label="States"
+        id="states"
+        placeholder="Select the states"
+        isMultiSelect={true}
+        isSearchable={true}
+        noOptionsMessage={() => 'No state found'}
+        options={States.map((state) => ({
+          value: state,
+          label: removeUnderScoreAndCapitalize(state),
+        }))}
+        onChange={(selected) => setUserData({ ...userData, states: selected })}
+      /> */}
       {userData.role !== Constants.ROLES.ADMIN && (
         <TextInput
           label="Password"
@@ -74,16 +74,37 @@ const UserForm = ({ userData, setUserData, errors }) => {
           errors={errors}
         />
       )}{' '}
-      <select
-        className="form-select"
+      <SelectBox
+        id="status"
+        name="status"
+        label="Status"
         value={userData.status}
         onChange={(e) => setUserData({ ...userData, status: e.target.value })}
-      >
-        <option value="">Select Status</option>
-        <option value="active">Active</option>
-        <option value="inactive">Inactive</option>
-      </select>
-      {errors?.status && <p className="text-danger m-0">{errors?.status}</p>}
+        defaultOption="-- Select Status --"
+        options={Object.values(Constants.STATUS).map((stat) => ({
+          value: stat,
+          key: stat,
+          label: stat,
+        }))}
+        errors={errors}
+      />
+      {/* Image preview */}
+      {userData.preview || userData.imageUrl ? (
+        <img
+          src={userData.preview || userData.imageUrl || userData.image || userData?.image?.name}
+          alt="profile"
+          style={{ width: 80, height: 80, borderRadius: '50%', objectFit: 'cover' }}
+        />
+      ) : null}
+      {/* Upload Image */}
+      <label className="form-label fw-semibold">Upload Image</label>
+      <input
+        type="file"
+        accept="image/*"
+        className="form-control"
+        onChange={(e) => setUserData({ ...userData, image: e.target.files[0] })}
+      />
+      {errors?.image && <p className="text-danger m-0">{errors?.image}</p>}
     </div>
   )
 }

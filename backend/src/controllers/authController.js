@@ -103,7 +103,7 @@ export const loginEmployee = asyncHandler(async (req, res, next) => {
 
     const isMatch = await bcrypt.compare(password, employee.password);
     if (!isMatch) {
-      return next(new ErrorHandler(" Invalid Password", 400));
+      return next(new ErrorHandler("Invalid Password", 400));
     }
 
     const user = employee;

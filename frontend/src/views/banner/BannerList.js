@@ -224,7 +224,7 @@ export default function BannerManager() {
                 </CTableHead>
                 <CTableBody>
                   {banners.map((banner, index) => (
-                    <CTableRow key={banner._id}>
+                    <CTableRow key={banner._id} className="align-middle">
                       <CTableDataCell>{(page - 1) * perPage + index + 1}</CTableDataCell>
                       <CTableDataCell>
                         <img src={banner.url} alt={banner.title} style={{ width: '100px' }} />

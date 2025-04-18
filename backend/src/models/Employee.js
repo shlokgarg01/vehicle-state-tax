@@ -2,8 +2,6 @@ import mongoose from "mongoose";
 import bcrypt from "bcryptjs";
 import CONSTANTS from "../constants/constants.js";
 import mongooseDelete from "mongoose-delete";
-import validator from "validator";
-import { INDIAN_PHONE_REGEX } from "../helpers/validators.js";
 import COLLECTION_NAMES from "../constants/collection.js";
 
 const Schema = mongoose.Schema;
@@ -36,6 +34,10 @@ const employeeSchema = new Schema(
       type: String,
       enum: Object.values(CONSTANTS.USER_ROLES),
       default: CONSTANTS.USER_ROLES.MANAGER,
+    },
+    states: {
+      type: [String],
+      default: []
     },
     status: {
       type: String,

@@ -128,7 +128,7 @@ export default function UserSearch() {
               </CTableHead>
               <CTableBody>
                 {users?.users?.map((stateData, index) => (
-                  <CTableRow key={index + 1}>
+                  <CTableRow key={index + 1} className="align-middle">
                     {/* serial number */}
                     <CTableHeaderCell scope="row">
                       {(currentPage - 1) * Constants.ITEMS_PER_PAGE + index + 1}

@@ -129,10 +129,10 @@ const Home = () => {
   ]
 
   const rangeOptions = [
-    { label: 'Last 1 Day', value: 1 },
-    { label: 'Last 5 Days', value: 5 },
-    { label: 'Last 7 Days', value: 7 },
-    { label: 'Last 30 Days', value: 30 },
+    { label: 'Last 1 Day', value: 0 },
+    { label: 'Last 5 Days', value: 4 },
+    { label: 'Last 7 Days', value: 6 },
+    { label: 'Last 30 Days', value: 29 },
   ]
 
   const handleSubmit = () => {

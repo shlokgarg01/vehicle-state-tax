@@ -40,6 +40,9 @@ import {
   deleteSingleEmployee,
   createEmployee,
 } from '../../actions/employeeAction'
+import MultiSelectedBox from '../../components/Form/MultiSelectedBox'
+import { removeUnderScoreAndCapitalize } from '../../helpers/strings'
+import States from '../../utils/states'
 
 export default function EmployeeList() {
   const dispatch = useDispatch()
@@ -79,6 +82,8 @@ export default function EmployeeList() {
     contactNumber: '',
     image: '',
     name: '',
+    states: [],
+    status: Constants.STATUS.ACTIVE,
   })
   const [editUser, setEditUser] = useState({
     username: '',
@@ -87,6 +92,7 @@ export default function EmployeeList() {
     status: '',
     image: '',
     name: '',
+    states: [],
   })
   const [editErrors, setEditErrors] = useState({})
   const [isEditModalVisible, setIsEditModalVisible] = useState(false)
@@ -108,13 +114,30 @@ export default function EmployeeList() {
     if (employee.email && !/^\S+@\S+\.\S+$/.test(employee.email)) newErrors.email = 'Invalid email'
     if (employee.contactNumber && !/^\d{10}$/.test(employee.contactNumber))
       newErrors.contactNumber = 'Must be 10 digits'
-    // if (employee.name)
     if (Object.keys(newErrors).length > 0) {
       setEditErrors(newErrors)
       return
     }
 
-    dispatch(createEmployee(employee))
+    let employeeStates = employee.states.map((state) => state.value)
+    const updatedEmployee = { ...employee, states: employeeStates }
+    setEmployee(updatedEmployee)
+
+    let formData = new FormData()
+    formData.append('username', employee.username)
+    formData.append('password', employee.password)
+    formData.append('email', employee.email)
+    formData.append('contactNumber', employee.contactNumber)
+    formData.append('status', employee.status)
+    formData.append('name', employee.name)
+    if (employee.image) {
+      formData.append('image', employee.image)
+    }
+    updatedEmployee.states.forEach((state) => {
+      formData.append('states[]', state)
+    })
+
+    dispatch(createEmployee(formData))
   }
 
   const handleUpdateUser = () => {
@@ -151,8 +174,26 @@ export default function EmployeeList() {
       updatePayload.password = editUser.password.trim()
     }
 
+    let employeeStates = editUser.states.map((state) => state.value)
+    const updatedEmployee = { ...editUser, states: employeeStates }
+    setEmployee(updatedEmployee)
+
+    let formData = new FormData()
+    formData.append('username', editUser.username)
+    formData.append('password', editUser.password)
+    formData.append('email', editUser.email)
+    formData.append('contactNumber', editUser.contactNumber)
+    formData.append('status', editUser.status)
+    formData.append('name', editUser.name)
+    if (editUser.image) {
+      formData.append('image', editUser.image)
+    }
+    updatedEmployee.states.forEach((state) => {
+      formData.append('states[]', state)
+    })
+
     // Dispatch the update
-    dispatch(updateSingleEmployee(editUser._id, updatePayload))
+    dispatch(updateSingleEmployee(editUser._id, formData))
     setIsEditModalVisible(false)
   }
 
@@ -183,6 +224,7 @@ export default function EmployeeList() {
         contactNumber: '',
         image: '',
         name: '',
+        states: [],
       })
       dispatch(getAndSearchEmployee({ page: 1 }))
     }
@@ -221,6 +263,7 @@ export default function EmployeeList() {
   useEffect(() => {
     dispatch(getAndSearchEmployee({ ...search, page: currentPage }))
   }, [dispatch, currentPage])
+
   useEffect(() => {
     if (updateError) {
       showToast(updateError, 'error')
@@ -367,6 +410,29 @@ export default function EmployeeList() {
                   </CCol>
                 </CRow>
 
+                {/* <CRow className="mb-4 align-items-center">
+                  <CCol md={3}>
+                    <label htmlFor="states" className="form-label fw-semibold">
+                      States
+                    </label>
+                  </CCol>
+                  <CCol md={9}>
+                    <MultiSelectedBox
+                      id="states"
+                      placeholder="Select the states"
+                      isMultiSelect={true}
+                      isSearchable={true}
+                      noOptionsMessage={() => 'No state found'}
+                      value={employee.states || []}
+                      options={States.map((state) => ({
+                        value: state,
+                        label: removeUnderScoreAndCapitalize(state),
+                      }))}
+                      onChange={(selected) => setEmployee({ ...employee, states: selected })}
+                    />
+                  </CCol>
+                </CRow> */}
+
                 <CRow className="justify-content-center">
                   <CCol md={8}>
                     {/* Image */}
@@ -499,34 +565,32 @@ export default function EmployeeList() {
                   <CTableHeaderCell scope="col">Name</CTableHeaderCell>
                   <CTableHeaderCell scope="col">Username</CTableHeaderCell>
                   <CTableHeaderCell scope="col">Contact Number</CTableHeaderCell>
-                  <CTableHeaderCell scope="col">Status</CTableHeaderCell>
+                  {/* <CTableHeaderCell scope="col">States</CTableHeaderCell> */}
                   <CTableHeaderCell scope="col">Delete</CTableHeaderCell>
                   <CTableHeaderCell scope="col">Edit</CTableHeaderCell>
                 </CTableRow>
               </CTableHead>
               <CTableBody>
-                {employees?.managers?.map((stateData, index) => (
-                  <CTableRow key={stateData._id}>
+                {employees?.managers?.map((employeeData, index) => (
+                  <CTableRow key={employeeData._id} className="align-middle">
                     <CTableDataCell>{(currentPage - 1) * limit + index + 1}</CTableDataCell>
-                    <CTableDataCell>{stateData.email || '-'}</CTableDataCell>
-                    <CTableDataCell>{stateData.name || '-'}</CTableDataCell>
-                    <CTableDataCell>{stateData.username}</CTableDataCell>
-                    <CTableDataCell>{stateData.contactNumber || '-'}</CTableDataCell>
+                    <CTableDataCell>{employeeData.email || '-'}</CTableDataCell>
+                    <CTableDataCell>{employeeData.name || '-'}</CTableDataCell>
+                    <CTableDataCell>{employeeData.username}</CTableDataCell>
+                    <CTableDataCell>{employeeData.contactNumber || '-'}</CTableDataCell>
+                    {/* <CTableDataCell
+                      style={{ whiteSpace: 'normal', wordBreak: 'break-word', maxWidth: 130 }}
+                    >
+                      {removeUnderScoreAndCapitalize(employeeData.states.join(', ')) || '-'}
+                    </CTableDataCell> */}
                     <CTableDataCell>
-                      <span
-                        className={`badge bg-${stateData?.status === 'active' ? 'success' : 'secondary'}`}
-                      >
-                        {stateData.status}
-                      </span>
-                    </CTableDataCell>
-                    <CTableDataCell>
-                      {stateData.role !== Constants.ROLES.ADMIN && (
+                      {employeeData.role !== Constants.ROLES.ADMIN && (
                         <Button
                           title="Delete"
                           color="danger"
                           size="sm"
                           onClick={() => {
-                            setStateToDelete(stateData._id)
+                            setStateToDelete(employeeData._id)
                             setIsDeleteModalVisible(true)
                           }}
                         />
@@ -538,7 +602,7 @@ export default function EmployeeList() {
                         color="success"
                         size="sm"
                         onClick={() => {
-                          setEditUser(stateData)
+                          setEditUser(employeeData)
                           setIsEditModalVisible(true)
                         }}
                       />

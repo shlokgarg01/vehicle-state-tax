@@ -24,6 +24,7 @@ const TaxSearch = () => {
   ])
 
   const { loading, taxes = [], totalPages } = useSelector((state) => state.allTaxes || {})
+  const { user } = useSelector((state) => state.user)
   const [hasSearched, setHasSearched] = useState(false)
   const [currentPage, setCurrentPage] = useState(1)
   const [filters, setFilters] = useState({})
@@ -42,6 +43,7 @@ const TaxSearch = () => {
       getAllTaxes({
         ...updatedFilters,
         status: filterStatus,
+        state: user?.states,
         page: 1,
         perPage: Constants.ITEMS_PER_PAGE,
       }),
@@ -54,12 +56,25 @@ const TaxSearch = () => {
     setMode('')
     setHasSearched(false)
     setFilters({})
-    dispatch(getAllTaxes({ page: 1, perPage: Constants.ITEMS_PER_PAGE, status: filterStatus }))
+    dispatch(
+      getAllTaxes({
+        page: 1,
+        perPage: Constants.ITEMS_PER_PAGE,
+        status: filterStatus,
+        state: user?.states,
+      }),
+    )
   }
 
   useEffect(() => {
     dispatch(
-      getAllTaxes({ ...filters, status: filterStatus, page: 1, perPage: Constants.ITEMS_PER_PAGE }),
+      getAllTaxes({
+        ...filters,
+        status: filterStatus,
+        page: 1,
+        perPage: Constants.ITEMS_PER_PAGE,
+        state: user?.states,
+      }),
     )
   }, [dispatch, currentPage])
 
@@ -73,7 +88,7 @@ const TaxSearch = () => {
   ) : (
     <div className="p-4">
       <CForm onSubmit={handleSearch}>
-        <CRow className="mb-4 g-3 align-items-end">
+        <CRow className="mb-4 g-3">
           {/* Mode Select */}
           <CCol xs={12} lg={3}>
             <SelectBox
@@ -110,14 +125,7 @@ const TaxSearch = () => {
           <CCol xs={12} lg={3}>
             <CRow className="g-2">
               <CCol xs={6}>
-                <Button
-                  title="Search"
-                  type="submit"
-                  color="success"
-                  fullWidth
-                  btnSmall
-                  fullHeight
-                />
+                <Button title="Search" type="submit" color="success" fullWidth fullHeight />
               </CCol>
               <CCol xs={6}>
                 <Button
@@ -125,7 +133,6 @@ const TaxSearch = () => {
                   type="button"
                   color="danger"
                   fullWidth
-                  btnSmall
                   fullHeight
                   onClick={handleClear}
                 />

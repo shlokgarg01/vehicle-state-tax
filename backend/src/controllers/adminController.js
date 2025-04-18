@@ -4,13 +4,17 @@ import ApiFeatures from "../utils/apiFeatures.js";
 import Employee from "../models/Employee.js";
 import CONSTANTS from "../constants/constants.js";
 import { ErrorHandler } from "../utils/errorHandlerUtils.js";
-import bcrypt from "bcryptjs";
 import Tax from "../models/Tax.js";
 import { deleteFile, uploadFile } from "../helpers/uploadHelpers.js";
 
 export const createEmployee = asyncHandler(async (req, res, next) => {
   try {
     const { username, email, password, contactNumber, name } = req.body;
+    let states = req.body['states[]']
+    if (!Array.isArray(states)) {
+      states = [states] // convert single item to array
+    }
+
     const { image } = req?.files || {};
 
     if (!username || !password) {
@@ -58,6 +62,7 @@ export const createEmployee = asyncHandler(async (req, res, next) => {
       contactNumber,
       image: employeeImage,
       name,
+      states,
     });
 
     res.status(201).json({
@@ -71,12 +76,12 @@ export const createEmployee = asyncHandler(async (req, res, next) => {
         role: employee.role,
         status: employee.status,
         employeeImage: employee.image,
-
+        states: employee.states,
         name: employee.name,
       },
     });
   } catch (error) {
-    next(new ErrorHandler("Error in creating employee:", 500));
+    next(new ErrorHandler(error.message, 500));
   }
 });
 
@@ -119,6 +124,7 @@ export const viewManagers = asyncHandler(async (req, res) => {
 export const updateEmployee = asyncHandler(async (req, res, next) => {
   const { id } = req.params;
   const { username, email, password, contactNumber, status, name } = req.body;
+  let states = req.body['states[]']
   const { image } = req.files || {};
 
   const employee = await Employee.findById(id).select("+password");
@@ -164,8 +170,10 @@ export const updateEmployee = asyncHandler(async (req, res, next) => {
 
   // Password update
   if (password) {
-    employee.password = await bcrypt.hash(password, 10);
+    employee.password = password
   }
+
+  if (states?.length > 0) employee.states = states
 
   // Status update
   if (status !== undefined) {
@@ -266,6 +274,7 @@ export const dashboardAnalytics = async (req, res) => {
 
     startDate = new Date(startDate);
     endDate = new Date(endDate);
+    endDate.setHours(23, 59, 59, 999);
     let baseQuery = {
       createdAt: {
         $gte: startDate,

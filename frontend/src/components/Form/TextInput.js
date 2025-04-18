@@ -33,7 +33,7 @@ export default function TextInput({
     fontSize: '1rem',
     border: hasError ? '1px solid #dc3545' : '1px solid #ced4da',
     borderRadius: 7,
-    padding: '0.5rem 0.75rem',
+    // padding: '0.5rem 0.75rem',
     width: '100%',
     ...style,
   }

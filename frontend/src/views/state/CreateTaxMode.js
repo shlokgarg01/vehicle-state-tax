@@ -340,7 +340,7 @@ const CreateTaxMode = ({ states, mode }) => {
               </CTableHead>
               <CTableBody>
                 {filtered.map((taxMode, index) => (
-                  <CTableRow key={taxMode._id}>
+                  <CTableRow key={taxMode._id} className="align-middle">
                     <CTableDataCell>{(currentPage - 1) * limit + index + 1}</CTableDataCell>
                     <CTableDataCell>{taxMode.state?.name || '-'}</CTableDataCell>
                     <CTableDataCell>{getModeLabel(taxMode.mode)}</CTableDataCell>

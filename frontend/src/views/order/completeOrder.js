@@ -9,11 +9,18 @@ import Pagination from '../../components/Pagination/Pagination'
 const CompleteOrder = () => {
   const dispatch = useDispatch()
   const { taxes, loading, error, totalPages } = useSelector((state) => state.allTaxes)
+  const { user } = useSelector((state) => state.user)
   const [currentPage, setCurrentPage] = useState(1)
 
   useEffect(() => {
-    dispatch(getAllTaxes({ status: Constants.ORDER_STATUS.CLOSED, page: currentPage }))
-  }, [dispatch, currentPage])
+    dispatch(
+      getAllTaxes({
+        status: Constants.ORDER_STATUS.CLOSED,
+        page: currentPage,
+        state: user?.states,
+      }),
+    )
+  }, [dispatch, currentPage, user])
 
   const completedTaxes = taxes?.filter((tax) => tax.status === Constants.ORDER_STATUS.CLOSED)
   return (
