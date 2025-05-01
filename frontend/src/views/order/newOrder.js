@@ -16,6 +16,7 @@ const NewOrder = () => {
   const [taxFilters, _] = useState({
     status: Constants.ORDER_STATUS.CONFIRMED,
     sort: 'asc',
+    perPage: 100,
   })
 
   useEffect(() => {
