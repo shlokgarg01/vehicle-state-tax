@@ -21,7 +21,7 @@ const NewOrder = () => {
 
   useEffect(() => {
     const fetchData = async () => {
-      dispatch(getAllTaxes({ ...taxFilters, state: user?.states }))
+      dispatch(getAllTaxes({ ...taxFilters }))
     }
     fetchData()
 

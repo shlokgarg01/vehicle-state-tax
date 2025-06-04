@@ -174,23 +174,25 @@ export default function EmployeeList() {
       updatePayload.password = editUser.password.trim()
     }
 
-    let employeeStates = editUser.states.map((state) => state.value)
-    const updatedEmployee = { ...editUser, states: employeeStates }
-    setEmployee(updatedEmployee)
+    // let employeeStates = editUser.states.map((state) => state.value)
+    // const updatedEmployee = { ...editUser, states: employeeStates }
+    // setEmployee(updatedEmployee)
 
     let formData = new FormData()
-    formData.append('username', editUser.username)
-    formData.append('password', editUser.password)
-    formData.append('email', editUser.email)
-    formData.append('contactNumber', editUser.contactNumber)
-    formData.append('status', editUser.status)
-    formData.append('name', editUser.name)
+    // formData.append('username', editUser.username)
+    if(editUser.password) formData.append('password', editUser.password)
+    if(editUser.email) formData.append('email', editUser.email)
+    if(editUser.contactNumber) formData.append('contactNumber', editUser.contactNumber)
+    if(editUser.status) formData.append('status', editUser.status)
+    if(editUser.name) formData.append('name', editUser.name)
     if (editUser.image) {
       formData.append('image', editUser.image)
     }
-    updatedEmployee.states.forEach((state) => {
-      formData.append('states[]', state)
-    })
+    // updatedEmployee.states.forEach((state) => {
+    //   formData.append('states[]', state)
+    // })
+
+    console.log(editUser, formData)
 
     // Dispatch the update
     dispatch(updateSingleEmployee(editUser._id, formData))
