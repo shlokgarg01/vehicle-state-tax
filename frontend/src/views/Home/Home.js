@@ -119,6 +119,8 @@ const Home = () => {
 
   const cards = [
     { title: 'Total Orders', value: data?.counts?.totalOrders, color: 'primary' },
+    { title: 'Total Amount', value: data?.counts?.totalAmount, color: 'success' },
+    { title: 'Total Commission', value: data?.counts?.totalCommission, color: 'info' },
     { title: 'Border Tax', value: data?.counts?.borderTax, color: 'warning' },
     { title: 'Road Tax', value: data?.counts?.roadTax, color: 'secondary' },
     { title: 'All India Tax', value: data?.counts?.allIndiaTax, color: 'info' },

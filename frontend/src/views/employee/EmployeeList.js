@@ -174,9 +174,9 @@ export default function EmployeeList() {
       updatePayload.password = editUser.password.trim()
     }
 
-    // let employeeStates = editUser.states.map((state) => state.value)
-    // const updatedEmployee = { ...editUser, states: employeeStates }
-    // setEmployee(updatedEmployee)
+    let employeeStates = editUser.states.map((state) => state.value)
+    const updatedEmployee = { ...editUser, states: employeeStates }
+    setEmployee(updatedEmployee)
 
     let formData = new FormData()
     // formData.append('username', editUser.username)
@@ -188,13 +188,14 @@ export default function EmployeeList() {
     if (editUser.image) {
       formData.append('image', editUser.image)
     }
-    // updatedEmployee.states.forEach((state) => {
-    //   formData.append('states[]', state)
-    // })
+    if (updatedEmployee.states.length > 0) {
+      updatedEmployee.states.forEach((state) => {
+        formData.append('states[]', state)
+      })
+    } else {
+      formData.append('states[]', '')
+    }
 
-    console.log(editUser, formData)
-
-    // Dispatch the update
     dispatch(updateSingleEmployee(editUser._id, formData))
     setIsEditModalVisible(false)
   }
@@ -412,7 +413,7 @@ export default function EmployeeList() {
                   </CCol>
                 </CRow>
 
-                {/* <CRow className="mb-4 align-items-center">
+                <CRow className="mb-4 align-items-center">
                   <CCol md={3}>
                     <label htmlFor="states" className="form-label fw-semibold">
                       States
@@ -433,7 +434,7 @@ export default function EmployeeList() {
                       onChange={(selected) => setEmployee({ ...employee, states: selected })}
                     />
                   </CCol>
-                </CRow> */}
+                </CRow>
 
                 <CRow className="justify-content-center">
                   <CCol md={8}>
@@ -467,6 +468,7 @@ export default function EmployeeList() {
                 {/* Buttons */}
                 <div className="d-flex justify-content-center gap-2 pb-4">
                   <Button
+                    btnSmall
                     title="Reset"
                     type="button"
                     color="danger"
@@ -480,6 +482,7 @@ export default function EmployeeList() {
                     }
                   />
                   <Button
+                    btnSmall
                     title={createLoading ? <CSpinner size="sm" /> : 'Create employee'}
                     type="submit"
                     color="success"
@@ -567,7 +570,7 @@ export default function EmployeeList() {
                   <CTableHeaderCell scope="col">Name</CTableHeaderCell>
                   <CTableHeaderCell scope="col">Username</CTableHeaderCell>
                   <CTableHeaderCell scope="col">Contact Number</CTableHeaderCell>
-                  {/* <CTableHeaderCell scope="col">States</CTableHeaderCell> */}
+                  <CTableHeaderCell scope="col">States</CTableHeaderCell>
                   <CTableHeaderCell scope="col">Delete</CTableHeaderCell>
                   <CTableHeaderCell scope="col">Edit</CTableHeaderCell>
                 </CTableRow>
@@ -580,14 +583,15 @@ export default function EmployeeList() {
                     <CTableDataCell>{employeeData.name || '-'}</CTableDataCell>
                     <CTableDataCell>{employeeData.username}</CTableDataCell>
                     <CTableDataCell>{employeeData.contactNumber || '-'}</CTableDataCell>
-                    {/* <CTableDataCell
+                    <CTableDataCell
                       style={{ whiteSpace: 'normal', wordBreak: 'break-word', maxWidth: 130 }}
                     >
                       {removeUnderScoreAndCapitalize(employeeData.states.join(', ')) || '-'}
-                    </CTableDataCell> */}
+                    </CTableDataCell>
                     <CTableDataCell>
                       {employeeData.role !== Constants.ROLES.ADMIN && (
                         <Button
+                          btnSmall
                           title="Delete"
                           color="danger"
                           size="sm"
@@ -600,11 +604,15 @@ export default function EmployeeList() {
                     </CTableDataCell>
                     <CTableDataCell>
                       <Button
+                        btnSmall
                         title="Edit"
                         color="success"
                         size="sm"
                         onClick={() => {
-                          setEditUser(employeeData)
+                          setEditUser({ ...employeeData, states: employeeData.states.map((state) => ({
+                            value: state,
+                            label: removeUnderScoreAndCapitalize(state),
+                          })) })
                           setIsEditModalVisible(true)
                         }}
                       />
@@ -644,7 +652,7 @@ export default function EmployeeList() {
         onVisibleToggle={() => setIsEditModalVisible(!isEditModalVisible)}
         onSubmitBtnClick={handleUpdateUser}
         onClose={() => setIsEditModalVisible(false)}
-        title="Edit employee"
+        title="Edit Employee"
         body={<UserForm userData={editUser} setUserData={setEditUser} errors={editErrors} />}
         closeBtnText="Cancel"
         submitBtnText="Update"

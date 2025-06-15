@@ -7,7 +7,7 @@ import { showToast } from '../../utils/toast'
 
 const NewOrder = () => {
   const dispatch = useDispatch()
-  const { taxes, error } = useSelector((state) => state.allTaxes)
+  const { taxes, error, totalTaxes } = useSelector((state) => state.allTaxes)
   const { uploaded } = useSelector((state) => state.uploadTax || {})
   const { user } = useSelector((state) => state.user)
   const [isUploading, setIsUploading] = useState(false)
@@ -21,7 +21,7 @@ const NewOrder = () => {
 
   useEffect(() => {
     const fetchData = async () => {
-      dispatch(getAllTaxes({ ...taxFilters }))
+      dispatch(getAllTaxes({ ...taxFilters, state: user?.states }))
     }
     fetchData()
 
@@ -52,6 +52,13 @@ const NewOrder = () => {
   return (
     <div>
       {error && <div className="alert alert-danger">Error: {error}</div>}
+
+      <div className="d-flex justify-content-between align-items-center mt-2">
+        <h4 className="mb-0" />
+        <h6 className="text-muted">
+          Total Pending Taxes: <span className="fw-bold">{totalTaxes || 0}</span>
+        </h6>
+      </div>
 
       {displayedTaxes.length === 0 && (
         <div className="alert alert-warning">No confirmed tax entries found.</div>

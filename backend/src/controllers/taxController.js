@@ -1,4 +1,6 @@
 import Tax from "../models/Tax.js";
+import State from "../models/State.js";
+import Price from "../models/Price.js";
 import ApiFeatures from "../utils/apiFeatures.js";
 import TaxManager from "../managers/taxManager.js";
 import CONSTANTS from "../constants/constants.js";
@@ -8,7 +10,29 @@ import { uploadFile } from "../helpers/uploadHelpers.js";
 // Create a Tax Entry
 export const createTax = async (req, res) => {
   try {
+    let state = await State.findOne({ name: req.body.state.toLowerCase(), mode: req.body.category, status: CONSTANTS.STATUS.ACTIVE })
+    let price = await Price.findOne({ mode: req.body.category, taxMode: req.body.taxMode, seatCapacity: req.body.seatCapacity, state: state._id, status: CONSTANTS.STATUS.ACTIVE })
+
+    const startDate = new Date(req.body.startDate)
+    const endDate = new Date(req.body.endDate)
+    const numberOfDays = Math.ceil((endDate - startDate) / (1000 * 60 * 60 * 24)) + 1 // Adding 1 to include both start and end dates
+    let commission = 0
+    if (req.body.taxMode === 'days') {
+      if (numberOfDays <= 2) {
+        commission = 30
+      } else if (numberOfDays <= 5) {
+        commission = 50
+      } else if (numberOfDays <= 9) {
+        commission = 70
+      } else {
+        commission = 100
+      }
+    } else {
+      commission = price?.serviceCharge || 0
+    }
+    req.body.commission = commission
     const taxEntry = await TaxManager.createTaxEntry(req.user?._id, req.body);
+
     res.status(201).json({
       success: true,
       taxEntry,
@@ -16,7 +40,7 @@ export const createTax = async (req, res) => {
   } catch (error) {
     res.status(500).json({
       success: false,
-      message: "Internal server error in creating a tax",
+      message: "Error while creating the tax",
       error: error,
     });
   }

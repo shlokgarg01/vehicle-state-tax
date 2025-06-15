@@ -10,7 +10,7 @@ import { deleteFile, uploadFile } from "../helpers/uploadHelpers.js";
 export const createEmployee = asyncHandler(async (req, res, next) => {
   try {
     const { username, email, password, contactNumber, name } = req.body;
-    let states = req.body['states[]']
+    let states = req.body['states[]'] || []
     if (!Array.isArray(states)) {
       states = [states] // convert single item to array
     }
@@ -124,7 +124,7 @@ export const viewManagers = asyncHandler(async (req, res) => {
 export const updateEmployee = asyncHandler(async (req, res, next) => {
   const { id } = req.params;
   const { username, email, password, contactNumber, status, name } = req.body;
-  let states = req.body['states[]']
+  let states = req.body['states[]'] || []
   const { image } = req.files || {};
 
   const employee = await Employee.findById(id).select("+password");
@@ -173,7 +173,7 @@ export const updateEmployee = asyncHandler(async (req, res, next) => {
     employee.password = password
   }
 
-  if (states?.length > 0) employee.states = states
+  employee.states = states
 
   // Status update
   if (status !== undefined) {
@@ -299,6 +299,8 @@ export const dashboardAnalytics = async (req, res) => {
       allIndiaTaxCount,
       allIndiaPermitCount,
       loadingVehicleCount,
+      totalAmount,
+      totalCommission,
     ] = await Promise.all([
       User.countDocuments(baseQuery),
       Employee.countDocuments(baseQuery),
@@ -323,6 +325,14 @@ export const dashboardAnalytics = async (req, res) => {
         ...taxBaseQuery,
         category: CONSTANTS.TAX_CATEGORIES.LOADING_VEHICLE,
       }),
+      Tax.aggregate([
+        { $match: taxBaseQuery },
+        { $group: { _id: null, total: { $sum: { $ifNull: ["$amount", 0] } } } }
+      ]).then(result => result[0]?.total || 0),
+      Tax.aggregate([
+        { $match: taxBaseQuery },
+        { $group: { _id: null, total: { $sum: { $ifNull: ["$commission", 0] } } } }
+      ]).then(result => result[0]?.total || 0),
     ]);
 
     res.status(200).json({
@@ -337,6 +347,8 @@ export const dashboardAnalytics = async (req, res) => {
         allIndiaTax: allIndiaTaxCount,
         allIndiaPermit: allIndiaPermitCount,
         loadingVehicle: loadingVehicleCount,
+        totalAmount,
+        totalCommission,
       },
     });
   } catch (error) {

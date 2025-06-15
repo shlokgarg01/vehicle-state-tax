@@ -23,6 +23,7 @@ const taxSchema = new mongoose.Schema(
     }, // id of the employee who completed the Tax i.e. who uploaded the tax.
     startDate: { type: Date, required: true },
     amount: { type: Number, required: true },
+    commission: { type: Number, default: 0 },
     fileUrl: { type: String, default: "" },
     isCompleted: { type: Boolean, default: false },
     orderId: { type: String, default: "", required: true, unique: true },

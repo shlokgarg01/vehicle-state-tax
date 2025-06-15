@@ -48,19 +48,20 @@ const UserForm = ({ userData, setUserData, errors }) => {
         id="contactNumber"
         errors={errors}
       />
-      {/* <MultiSelectedBox
+      <MultiSelectedBox
         label="States"
         id="states"
         placeholder="Select the states"
         isMultiSelect={true}
         isSearchable={true}
         noOptionsMessage={() => 'No state found'}
+        value={userData.states}
         options={States.map((state) => ({
           value: state,
           label: removeUnderScoreAndCapitalize(state),
         }))}
         onChange={(selected) => setUserData({ ...userData, states: selected })}
-      /> */}
+      />
       {userData.role !== Constants.ROLES.ADMIN && (
         <TextInput
           label="Password"
