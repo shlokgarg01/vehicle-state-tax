@@ -24,7 +24,7 @@ export default function MultiSelectedBox({
         </CFormLabel>
       )}
       <Select
-        defaultValue={value}
+        value={value}
         onChange={onChange}
         options={options}
         placeholder={placeholder}
