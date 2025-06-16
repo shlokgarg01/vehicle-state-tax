@@ -18,6 +18,7 @@ const CompleteOrder = () => {
         status: Constants.ORDER_STATUS.CLOSED,
         page: currentPage,
         state: user?.states,
+        category: user?.categories,
       }),
     )
   }, [dispatch, currentPage, user])

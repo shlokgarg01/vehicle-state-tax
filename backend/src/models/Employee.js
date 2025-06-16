@@ -39,6 +39,11 @@ const employeeSchema = new Schema(
       type: [String],
       default: []
     },
+    categories: {
+      type: [String],
+      enum: Object.values(CONSTANTS.TAX_CATEGORIES),
+      default: []
+    },
     status: {
       type: String,
       enum: Object.values(CONSTANTS.STATUS),

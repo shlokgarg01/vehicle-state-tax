@@ -21,7 +21,7 @@ const NewOrder = () => {
 
   useEffect(() => {
     const fetchData = async () => {
-      dispatch(getAllTaxes({ ...taxFilters, state: user?.states }))
+      dispatch(getAllTaxes({ ...taxFilters, state: user?.states, category: user?.categories }))
     }
     fetchData()
 
@@ -46,7 +46,7 @@ const NewOrder = () => {
   }, [uploaded])
 
   const handleRefresh = () => {
-    dispatch(getAllTaxes({ ...taxFilters, state: user?.states }))
+    dispatch(getAllTaxes({ ...taxFilters, state: user?.states, category: user?.categories }))
   }
 
   return (

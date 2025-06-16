@@ -15,6 +15,11 @@ export const createEmployee = asyncHandler(async (req, res, next) => {
       states = [states] // convert single item to array
     }
 
+    let categories = req.body['categories[]'] || []
+    if (!Array.isArray(categories)) {
+      categories = [categories] // convert single item to array
+    }
+
     const { image } = req?.files || {};
 
     if (!username || !password) {
@@ -63,6 +68,7 @@ export const createEmployee = asyncHandler(async (req, res, next) => {
       image: employeeImage,
       name,
       states,
+      categories,
     });
 
     res.status(201).json({
@@ -77,6 +83,7 @@ export const createEmployee = asyncHandler(async (req, res, next) => {
         status: employee.status,
         employeeImage: employee.image,
         states: employee.states,
+        categories: employee.categories,
         name: employee.name,
       },
     });
@@ -125,6 +132,7 @@ export const updateEmployee = asyncHandler(async (req, res, next) => {
   const { id } = req.params;
   const { username, email, password, contactNumber, status, name } = req.body;
   let states = req.body['states[]'] || []
+  let categories = req.body['categories[]'] || []
   const { image } = req.files || {};
 
   const employee = await Employee.findById(id).select("+password");
@@ -174,6 +182,7 @@ export const updateEmployee = asyncHandler(async (req, res, next) => {
   }
 
   employee.states = states
+  employee.categories = categories
 
   // Status update
   if (status !== undefined) {
@@ -206,6 +215,8 @@ export const updateEmployee = asyncHandler(async (req, res, next) => {
       status: employee.status,
       image: employee.image,
       name: employee.name,
+      states: employee.states,
+      categories: employee.categories,
     },
   });
 });
