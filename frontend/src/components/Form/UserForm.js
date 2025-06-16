@@ -62,6 +62,20 @@ const UserForm = ({ userData, setUserData, errors }) => {
         }))}
         onChange={(selected) => setUserData({ ...userData, states: selected })}
       />
+      <MultiSelectedBox
+        label="Categories"
+        id="categories"
+        placeholder="Select the categories"
+        isMultiSelect={true}
+        isSearchable={true}
+        noOptionsMessage={() => 'No category found'}
+        value={userData.categories || []}
+        options={Object.values(Constants.MODES).map((category) => ({
+          value: category,
+          label: removeUnderScoreAndCapitalize(category),
+        }))}
+        onChange={(selected) => setUserData({ ...userData, categories: selected })}
+      />
       {userData.role !== Constants.ROLES.ADMIN && (
         <TextInput
           label="Password"

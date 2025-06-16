@@ -17,7 +17,8 @@ const CompleteOrder = () => {
       getAllTaxes({
         status: Constants.ORDER_STATUS.CLOSED,
         page: currentPage,
-        // state: user?.states,
+        state: user?.states,
+        category: user?.categories,
       }),
     )
   }, [dispatch, currentPage, user])

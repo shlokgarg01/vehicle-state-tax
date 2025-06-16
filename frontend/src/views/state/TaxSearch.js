@@ -78,10 +78,14 @@ const TaxSearch = () => {
     )
   }, [dispatch, currentPage])
 
-  const modeOptions = Object.entries(Constants.MODES).map(([key, value]) => ({
-    value: key,
-    label: removeUnderScoreAndCapitalize(value),
-  }))
+  const modeOptions = user?.categories.length > 0 ? 
+    Object.entries(Constants.MODES).filter(([_, value]) => user?.categories.includes(value)).map(([key, value]) => ({
+      value: key,
+      label: removeUnderScoreAndCapitalize(value),
+    })) : Object.entries(Constants.MODES).map(([key, value]) => ({
+      value: key,
+      label: removeUnderScoreAndCapitalize(value),
+    }))
 
   return loading ? (
     <Loader />

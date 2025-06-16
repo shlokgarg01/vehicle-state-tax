@@ -46,6 +46,16 @@ import States from '../../utils/states'
 
 export default function EmployeeList() {
   const dispatch = useDispatch()
+  let initial_employe = {
+    username: '',
+    email: '',
+    contactNumber: '',
+    status: '',
+    image: '',
+    name: '',
+    states: [],
+    categories: [],
+  }
 
   // Redux: Create employee
   const {
@@ -75,25 +85,8 @@ export default function EmployeeList() {
     error: deleteError,
   } = useSelector((state) => state.deleteEmployee)
 
-  const [employee, setEmployee] = useState({
-    username: '',
-    email: '',
-    password: '',
-    contactNumber: '',
-    image: '',
-    name: '',
-    states: [],
-    status: Constants.STATUS.ACTIVE,
-  })
-  const [editUser, setEditUser] = useState({
-    username: '',
-    email: '',
-    contactNumber: '',
-    status: '',
-    image: '',
-    name: '',
-    states: [],
-  })
+  const [employee, setEmployee] = useState({ ...initial_employe, password: '' })
+  const [editUser, setEditUser] = useState(initial_employe)
   const [editErrors, setEditErrors] = useState({})
   const [isEditModalVisible, setIsEditModalVisible] = useState(false)
   const [search, setSearch] = useState({ contactNumber: '', username: '', email: '' })
@@ -120,7 +113,8 @@ export default function EmployeeList() {
     }
 
     let employeeStates = employee.states.map((state) => state.value)
-    const updatedEmployee = { ...employee, states: employeeStates }
+    let employeeCategories = employee.categories.map((category) => category.value)
+    const updatedEmployee = { ...employee, states: employeeStates, categories: employeeCategories }
     setEmployee(updatedEmployee)
 
     let formData = new FormData()
@@ -135,6 +129,9 @@ export default function EmployeeList() {
     }
     updatedEmployee.states.forEach((state) => {
       formData.append('states[]', state)
+    })
+    updatedEmployee.categories.forEach((category) => {
+      formData.append('categories[]', category)
     })
 
     dispatch(createEmployee(formData))
@@ -175,7 +172,8 @@ export default function EmployeeList() {
     }
 
     let employeeStates = editUser.states.map((state) => state.value)
-    const updatedEmployee = { ...editUser, states: employeeStates }
+    let employeeCategories = editUser.categories.map((category) => category.value)
+    const updatedEmployee = { ...editUser, states: employeeStates, categories: employeeCategories }
     setEmployee(updatedEmployee)
 
     let formData = new FormData()
@@ -194,6 +192,13 @@ export default function EmployeeList() {
       })
     } else {
       formData.append('states[]', '')
+    }
+    if (updatedEmployee.categories.length > 0) {
+      updatedEmployee.categories.forEach((category) => {
+        formData.append('categories[]', category)
+      })
+    } else {
+      formData.append('categories[]', '')
     }
 
     dispatch(updateSingleEmployee(editUser._id, formData))
@@ -220,15 +225,7 @@ export default function EmployeeList() {
   useEffect(() => {
     if (createSuccess) {
       showToast('Employee created successfully', 'success')
-      setEmployee({
-        username: '',
-        email: '',
-        password: '',
-        contactNumber: '',
-        image: '',
-        name: '',
-        states: [],
-      })
+      setEmployee(initial_employe)
       dispatch(getAndSearchEmployee({ page: 1 }))
     }
 
@@ -436,6 +433,29 @@ export default function EmployeeList() {
                   </CCol>
                 </CRow>
 
+                <CRow className="mb-4 align-items-center">
+                  <CCol md={3}>
+                    <label htmlFor="categories" className="form-label fw-semibold">
+                      Categories
+                    </label>
+                  </CCol>
+                  <CCol md={9}>
+                    <MultiSelectedBox
+                      id="categories"
+                      placeholder="Select the categories"
+                      isMultiSelect={true}
+                      isSearchable={true}
+                      noOptionsMessage={() => 'No category found'}
+                      value={employee.categories || []}
+                      options={Object.values(Constants.MODES).map((category) => ({
+                        value: category,
+                        label: removeUnderScoreAndCapitalize(category),
+                      }))}
+                      onChange={(selected) => setEmployee({ ...employee, categories: selected })}
+                    />
+                  </CCol>
+                </CRow>
+
                 <CRow className="justify-content-center">
                   <CCol md={8}>
                     {/* Image */}
@@ -571,6 +591,7 @@ export default function EmployeeList() {
                   <CTableHeaderCell scope="col">Username</CTableHeaderCell>
                   <CTableHeaderCell scope="col">Contact Number</CTableHeaderCell>
                   <CTableHeaderCell scope="col">States</CTableHeaderCell>
+                  <CTableHeaderCell scope="col">Categories</CTableHeaderCell>
                   <CTableHeaderCell scope="col">Delete</CTableHeaderCell>
                   <CTableHeaderCell scope="col">Edit</CTableHeaderCell>
                 </CTableRow>
@@ -587,6 +608,11 @@ export default function EmployeeList() {
                       style={{ whiteSpace: 'normal', wordBreak: 'break-word', maxWidth: 130 }}
                     >
                       {removeUnderScoreAndCapitalize(employeeData.states.join(', ')) || '-'}
+                    </CTableDataCell>
+                    <CTableDataCell
+                      style={{ whiteSpace: 'normal', wordBreak: 'break-word', maxWidth: 130 }}
+                    >
+                      {removeUnderScoreAndCapitalize(employeeData.categories?.join(', ')) || '-'}
                     </CTableDataCell>
                     <CTableDataCell>
                       {employeeData.role !== Constants.ROLES.ADMIN && (
@@ -609,10 +635,17 @@ export default function EmployeeList() {
                         color="success"
                         size="sm"
                         onClick={() => {
-                          setEditUser({ ...employeeData, states: employeeData.states.map((state) => ({
-                            value: state,
-                            label: removeUnderScoreAndCapitalize(state),
-                          })) })
+                          setEditUser({ 
+                            ...employeeData, 
+                            states: employeeData.states.map((state) => ({
+                              value: state,
+                              label: removeUnderScoreAndCapitalize(state),
+                            })),
+                            categories: employeeData.categories?.map((category) => ({
+                              value: category,
+                              label: removeUnderScoreAndCapitalize(category),
+                            }))
+                          })
                           setIsEditModalVisible(true)
                         }}
                       />
