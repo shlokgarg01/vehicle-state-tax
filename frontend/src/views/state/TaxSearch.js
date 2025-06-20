@@ -43,7 +43,7 @@ const TaxSearch = () => {
       getAllTaxes({
         ...updatedFilters,
         status: filterStatus,
-        state: user?.states,
+        // state: user?.states,
         page: 1,
         perPage: Constants.ITEMS_PER_PAGE,
       }),
@@ -61,7 +61,7 @@ const TaxSearch = () => {
         page: 1,
         perPage: Constants.ITEMS_PER_PAGE,
         status: filterStatus,
-        state: user?.states,
+        // state: user?.states,
       }),
     )
   }
@@ -73,7 +73,7 @@ const TaxSearch = () => {
         status: filterStatus,
         page: 1,
         perPage: Constants.ITEMS_PER_PAGE,
-        state: user?.states,
+        // state: user?.states,
       }),
     )
   }, [dispatch, currentPage])
