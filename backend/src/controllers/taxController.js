@@ -105,12 +105,17 @@ export const createTaxAndPaymentURL = async (req, res) => {
   try {
     const { orderId, amount, mobileNumber, category, ...taxData } = req.body;
 
-    let state = await State.findOne({ name: taxData.state.toLowerCase(), mode: category, status: CONSTANTS.STATUS.ACTIVE })
-    let price = await Price.findOne({ mode: category, taxMode: taxData.taxMode, seatCapacity: taxData.seatCapacity, state: state._id, status: CONSTANTS.STATUS.ACTIVE })
-    const startDate = parseCustomDate(req.body.startDate)
+    let price = 0;
+    if ([CONSTANTS.MODES.BORDER_TAX, CONSTANTS.MODES.ROAD_TAX].includes(taxData.category)) {
+      let state = await State.findOne({ name: taxData.state.toLowerCase(), mode: category, status: CONSTANTS.STATUS.ACTIVE })
+      price = await Price.findOne({ mode: category, taxMode: taxData.taxMode, seatCapacity: taxData.seatCapacity, state: state._id, status: CONSTANTS.STATUS.ACTIVE })
+    } else {
+      price = await Price.findOne({ mode: category, taxMode: taxData.taxMode, seatCapacity: taxData.seatCapacity, status: CONSTANTS.STATUS.ACTIVE })
+    }
 
     let commission = 0
     if (req.body.taxMode === 'days') {
+      const startDate = parseCustomDate(req.body.startDate)
       const endDate = parseCustomDate(req.body.endDate)
       const numberOfDays = Math.ceil((endDate - startDate) / (1000 * 60 * 60 * 24)) + 1 // Adding 1 to include both start and end dates
       if (numberOfDays <= 2) {
