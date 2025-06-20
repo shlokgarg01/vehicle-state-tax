@@ -14,6 +14,21 @@ export const createTaxReducer = (state = {}, action) => {
   }
 }
 
+export const updateTaxReducer = (state = {}, action) => {
+  switch (action.type) {
+    case TAX_CONSTANTS.UPDATE_TAX_REQUEST:
+      return { loading: true }
+    case TAX_CONSTANTS.UPDATE_TAX_SUCCESS:
+      return { loading: false, tax: action.payload, success: true }
+    case TAX_CONSTANTS.UPDATE_TAX_FAIL:
+      return { loading: false, error: action.payload }
+    case TAX_CONSTANTS.UPDATE_TAX_RESET: 
+      return { loading: false, error: null }
+    default:
+      return state
+  }
+}
+
 export const allTaxesReducer = (state = { taxes: [] }, action) => {
   switch (action.type) {
     case TAX_CONSTANTS.GET_ALL_TAXES_REQUEST:

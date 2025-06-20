@@ -59,6 +59,11 @@ const _nav = (role) => {
         },
         {
           component: CNavItem,
+          name: 'Refunded Orders',
+          to: '/orders/refunded',
+        },
+        {
+          component: CNavItem,
           name: 'Search Orders',
           to: '/orders/search',
         },

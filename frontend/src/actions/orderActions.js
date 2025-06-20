@@ -23,6 +23,23 @@ export const createTax = (taxData) => async (dispatch) => {
   }
 }
 
+export const updateTax = (id, taxData) => async (dispatch) => {
+  try {
+    dispatch({ type: TAX_CONSTANTS.UPDATE_TAX_REQUEST })
+    const { data } = await axiosInstance.put(`${TAX_PREFIX}/${id}`, taxData)
+
+    dispatch({
+      type: TAX_CONSTANTS.UPDATE_TAX_SUCCESS,
+      payload: data.tax,
+    })
+  } catch (error) {
+    dispatch({
+      type: TAX_CONSTANTS.UPDATE_TAX_FAIL,
+      payload: error.response?.data?.message || error.message,
+    })
+  }
+}
+
 export const getAllTaxes =
   (params = {}) =>
   async (dispatch) => {

@@ -21,12 +21,14 @@ import CreateRoadTaxPrice from './views/roadTax/createRoadTaxPrice'
 import newOrder from './views/order/newOrder'
 import CompleteOrder from './views/order/completeOrder'
 import searchOrder from './views/order/searchOrder'
+import RefundedOrder from './views/order/refundedOrder'
 
 const routes = [
   { path: '/', exact: true, name: 'Home', element: Home },
 
   { path: '/orders/new', name: 'Create Price', element: newOrder },
   { path: '/orders/completed', name: 'Create Price', element: CompleteOrder },
+  { path: '/orders/refunded', name: 'Create Price', element: RefundedOrder },
   { path: '/orders/search', name: 'Create Price', element: searchOrder },
 
   { path: '/border_tax/state', name: 'Create State', element: CreateBorderTaxState },

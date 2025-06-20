@@ -311,6 +311,7 @@ export const dashboardAnalytics = async (req, res) => {
       allIndiaPermitCount,
       loadingVehicleCount,
       totalAmount,
+      totalRefundedAmount,
       totalCommission,
     ] = await Promise.all([
       User.countDocuments(baseQuery),
@@ -341,6 +342,11 @@ export const dashboardAnalytics = async (req, res) => {
         { $group: { _id: null, total: { $sum: { $ifNull: ["$amount", 0] } } } }
       ]).then(result => result[0]?.total || 0),
       Tax.aggregate([
+        { $match: { ...taxBaseQuery, status: CONSTANTS.ORDER_STATUS.CANCELLED }
+        },
+        { $group: { _id: null, total: { $sum: { $ifNull: ["$amount", 0] } } } }
+      ]).then(result => result[0]?.total || 0),
+      Tax.aggregate([
         { $match: taxBaseQuery },
         { $group: { _id: null, total: { $sum: { $ifNull: ["$commission", 0] } } } }
       ]).then(result => result[0]?.total || 0),
@@ -358,6 +364,7 @@ export const dashboardAnalytics = async (req, res) => {
         allIndiaTax: allIndiaTaxCount,
         allIndiaPermit: allIndiaPermitCount,
         loadingVehicle: loadingVehicleCount,
+        totalRefundedAmount,
         totalAmount,
         totalCommission,
       },

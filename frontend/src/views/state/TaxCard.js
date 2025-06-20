@@ -4,11 +4,13 @@ import { CCard, CCardBody, CRow, CCol, CContainer } from '@coreui/react'
 import CIcon from '@coreui/icons-react'
 import { cilCloudDownload, cilCloudUpload, cilCopy } from '@coreui/icons'
 import { useDispatch, useSelector } from 'react-redux'
-import { getAllTaxes, uploadTax } from '../../actions/orderActions'
+import { getAllTaxes, updateTax, uploadTax } from '../../actions/orderActions'
 import { removeSpaces, removeUnderScoreAndCapitalize } from '../../helpers/strings'
 import { showToast } from '../../utils/toast'
 import { TAX_CONSTANTS } from '../../constants/taxConstants'
 import { getDateFromDateString, getDateTimeFromDateString } from '../../helpers/Date'
+import CONSTANTS from '../../utils/constants'
+import Modal from '../../components/Modal/Modal'
 
 const FieldRow = ({ label, value, copyable }) => {
   if (!value) return null
@@ -51,12 +53,14 @@ const TaxCard = ({ data, onUploadComplete, setIsUploading }) => {
   const dispatch = useDispatch()
   const fileInputRef = useRef(null)
   const [localFileUrl, setLocalFileUrl] = useState(data.fileUrl)
+  const [showRefundModal, setShowRefundModal] = useState(false)
 
   const {
     loading: uploadLoading,
     uploaded,
     error: uploadError,
   } = useSelector((state) => state.uploadTax || {})
+  const { loading: updateTaxLoading, success } = useSelector((state) => state.updateTax)
 
   const handleFileChange = (e) => {
     const file = e.target.files[0]
@@ -76,7 +80,17 @@ const TaxCard = ({ data, onUploadComplete, setIsUploading }) => {
     dispatch(uploadTax(formData))
   }
 
+  const handleRefundConfirm = () => {
+    dispatch(updateTax(data._id, { status: CONSTANTS.ORDER_STATUS.CANCELLED }))
+    setShowRefundModal(false)
+  }
+
   useEffect(() => {
+    if (success) {
+      showToast('Tax Updated successfully')
+      dispatch({ type: TAX_CONSTANTS.UPDATE_TAX_RESET })
+    }
+
     if (uploadError) {
       showToast(uploadError, 'error')
       setIsUploading?.(false)
@@ -100,7 +114,7 @@ const TaxCard = ({ data, onUploadComplete, setIsUploading }) => {
       onUploadComplete?.()
       setIsUploading?.(false)
     }
-  }, [uploaded, uploadError])
+  }, [uploaded, uploadError, success])
 
   const rows = [
     data.vehicleNumber && (
@@ -154,7 +168,30 @@ const TaxCard = ({ data, onUploadComplete, setIsUploading }) => {
 
             {/* File Upload/Download */}
             <CRow className="mb-3 mt-1">
-              <CCol className="text-center text-md-end">
+              <CCol className="d-flex align-items-center justify-content-center justify-content-md-between gap-3">
+                {
+                  data.status === CONSTANTS.ORDER_STATUS.CONFIRMED && <>
+                    <button
+                      className="btn btn-outline-danger btn-sm"
+                      style={{ minWidth: 90 }}
+                      onClick={() => setShowRefundModal(true)}
+                      disabled={updateTaxLoading}
+                    >
+                      {updateTaxLoading ? 'Refunding...' : 'Refund'}
+                    </button>
+                    <Modal
+                      visible={showRefundModal}
+                      onVisibleToggle={() => setShowRefundModal(false)}
+                      onClose={() => setShowRefundModal(false)}
+                      title="Refund Tax"
+                      body={<div>Are you sure you want to refund this tax?</div>}
+                      closeBtnText="No"
+                      submitBtnText="Yes, Refund"
+                      submitBtnColor="danger"
+                      onSubmitBtnClick={handleRefundConfirm}
+                    />
+                  </>
+                }
                 {localFileUrl ? (
                   <a
                     target="_blank"
@@ -166,7 +203,7 @@ const TaxCard = ({ data, onUploadComplete, setIsUploading }) => {
                     <CIcon icon={cilCloudDownload} className="me-2" />
                     <span className="text-primary"> Download File</span>
                   </a>
-                ) : (
+                ) : data.status === CONSTANTS.ORDER_STATUS.CONFIRMED ? (
                   <>
                     <span
                       className="text-primary fw-semibold"
@@ -184,7 +221,7 @@ const TaxCard = ({ data, onUploadComplete, setIsUploading }) => {
                       style={{ display: 'none' }}
                     />
                   </>
-                )}
+                ) : null}
               </CCol>
             </CRow>
 

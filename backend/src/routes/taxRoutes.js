@@ -7,6 +7,7 @@ import {
   createTaxAndPaymentURL,
   paymentStatusCheck,
   uploadTax,
+  updateTax,
 } from "../controllers/taxController.js";
 import {
   authorizeRoles,
@@ -25,6 +26,12 @@ taxRoutes.post(
   isAuthenticatedUser,
   authorizeRoles([CONSTANTS.USER_ROLES.ADMIN, CONSTANTS.USER_ROLES.MANAGER]),
   uploadTax
+);
+taxRoutes.put(
+  "/:id",
+  isAuthenticatedUser,
+  authorizeRoles([CONSTANTS.USER_ROLES.ADMIN, CONSTANTS.USER_ROLES.MANAGER]),
+  updateTax
 );
 
 // Payment Routes

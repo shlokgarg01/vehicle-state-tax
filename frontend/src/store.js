@@ -56,6 +56,7 @@ const rootReducer = combineReducers({
   deletePrice: priceReducer.deletePriceReducer,
 
   createTax: orderReducer.createTaxReducer,
+  updateTax: orderReducer.updateTaxReducer,
   allTaxes: orderReducer.allTaxesReducer,
   uploadTax: orderReducer.uploadTaxReducer,
 
