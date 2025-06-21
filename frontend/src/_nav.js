@@ -38,6 +38,12 @@ const _nav = (role) => {
     },
     isManager && {
       component: CNavItem,
+      name: 'Refunded Orders',
+      to: '/orders/refunded',
+      icon: <CIcon icon={cilCalculator} customClassName="nav-icon" />
+    },
+    isManager && {
+      component: CNavItem,
       name: 'Search Orders',
       to: '/orders/search',
       icon: <CIcon icon={cilDrop} customClassName="nav-icon" />,
