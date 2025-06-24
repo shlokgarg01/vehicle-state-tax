@@ -298,7 +298,7 @@ export const dashboardAnalytics = async (req, res) => {
         $gte: startDate,
         $lte: endDate,
       },
-      status: { $in: [CONSTANTS.ORDER_STATUS.CONFIRMED, CONSTANTS.ORDER_STATUS.CLOSED, CONSTANTS.ORDER_STATUS.CLOSED] }
+      status: { $in: [CONSTANTS.ORDER_STATUS.CONFIRMED, CONSTANTS.ORDER_STATUS.CLOSED, CONSTANTS.ORDER_STATUS.CANCELLED] }
     };
 
     const [
@@ -316,13 +316,7 @@ export const dashboardAnalytics = async (req, res) => {
     ] = await Promise.all([
       User.countDocuments(baseQuery),
       Employee.countDocuments(baseQuery),
-      Tax.countDocuments({
-        createdAt: {
-          $gte: startDate,
-          $lte: endDate,
-        },
-        status: { $in: [CONSTANTS.ORDER_STATUS.CONFIRMED, CONSTANTS.ORDER_STATUS.CLOSED, CONSTANTS.ORDER_STATUS.CANCELLED] }
-      }),
+      Tax.countDocuments(taxBaseQuery),
       Tax.countDocuments({
         ...taxBaseQuery,
         category: CONSTANTS.TAX_CATEGORIES.BORDER_TAX,
