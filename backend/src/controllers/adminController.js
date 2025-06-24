@@ -285,7 +285,7 @@ export const dashboardAnalytics = async (req, res) => {
 
     startDate = new Date(`${startDate}T00:00:00+05:30`);
     endDate = new Date(`${endDate}T23:59:59.999+05:30`);
-    endDate.setHours(23, 59, 59, 999);
+    // endDate.setHours(18, 29, 59, 999);
     let baseQuery = {
       createdAt: {
         $gte: startDate,
