@@ -13,6 +13,7 @@ import * as taxModeReducer from './reducers/taxModeReducer'
 import * as priceReducer from './reducers/priceReducer'
 import * as orderReducer from './reducers/orderReducer'
 import * as dashboardReducer from './reducers/dashboardReducer'
+import * as constantsReducer from './reducers/constantsReducer'
 const initialState = { sidebarShow: true }
 
 const toggleSidebar = (state = initialState, { type, ...rest }) => {
@@ -61,6 +62,7 @@ const rootReducer = combineReducers({
   uploadTax: orderReducer.uploadTaxReducer,
 
   dashboard: dashboardReducer.dashboardReducer,
+  whatsAppMessage: constantsReducer.whatsAppMessageReducer,
 })
 
 // ✅ persist config

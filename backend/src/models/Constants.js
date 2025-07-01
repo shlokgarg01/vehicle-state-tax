@@ -1,15 +1,24 @@
 import mongoose from "mongoose";
-import COLLECTION_NAMES from "../constants/collection.js";
 import mongooseDelete from "mongoose-delete";
+import COLLECTION_NAMES from "../constants/collection.js";
 
-const constantsSchema = new mongoose.Schema(
+const Schema = mongoose.Schema;
+
+const constantsSchema = new Schema(
   {
-    key: { type: String, required: true },
-    value: { type: String, required: true },
+    key: {
+      type: String,
+      required: [true, "Key is required"],
+      unique: true,
+      trim: true,
+    },
+    value: {
+      type: String,
+      required: [true, "Value is required"],
+      trim: true,
+    },
   },
-  {
-    timestamps: true,
-  }
+  { timestamps: true }
 );
 
 constantsSchema.plugin(mongooseDelete, {
@@ -17,5 +26,5 @@ constantsSchema.plugin(mongooseDelete, {
   deletedAt: true,
 });
 
-mongoose.set("debug", true);
-export default mongoose.model(COLLECTION_NAMES.CONSTANTS, constantsSchema);
+const Constants = mongoose.model(COLLECTION_NAMES.CONSTANTS, constantsSchema);
+export default Constants;

@@ -26,12 +26,16 @@ import Pagination from '../../components/Pagination/Pagination'
 import { deleteSingleUser, getAndSearchUsers } from '../../actions/usersAction'
 import Constants from '../../utils/constants'
 import { getDateFromDateString } from '../../helpers/Date'
+import { getWhatsAppMessage } from '../../actions/constantsAction'
+import CIcon from '@coreui/icons-react'
+import { cibWhatsapp } from '@coreui/icons'
 
 export default function UserSearch() {
   const dispatch = useDispatch()
 
   const { loading, users, errors } = useSelector((state) => state.users)
   const { isDeleted } = useSelector((state) => state.deleteUser)
+  const { message: whatsAppMessage } = useSelector((state) => state.whatsAppMessage)
 
   const [search, setSearch] = useState('')
   const [currentPage, setCurrentPage] = useState(1)
@@ -65,6 +69,25 @@ export default function UserSearch() {
   useEffect(() => {
     dispatch(getAndSearchUsers({ page: currentPage, search }))
   }, [dispatch, currentPage])
+
+  useEffect(() => {
+    dispatch(getWhatsAppMessage())
+  }, [dispatch])
+
+  const handleWhatsAppClick = (contactNumber) => {
+    if (!whatsAppMessage) {
+      showToast('WhatsApp message template not found. Please set it up first.', 'error')
+      return
+    }
+    // Format the message (replace placeholders if any)
+    let formattedMessage = whatsAppMessage
+      .replace(/{contact}/g, contactNumber)
+      .replace(/\n/g, '\n'); // This line is optional if you already use \n correctly
+
+    const encodedMessage = encodeURIComponent(formattedMessage.trim());
+    const whatsappUrl = `https://api.whatsapp.com/send?phone=${contactNumber}&text=${encodedMessage}`;
+    window.open(whatsappUrl, '_blank');
+  }
 
   return loading ? (
     <Loader />
@@ -124,6 +147,7 @@ export default function UserSearch() {
                   {/* <CTableHeaderCell scope="col">Name</CTableHeaderCell> */}
                   <CTableHeaderCell scope="col">Contact Number</CTableHeaderCell>
                   <CTableHeaderCell scope="col">Last Login</CTableHeaderCell>
+                  <CTableHeaderCell scope="col">WhatsApp</CTableHeaderCell>
                 </CTableRow>
               </CTableHead>
               <CTableBody>
@@ -137,6 +161,15 @@ export default function UserSearch() {
                     <CTableDataCell>{stateData.contactNumber}</CTableDataCell>
                     <CTableDataCell>
                       {stateData.lastLogin ? getDateFromDateString(stateData.lastLogin) : 'N/A'}
+                    </CTableDataCell>
+                    <CTableDataCell>
+                      <span
+                        style={{ color: '#25D366', cursor: 'pointer', fontSize: '1.5rem', display: 'inline-flex', alignItems: 'center' }}
+                        onClick={() => handleWhatsAppClick(stateData.contactNumber)}
+                        title="Send WhatsApp Message"
+                      >
+                        <CIcon icon={cibWhatsapp} size="lg" />
+                      </span>
                     </CTableDataCell>
                   </CTableRow>
                 ))}

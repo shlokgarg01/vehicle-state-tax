@@ -9,6 +9,7 @@ import {
   cilChartPie,
   cilBell,
   cilTruck,
+  cibWhatsapp,
 } from '@coreui/icons'
 import { CNavGroup, CNavItem } from '@coreui/react'
 import Constants from './utils/constants'
@@ -187,6 +188,12 @@ const _nav = (role) => {
           to: '/all_india_tax/price',
         },
       ],
+    },
+    isAdmin && {
+      component: CNavItem,
+      name: 'WhatsApp Message',
+      to: '/whatsapp-message',
+      icon: <CIcon icon={cibWhatsapp} customClassName="nav-icon" />,
     },
   ].filter(Boolean)
 }

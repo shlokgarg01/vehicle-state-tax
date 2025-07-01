@@ -22,6 +22,7 @@ import newOrder from './views/order/newOrder'
 import CompleteOrder from './views/order/completeOrder'
 import searchOrder from './views/order/searchOrder'
 import RefundedOrder from './views/order/refundedOrder'
+import WhatsAppMessage from './views/pages/WhatsAppMessage'
 
 const routes = [
   { path: '/', exact: true, name: 'Home', element: Home },
@@ -52,6 +53,7 @@ const routes = [
   { path: '/employee', name: 'Employee ', element: EmployeeList },
 
   { path: '/banners/list', name: 'List Banner ', element: BannerList },
+  { path: '/whatsapp-message', name: 'WhatsApp Message', element: WhatsAppMessage },
 ]
 
 export default routes
