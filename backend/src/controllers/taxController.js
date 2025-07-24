@@ -246,3 +246,11 @@ export const updateTax = async (req, res) => {
     res.status(500).json({ success: false, message: error.message });
   }
 };
+
+export const paymentRedirect = async (req, res) => {
+  try {
+    res.send("Thank You. Your payment has been received. You will receive your tax soon.")
+  } catch(error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+}
