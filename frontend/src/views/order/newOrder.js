@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react'
+import React, { useEffect, useRef, useState, useCallback } from 'react'
 import TaxCard from '../state/TaxCard'
 import { useDispatch, useSelector } from 'react-redux'
 import { getAllTaxes } from '../../actions/orderActions'
@@ -45,9 +45,17 @@ const NewOrder = () => {
     }
   }, [uploaded])
 
-  const handleRefresh = () => {
-    dispatch(getAllTaxes({ ...taxFilters, state: user?.states, category: user?.categories }))
-  }
+  const refreshTimeoutRef = useRef(null)
+
+  const handleRefresh = useCallback(() => {
+    if (refreshTimeoutRef.current) {
+      clearTimeout(refreshTimeoutRef.current)
+    }
+    
+    refreshTimeoutRef.current = setTimeout(() => {
+      dispatch(getAllTaxes({ ...taxFilters, state: user?.states, category: user?.categories }))
+    }, 100)
+  }, [dispatch, taxFilters, user?.states, user?.categories])
 
   return (
     <div>
