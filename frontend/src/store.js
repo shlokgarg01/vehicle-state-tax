@@ -60,6 +60,7 @@ const rootReducer = combineReducers({
   updateTax: orderReducer.updateTaxReducer,
   allTaxes: orderReducer.allTaxesReducer,
   uploadTax: orderReducer.uploadTaxReducer,
+  sendWhatsApp: orderReducer.sendWhatsAppReducer,
 
   dashboard: dashboardReducer.dashboardReducer,
   whatsAppMessage: constantsReducer.whatsAppMessageReducer,

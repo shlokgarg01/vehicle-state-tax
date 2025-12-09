@@ -8,3 +8,59 @@ export const sendOtpSMS = async (options) => {
   await axios.get(url);
   return null;
 };
+
+export const sendTaxViaWhatsApp = async (params) => {
+  const { contactNumber, vehicleNumber, fileUrl, filename } = params;
+  let url = `${config.whatsapp.baseUrl}/${config.whatsapp.waId}/messages`;
+
+  const whatsappParams = {
+    "messaging_product": "whatsapp",
+    "recipient_type": "individual",
+    "to": `91${contactNumber}`,
+    "type": "template",
+    "template": {
+      "name": "device_recovery",
+      "language": {
+        "code": "en_US"
+      },
+      "components": [
+        {
+          "type": "header",
+          "parameters": [
+            {
+              "type": "document",
+              "document": {
+                "link": fileUrl,
+                filename
+              }
+            }
+          ]
+        },
+        {
+          "type": "body",
+          "parameters": [
+            {
+              "type": "text",
+              "text": vehicleNumber
+            }
+          ]
+        }
+      ]
+    },
+    "biz_opaque_callback_data": "{{BizOpaqueCallbackData}}"
+  }
+
+  try {
+    await axios.post(url, whatsappParams, {
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${config.whatsapp.token}`
+      }
+    });
+  } catch (e) {
+    console.log(`Error while sending WhatsApp message to ${contactNumber} - `, e.message)
+    return false;
+  }
+
+  return true;
+};

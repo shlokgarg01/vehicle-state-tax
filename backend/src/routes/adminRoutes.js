@@ -7,6 +7,7 @@ import {
   createEmployee,
   dashboardAnalytics,
 } from "../controllers/adminController.js";
+import { resendTaxWhatsAppNotification } from "../controllers/taxController.js";
 import {
   isAuthenticatedUser,
   authorizeRoles,
@@ -62,6 +63,14 @@ adminRoutes.get(
   isAuthenticatedUser,
   authorizeRoles([CONSTANTS.USER_ROLES.ADMIN, CONSTANTS.USER_ROLES.MANAGER]),
   dashboardAnalytics
+);
+
+// resend tax via WhatsApp
+adminRoutes.post(
+  "/tax/send-whatsapp",
+  isAuthenticatedUser,
+  authorizeRoles([CONSTANTS.USER_ROLES.ADMIN, CONSTANTS.USER_ROLES.MANAGER]),
+  resendTaxWhatsAppNotification
 );
 
 export default adminRoutes;

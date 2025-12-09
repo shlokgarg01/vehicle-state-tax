@@ -26,6 +26,7 @@ const taxSchema = new mongoose.Schema(
     commission: { type: Number, default: 0 },
     fileUrl: { type: String, default: "" },
     isCompleted: { type: Boolean, default: false },
+    isWhatsAppNotificationSent: { type: Boolean, default: false },
     orderId: { type: String, default: "", required: true, unique: true },
     paymentId: { type: String, default: "" },
     paymentLink: { type: String, default: "" },

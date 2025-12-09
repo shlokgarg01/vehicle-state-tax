@@ -2,9 +2,9 @@
 import React, { useEffect, useRef, useState } from 'react'
 import { CCard, CCardBody, CRow, CCol, CContainer } from '@coreui/react'
 import CIcon from '@coreui/icons-react'
-import { cilCloudDownload, cilCloudUpload, cilCopy } from '@coreui/icons'
+import { cibWhatsapp, cilCloudDownload, cilCloudUpload, cilCopy } from '@coreui/icons'
 import { useDispatch, useSelector } from 'react-redux'
-import { getAllTaxes, updateTax, uploadTax } from '../../actions/orderActions'
+import { getAllTaxes, resendTaxWhatsApp, updateTax, uploadTax } from '../../actions/orderActions'
 import { removeSpaces, removeUnderScoreAndCapitalize } from '../../helpers/strings'
 import { showToast } from '../../utils/toast'
 import { TAX_CONSTANTS } from '../../constants/taxConstants'
@@ -54,6 +54,7 @@ const TaxCard = ({ data, onUploadComplete, setIsUploading }) => {
   const fileInputRef = useRef(null)
   const [localFileUrl, setLocalFileUrl] = useState(data.fileUrl)
   const [showRefundModal, setShowRefundModal] = useState(false)
+  const whatsappSent = data?.isWhatsAppNotificationSent
 
   const {
     loading: uploadLoading,
@@ -61,6 +62,13 @@ const TaxCard = ({ data, onUploadComplete, setIsUploading }) => {
     error: uploadError,
   } = useSelector((state) => state.uploadTax || {})
   const { loading: updateTaxLoading, success } = useSelector((state) => state.updateTax)
+  const {
+    loading: sendWhatsAppLoading,
+    success: sendWhatsAppSuccess,
+    error: sendWhatsAppError,
+    message: sendWhatsAppMessage,
+    currentOrderId: sendWhatsAppOrderId,
+  } = useSelector((state) => state.sendWhatsApp || {})
 
   const handleFileChange = (e) => {
     const file = e.target.files[0]
@@ -91,6 +99,16 @@ const TaxCard = ({ data, onUploadComplete, setIsUploading }) => {
       dispatch({ type: TAX_CONSTANTS.UPDATE_TAX_RESET })
     }
 
+    const isThisCard = sendWhatsAppOrderId === data.orderId
+    if (sendWhatsAppSuccess && isThisCard) {
+      showToast(sendWhatsAppMessage || 'WhatsApp notification sent')
+      dispatch({ type: TAX_CONSTANTS.SEND_WHATSAPP_RESET })
+    }
+    if (sendWhatsAppError && isThisCard) {
+      showToast(sendWhatsAppError, 'error')
+      dispatch({ type: TAX_CONSTANTS.SEND_WHATSAPP_RESET })
+    }
+
     if (uploadError) {
       showToast(uploadError, 'error')
       setIsUploading?.(false)
@@ -113,7 +131,7 @@ const TaxCard = ({ data, onUploadComplete, setIsUploading }) => {
       onUploadComplete?.()
       setIsUploading?.(false)
     }
-  }, [uploaded, uploadError, success])
+  }, [uploaded, uploadError, success, sendWhatsAppSuccess, sendWhatsAppError, sendWhatsAppOrderId])
 
   const rows = [
     data.vehicleNumber && (
@@ -167,7 +185,7 @@ const TaxCard = ({ data, onUploadComplete, setIsUploading }) => {
 
             {/* File Upload/Download */}
             <CRow className="mb-3 mt-1">
-              <CCol className="d-flex align-items-center justify-content-center justify-content-md-between gap-3">
+            <CCol className="d-flex align-items-center justify-content-center justify-content-md-between gap-3 flex-wrap">
                 {
                   data.status === CONSTANTS.ORDER_STATUS.CONFIRMED && <>
                     <button
@@ -192,16 +210,48 @@ const TaxCard = ({ data, onUploadComplete, setIsUploading }) => {
                   </>
                 }
                 {localFileUrl ? (
-                  <a
-                    target="_blank"
-                    href={localFileUrl}
-                    download
-                    className="text-decoration-none text-primary fw-semibold text-dark"
-                    onClick={(e) => e.stopPropagation()}
-                  >
-                    <CIcon icon={cilCloudDownload} className="me-2" />
-                    <span className="text-primary"> Download File</span>
-                  </a>
+                  <>
+                    <a
+                      target="_blank"
+                      href={localFileUrl}
+                      download
+                      className="text-decoration-none text-primary fw-semibold text-dark"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      <CIcon icon={cilCloudDownload} className="me-2" />
+                      <span className="text-primary"> Download File</span>
+                    </a>
+                    <div className="d-flex align-items-center gap-3 flex-wrap">
+                      <div
+                        className="d-flex align-items-center gap-2 px-3 py-2 rounded-3"
+                        style={{ backgroundColor: '#eef8f1' }}
+                      >
+                        <CIcon
+                          icon={cibWhatsapp}
+                          size="lg"
+                          className={whatsappSent ? 'text-success' : 'text-secondary'}
+                        />
+                        <div className="d-flex flex-column">
+                          <span className="text-muted small">WhatsApp</span>
+                          <span
+                            className={`small fw-semibold ${whatsappSent ? 'text-success' : 'text-secondary'}`}
+                          >
+                            {whatsappSent ? 'Sent' : 'Not sent'}
+                          </span>
+                        </div>
+                      </div>
+                      <button
+                        type="button"
+                        className="btn btn-outline-success btn-sm"
+                        disabled={sendWhatsAppLoading && sendWhatsAppOrderId === data.orderId}
+                        onClick={() => dispatch(resendTaxWhatsApp(data.orderId))}
+                      >
+                        {sendWhatsAppLoading && sendWhatsAppOrderId === data.orderId
+                          ? 'Sending...'
+                          : 'Resend'}
+                      </button>
+                    </div>
+                  </>
                 ) : data.status === CONSTANTS.ORDER_STATUS.CONFIRMED ? (
                   <>
                     <span

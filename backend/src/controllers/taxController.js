@@ -7,6 +7,8 @@ import CONSTANTS from "../constants/constants.js";
 import catchAsyncErrors from "../middlewares/catchAsyncErrors.js";
 import { uploadFile } from "../helpers/uploadHelpers.js";
 import { parseCustomDate } from '../helpers/dateHelper.js'
+import { sendTaxViaWhatsApp } from "../utils/sendNotifications.js";
+import { ErrorHandler } from "../utils/errorHandlerUtils.js";
 
 // Create a Tax Entry
 export const createTax = async (req, res) => {
@@ -211,11 +213,20 @@ export const uploadTax = catchAsyncErrors(async (req, res) => {
   const uploadResponse = await uploadFile(fileData, "new_taxes");
   let tax = {};
   if (uploadResponse.isUploaded) {
+    tax = await TaxManager.getTaxByOrderId(orderId);
+    let isWhatsAppNotificationSent = await sendTaxViaWhatsApp({
+      contactNumber: tax.mobileNumber,
+      vehicleNumber: tax.vehicleNumber,
+      fileUrl: uploadResponse.url,
+      filename: fileData.name || '',
+    });
+
     tax = await TaxManager.updateTaxByOrderId(orderId, {
       fileUrl: uploadResponse.url,
       isCompleted: true,
       whoCompleted: req.user._id,
       status: CONSTANTS.ORDER_STATUS.CLOSED,
+      isWhatsAppNotificationSent,
     });
   }
   res.status(uploadResponse.isUploaded ? 200 : 400).json({
@@ -225,6 +236,35 @@ export const uploadTax = catchAsyncErrors(async (req, res) => {
       url: uploadResponse.url,
       tax,
     },
+  });
+});
+
+export const resendTaxWhatsAppNotification = catchAsyncErrors(async (req, res, next) => {
+  const { orderId } = req.body;
+  if (!orderId) {
+    return next(new ErrorHandler("Order Id is required", 400));
+  }
+
+  const tax = await TaxManager.getTaxByOrderId(orderId);
+  if (!tax?.fileUrl) {
+    return next(new ErrorHandler("Tax file not available to send", 400));
+  }
+
+  const isWhatsAppNotificationSent = await sendTaxViaWhatsApp({
+    contactNumber: tax.mobileNumber,
+    vehicleNumber: tax.vehicleNumber,
+    fileUrl: tax.fileUrl,
+    filename: tax.fileUrl.split('/').pop() || 'tax-file',
+  });
+
+  await TaxManager.updateTaxByOrderId(orderId, {
+    isWhatsAppNotificationSent: tax.isWhatsAppNotificationSent || isWhatsAppNotificationSent
+  }); // set to true if not already sent
+
+  res.status(200).json({
+    success: true,
+    message: "WhatsApp notification sent successfully",
+    data: { isWhatsAppNotificationSent },
   });
 });
 

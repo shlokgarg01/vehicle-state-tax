@@ -26,6 +26,12 @@ const config = {
   firebase: {
     bucketName: process.env.FIREBASE_STORAGE_BUCKET_NAME,
   },
+
+  whatsapp: {
+    baseUrl: process.env.WHATSAPP_API_URL,
+    token: process.env.WHATSAPP_AUTH_TOKEN,
+    waId: process.env.WHATSAPP_API_WAID
+  }
 };
 
 export default config;

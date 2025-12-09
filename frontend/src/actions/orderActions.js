@@ -4,6 +4,7 @@ import axiosInstance from '../utils/config'
 import Constants from '../utils/constants'
 
 const TAX_PREFIX = '/api/v1/tax'
+const ADMIN_TAX_PREFIX = '/api/v1/admin/tax'
 
 export const createTax = (taxData) => async (dispatch) => {
   try {
@@ -94,6 +95,25 @@ export const uploadTax = (formData) => async (dispatch) => {
     dispatch({
       type: TAX_CONSTANTS.UPLOAD_TAX_FAIL,
       payload: error.response?.data?.message || error.message,
+    })
+  }
+}
+
+export const resendTaxWhatsApp = (orderId) => async (dispatch) => {
+  try {
+    dispatch({ type: TAX_CONSTANTS.SEND_WHATSAPP_REQUEST, meta: { orderId } })
+    const { data } = await axiosInstance.post(`${ADMIN_TAX_PREFIX}/send-whatsapp`, { orderId })
+
+    dispatch({
+      type: TAX_CONSTANTS.SEND_WHATSAPP_SUCCESS,
+      payload: data.message || 'WhatsApp notification sent',
+      meta: { orderId },
+    })
+  } catch (error) {
+    dispatch({
+      type: TAX_CONSTANTS.SEND_WHATSAPP_FAIL,
+      payload: error.response?.data?.message || error.message,
+      meta: { orderId },
     })
   }
 }

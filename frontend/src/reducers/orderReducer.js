@@ -72,3 +72,45 @@ export const uploadTaxReducer = (state = initialState, action) => {
       return state
   }
 }
+
+const sendWhatsAppInitial = {
+  loading: false,
+  success: false,
+  error: null,
+  message: null,
+  currentOrderId: null,
+}
+
+export const sendWhatsAppReducer = (state = sendWhatsAppInitial, action) => {
+  switch (action.type) {
+    case TAX_CONSTANTS.SEND_WHATSAPP_REQUEST:
+      return {
+        ...state,
+        loading: true,
+        success: false,
+        error: null,
+        message: null,
+        currentOrderId: action.meta?.orderId || null,
+      }
+    case TAX_CONSTANTS.SEND_WHATSAPP_SUCCESS:
+      return {
+        ...state,
+        loading: false,
+        success: true,
+        message: action.payload,
+        currentOrderId: action.meta?.orderId || null,
+      }
+    case TAX_CONSTANTS.SEND_WHATSAPP_FAIL:
+      return {
+        ...state,
+        loading: false,
+        success: false,
+        error: action.payload,
+        currentOrderId: action.meta?.orderId || null,
+      }
+    case TAX_CONSTANTS.SEND_WHATSAPP_RESET:
+      return sendWhatsAppInitial
+    default:
+      return state
+  }
+}
