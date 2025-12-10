@@ -6,6 +6,7 @@ import {
   viewManagers,
   createEmployee,
   dashboardAnalytics,
+  triggerUsersExport,
 } from "../controllers/adminController.js";
 import { resendTaxWhatsAppNotification } from "../controllers/taxController.js";
 import {
@@ -71,6 +72,14 @@ adminRoutes.post(
   isAuthenticatedUser,
   authorizeRoles([CONSTANTS.USER_ROLES.ADMIN, CONSTANTS.USER_ROLES.MANAGER]),
   resendTaxWhatsAppNotification
+);
+
+// trigger user export background job
+adminRoutes.post(
+  "/users/export",
+  isAuthenticatedUser,
+  authorizeRoles([CONSTANTS.USER_ROLES.ADMIN]),
+  triggerUsersExport
 );
 
 export default adminRoutes;

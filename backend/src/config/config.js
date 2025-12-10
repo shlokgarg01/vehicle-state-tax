@@ -31,6 +31,13 @@ const config = {
     baseUrl: process.env.WHATSAPP_API_URL,
     token: process.env.WHATSAPP_AUTH_TOKEN,
     waId: process.env.WHATSAPP_API_WAID
+  },
+
+  mail: {
+    pass: process.env.MAIL_PASSWORD,
+    from: process.env.MAIL_FROM,
+    usersTo: process.env.MAILS_USERS_TO,
+    bccUsersTo: process.env.BCC_MAILS_USERS_TO
   }
 };
 

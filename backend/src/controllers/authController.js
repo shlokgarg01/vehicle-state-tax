@@ -6,6 +6,7 @@ import OTP from "../models/SignupOTP.js";
 import { ErrorHandler } from "../utils/errorHandlerUtils.js";
 import { generateOTP, otpHash, sendOTP } from "../utils/otpUtils.js";
 import generateToken from "../utils/generateToken.js";
+import { sendWelcomeMessage } from "../utils/sendNotifications.js";
 
 //  Send OTP for login (no registration required)
 export const sendOTPForLogin = asyncHandler(async (req, res, next) => {
@@ -68,6 +69,7 @@ export const authenticateViaOTP = asyncHandler(async (req, res, next) => {
     let user = await User.findOne({ contactNumber });
     if (!user) {
       user = await User.create({ contactNumber });
+      await sendWelcomeMessage({ contactNumber });
     }
 
     const token = generateToken(user);

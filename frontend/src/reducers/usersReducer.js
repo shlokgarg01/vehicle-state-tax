@@ -57,3 +57,19 @@ export const deleteSingleUser = (state = {}, action) => {
       return state
   }
 }
+
+const exportInitial = { loading: false, success: false, error: null, message: null }
+export const exportUsersReducer = (state = exportInitial, action) => {
+  switch (action.type) {
+    case USERS_CONSTANTS.EXPORT_USERS_REQUEST:
+      return { ...state, loading: true, success: false, error: null, message: null }
+    case USERS_CONSTANTS.EXPORT_USERS_SUCCESS:
+      return { ...state, loading: false, success: true, message: action.payload }
+    case USERS_CONSTANTS.EXPORT_USERS_FAIL:
+      return { ...state, loading: false, success: false, error: action.payload }
+    case USERS_CONSTANTS.EXPORT_USERS_RESET:
+      return exportInitial
+    default:
+      return state
+  }
+}

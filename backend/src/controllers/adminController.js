@@ -6,6 +6,11 @@ import CONSTANTS from "../constants/constants.js";
 import { ErrorHandler } from "../utils/errorHandlerUtils.js";
 import Tax from "../models/Tax.js";
 import { deleteFile, uploadFile } from "../helpers/uploadHelpers.js";
+import fs from "fs";
+import os from "os";
+import path from "path";
+import { sendUsersListOnMail } from "../utils/sendNotifications.js";
+import { formatReadableDateTime } from "../helpers/dateHelper.js";
 
 export const createEmployee = asyncHandler(async (req, res, next) => {
   try {
@@ -271,6 +276,50 @@ export const searchUsers = asyncHandler(async (req, res) => {
       message: error.message,
     });
   }
+});
+
+export const triggerUsersExport = asyncHandler(async (req, res, next) => {
+  res.status(202).json({
+    success: true,
+    message: "User export started. You will receive the file on email soon.",
+  });
+
+  process.nextTick(async () => {
+    const tmpDir = path.join(os.tmpdir(), "user_exports");
+    await fs.promises.mkdir(tmpDir, { recursive: true });
+    const filePath = path.join(tmpDir, `users_${Date.now()}.csv`);
+    const writeStream = fs.createWriteStream(filePath, { encoding: "utf8" });
+    writeStream.write("S.No,Contact Number,Last Login,Created At\n");
+
+    try {
+      const cursor = User.find(
+        {},
+        { contactNumber: 1, lastLogin: 1, createdAt: 1, _id: 0 }
+      )
+      .sort({ lastLogin: -1 })
+      .cursor();
+
+      let index = 1;
+      for await (const user of cursor) {
+        const contact = user.contactNumber || "";
+        const lastLogin = user.lastLogin ? formatReadableDateTime(user.lastLogin) : "";
+        const createdAt = user.createdAt ? formatReadableDateTime(user.createdAt) : "";
+        writeStream.write(`${index},${contact},${lastLogin},${createdAt}\n`);
+        index += 1;
+      }
+
+      await new Promise((resolve, reject) => {
+        writeStream.end(() => resolve());
+        writeStream.on("error", reject);
+      });
+
+      await sendUsersListOnMail(filePath)
+    } catch (err) {
+      console.error("Error during user export job:", err.message);
+    } finally {
+      fs.promises.unlink(filePath).catch(() => {});
+    }
+  });
 });
 
 export const dashboardAnalytics = async (req, res) => {

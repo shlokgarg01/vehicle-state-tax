@@ -32,6 +32,7 @@ const rootReducer = combineReducers({
 
   users: taxUserReducer.usersReducer,
   deleteUser: taxUserReducer.deleteSingleUser,
+  exportUsers: taxUserReducer.exportUsersReducer,
 
   createEmployee: employeeReducer.createEmployeeReducer,
   getEmployee: employeeReducer.employeeGetReducer,
