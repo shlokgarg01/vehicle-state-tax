@@ -23,6 +23,7 @@ import CompleteOrder from './views/order/completeOrder'
 import searchOrder from './views/order/searchOrder'
 import RefundedOrder from './views/order/refundedOrder'
 import WhatsAppMessage from './views/pages/WhatsAppMessage'
+import AdminSettings from './views/pages/AdminSettings'
 
 const routes = [
   { path: '/', exact: true, name: 'Home', element: Home },
@@ -54,6 +55,7 @@ const routes = [
 
   { path: '/banners/list', name: 'List Banner ', element: BannerList },
   { path: '/whatsapp-message', name: 'WhatsApp Message', element: WhatsAppMessage },
+  { path: '/admin', name: 'Admin', element: AdminSettings },
 ]
 
 export default routes

@@ -9,6 +9,7 @@ import { uploadFile } from "../helpers/uploadHelpers.js";
 import { parseCustomDate } from '../helpers/dateHelper.js'
 import { sendTaxViaWhatsApp } from "../utils/sendNotifications.js";
 import { ErrorHandler } from "../utils/errorHandlerUtils.js";
+import ConstantsManager from "../managers/constantsManager.js";
 
 // Create a Tax Entry
 export const createTax = async (req, res) => {
@@ -214,12 +215,17 @@ export const uploadTax = catchAsyncErrors(async (req, res) => {
   let tax = {};
   if (uploadResponse.isUploaded) {
     tax = await TaxManager.getTaxByOrderId(orderId);
-    let isWhatsAppNotificationSent = await sendTaxViaWhatsApp({
-      contactNumber: tax.mobileNumber,
-      vehicleNumber: tax.vehicleNumber,
-      fileUrl: uploadResponse.url,
-      filename: fileData.name || '',
-    });
+    let isWhatsAppNotificationSent = false;
+
+    const shouldSendTaxWA = await ConstantsManager.getBooleanConstant('SEND_TAX_WHATSAPP', false);
+    if (shouldSendTaxWA) {
+      isWhatsAppNotificationSent = await sendTaxViaWhatsApp({
+        contactNumber: tax.mobileNumber,
+        vehicleNumber: tax.vehicleNumber,
+        fileUrl: uploadResponse.url,
+        filename: fileData.name || '',
+      });
+    }
 
     tax = await TaxManager.updateTaxByOrderId(orderId, {
       fileUrl: uploadResponse.url,
@@ -250,12 +256,16 @@ export const resendTaxWhatsAppNotification = catchAsyncErrors(async (req, res, n
     return next(new ErrorHandler("Tax file not available to send", 400));
   }
 
-  const isWhatsAppNotificationSent = await sendTaxViaWhatsApp({
-    contactNumber: tax.mobileNumber,
-    vehicleNumber: tax.vehicleNumber,
-    fileUrl: tax.fileUrl,
-    filename: tax.fileUrl.split('/').pop() || 'tax-file',
-  });
+  let isWhatsAppNotificationSent = false;
+  const shouldSendTaxWA = await ConstantsManager.getBooleanConstant('SEND_TAX_WHATSAPP', false);
+  if (shouldSendTaxWA) {
+    isWhatsAppNotificationSent = await sendTaxViaWhatsApp({
+      contactNumber: tax.mobileNumber,
+      vehicleNumber: tax.vehicleNumber,
+      fileUrl: tax.fileUrl,
+      filename: tax.fileUrl.split('/').pop() || 'tax-file',
+    });
+  }
 
   await TaxManager.updateTaxByOrderId(orderId, {
     isWhatsAppNotificationSent: tax.isWhatsAppNotificationSent || isWhatsAppNotificationSent

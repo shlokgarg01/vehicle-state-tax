@@ -7,6 +7,7 @@ import { ErrorHandler } from "../utils/errorHandlerUtils.js";
 import { generateOTP, otpHash, sendOTP } from "../utils/otpUtils.js";
 import generateToken from "../utils/generateToken.js";
 import { sendWelcomeMessage } from "../utils/sendNotifications.js";
+import ConstantsManager from "../managers/constantsManager.js";
 
 //  Send OTP for login (no registration required)
 export const sendOTPForLogin = asyncHandler(async (req, res, next) => {
@@ -69,7 +70,10 @@ export const authenticateViaOTP = asyncHandler(async (req, res, next) => {
     let user = await User.findOne({ contactNumber });
     if (!user) {
       user = await User.create({ contactNumber });
-      await sendWelcomeMessage({ contactNumber });
+      const shouldSendWelcome = await ConstantsManager.getBooleanConstant('SEND_WELCOME_WHATSAPP', false);
+      if (shouldSendWelcome) {
+        await sendWelcomeMessage({ contactNumber });
+      }
     }
 
     const token = generateToken(user);

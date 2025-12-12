@@ -65,6 +65,7 @@ const rootReducer = combineReducers({
 
   dashboard: dashboardReducer.dashboardReducer,
   whatsAppMessage: constantsReducer.whatsAppMessageReducer,
+  constants: constantsReducer.constantsReducer,
 })
 
 // ✅ persist config

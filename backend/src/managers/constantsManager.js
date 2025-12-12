@@ -50,6 +50,19 @@ class ConstantsManager {
     }
     return token.value;
   };
+
+  static getBooleanConstant = async (key, defaultValue = false) => {
+    const constant = await Constants.findOne({ key });
+    if (!constant || constant.value === undefined || constant.value === null) {
+      return defaultValue;
+    }
+
+    const val = String(constant.value).trim().toLowerCase();
+    if (["true", "1", "yes", "y", "on"].includes(val)) return true;
+    if (["false", "0", "no", "n", "off"].includes(val)) return false;
+
+    return defaultValue;
+  };
 }
 
 export default ConstantsManager;

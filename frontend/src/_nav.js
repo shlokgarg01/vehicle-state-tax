@@ -195,6 +195,12 @@ const _nav = (role) => {
       to: '/whatsapp-message',
       icon: <CIcon icon={cibWhatsapp} customClassName="nav-icon" />,
     },
+    isAdmin && {
+      component: CNavItem,
+      name: 'Admin',
+      to: '/admin',
+      icon: <CIcon icon={cilStar} customClassName="nav-icon" />,
+    },
   ].filter(Boolean)
 }
 
