@@ -20,9 +20,9 @@ export const sendTaxViaWhatsApp = async (params) => {
     "to": `91${contactNumber}`,
     "type": "template",
     "template": {
-      "name": "device_recovery",
+      "name": "order_confirm_tax_pdf",
       "language": {
-        "code": "en_US"
+        "code": "en"
       },
       "components": [
         {
