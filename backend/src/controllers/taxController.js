@@ -36,20 +36,20 @@ export const getAllTaxes = async (req, res) => {
     const { sort } = req.query;
     delete req.query['sort'];
 
-    // Initial query with deleted: false
-    const baseQuery = Tax.find()
-      .sort({ createdAt: sort === 'asc' ? 1 : -1 })
-      .populate("whoCompleted");
+    let baseQuery = Tax.find();
 
-    // Apply filters/search
+    // Apply filters/search BEFORE populate and sort for better performance
     let apiFeature = new ApiFeatures(baseQuery, req.query)
       .search()
       .filter();
 
-    // Get count BEFORE pagination — this is filtered count
-    const totalTaxes = await Tax.countDocuments(apiFeature.query.getFilter());
+    const filterObj = apiFeature.query.getQuery ? apiFeature.query.getQuery() : {};
+    const totalTaxes = await Tax.countDocuments(filterObj);
 
-    // Apply pagination after counting
+    // Sort after filtering to optimize index usage
+    apiFeature.query = apiFeature.query.sort({ createdAt: sort === 'asc' ? 1 : -1 });
+    apiFeature.query = apiFeature.query.populate("whoCompleted");
+    
     apiFeature = apiFeature.pagination(resultsPerPage);
     const taxes = await apiFeature.query;
 

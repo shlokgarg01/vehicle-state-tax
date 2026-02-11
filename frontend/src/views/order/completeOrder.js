@@ -8,7 +8,7 @@ import Pagination from '../../components/Pagination/Pagination'
 
 const CompleteOrder = () => {
   const dispatch = useDispatch()
-  const { taxes, loading, error, totalPages } = useSelector((state) => state.allTaxes)
+  const { taxes, loading, error, totalPages, totalTaxes } = useSelector((state) => state.allTaxes)
   const { user } = useSelector((state) => state.user)
   const [currentPage, setCurrentPage] = useState(1)
 
@@ -28,6 +28,13 @@ const CompleteOrder = () => {
     <div>
       {loading && <Loader />}
       {error && <div className="alert alert-danger">Error: {error}</div>}
+
+      <div className="d-flex justify-content-between align-items-center mt-2">
+        <h4 className="mb-0" />
+        <h6 className="text-muted">
+          Total Completed Taxes: <span className="fw-bold">{totalTaxes || 0}</span>
+        </h6>
+      </div>
 
       {!loading && completedTaxes?.length === 0 && (
         <div className="alert alert-warning">No pending tax entries found.</div>

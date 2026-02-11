@@ -23,7 +23,7 @@ const TaxSearch = () => {
     Constants.ORDER_STATUS.CLOSED,
   ])
 
-  const { loading, taxes = [], totalPages } = useSelector((state) => state.allTaxes || {})
+  const { loading, taxes = [], totalPages, totalTaxes } = useSelector((state) => state.allTaxes || {})
   const { user } = useSelector((state) => state.user)
   const [hasSearched, setHasSearched] = useState(false)
   const [currentPage, setCurrentPage] = useState(1)
@@ -145,6 +145,15 @@ const TaxSearch = () => {
           </CCol>
         </CRow>
       </CForm>
+
+      {hasSearched && (
+        <div className="d-flex justify-content-between align-items-center mt-2 mb-3">
+          <h4 className="mb-0" />
+          <h6 className="text-muted">
+            Total Taxes: <span className="fw-bold">{totalTaxes || 0}</span>
+          </h6>
+        </div>
+      )}
 
       {hasSearched && taxes.map((tax) => <TaxCard key={tax._id} data={tax} />)}
       {hasSearched && taxes.length > 0 && totalPages > 1 && (

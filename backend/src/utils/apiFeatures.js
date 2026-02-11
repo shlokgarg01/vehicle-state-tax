@@ -1,7 +1,23 @@
+import CONSTANTS from "../constants/constants.js";
+
 class ApiFeatures {
   constructor(query, queryStr) {
     this.query = query;
     this.queryStr = queryStr;
+  }
+
+  // Helper function to normalize category values (convert keys to values)
+  normalizeCategoryValue(value) {
+    // If value is a key in TAX_CATEGORIES, return the actual value
+    if (CONSTANTS.TAX_CATEGORIES[value]) {
+      return CONSTANTS.TAX_CATEGORIES[value];
+    }
+    // If value is a key in MODES, return the actual value
+    if (CONSTANTS.MODES[value]) {
+      return CONSTANTS.MODES[value];
+    }
+    // Otherwise return as-is
+    return value;
   }
 
   search(fields = []) {
@@ -46,9 +62,25 @@ class ApiFeatures {
 
   filter() {
     const queryCopy = { ...this.queryStr };
-    ["search", "page", "perPage"].forEach((key) => delete queryCopy[key]);
+    ["search", "page", "perPage", "sort"].forEach((key) => delete queryCopy[key]);
 
     const mongoFilter = [];
+
+    // Fields that should use exact match (enum fields, IDs, etc.)
+    // These fields benefit from index usage and don't need regex matching
+    const exactMatchFields = [
+      "status",
+      "category",
+      "taxMode",
+      "vehicleType",
+      "seatCapacity",
+      "userId",
+      "whoCompleted",
+      "orderId",
+      "paymentId",
+      "isCompleted",
+      "isWhatsAppNotificationSent",
+    ];
 
     Object.entries(queryCopy).forEach(([key, value]) => {
       if (
@@ -59,23 +91,27 @@ class ApiFeatures {
         return;
       }
 
-      // Exact match override (e.g., seatCapacity)
-      if (key === "seatCapacity") {
-        mongoFilter.push({ [key]: value });
-      }
-
-      // Array of values → OR of regex matches
-      else if (Array.isArray(value)) {
-        const orConditions = value.map((val) => ({
-          $expr: {
-            $regexMatch: {
-              input: { $toString: `$${key}` },
-              regex: val.toString(),
-              options: "i",
+      // Array of values → use $in for exact match fields, OR of regex matches for others
+      // Check arrays FIRST before checking exact match fields
+      if (Array.isArray(value)) {
+        if (exactMatchFields.includes(key)) {
+          // Normalize category values if needed
+          const normalizedValue = key === "category" 
+            ? value.map(v => this.normalizeCategoryValue(v))
+            : value;
+          mongoFilter.push({ [key]: { $in: normalizedValue } });
+        } else {
+          const orConditions = value.map((val) => ({
+            $expr: {
+              $regexMatch: {
+                input: { $toString: `$${key}` },
+                regex: val.toString(),
+                options: "i",
+              },
             },
-          },
-        }));
-        mongoFilter.push({ $or: orConditions });
+          }));
+          mongoFilter.push({ $or: orConditions });
+        }
       }
 
       // Object-based filters like { price: { gte: 1000 } }
@@ -87,7 +123,17 @@ class ApiFeatures {
         mongoFilter.push({ [key]: ops });
       }
 
-      // Partial string or number match
+      // Exact match for enum fields and IDs - uses indexes efficiently
+      // This handles single values (not arrays, not objects)
+      else if (exactMatchFields.includes(key)) {
+        // Normalize category values if needed (convert keys like "BORDER_TAX" to values like "border_tax")
+        const normalizedValue = key === "category" 
+          ? this.normalizeCategoryValue(value)
+          : value;
+        mongoFilter.push({ [key]: normalizedValue });
+      }
+
+      // Partial string or number match for non-enum fields
       else {
         mongoFilter.push({
           $expr: {

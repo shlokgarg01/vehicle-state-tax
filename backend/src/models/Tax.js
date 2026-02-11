@@ -54,5 +54,12 @@ const taxSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
+// Indexes
+taxSchema.index({ status: 1, createdAt: 1 });
+taxSchema.index({ status: 1 });
+taxSchema.index({ createdAt: -1 });
+taxSchema.index({ orderId: 1 });
+taxSchema.index({ userId: 1 });
+
 mongoose.set("debug", true);
 export default mongoose.model(COLLECTION_NAMES.TAX, taxSchema);
