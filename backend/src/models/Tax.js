@@ -27,6 +27,7 @@ const taxSchema = new mongoose.Schema(
     fileUrl: { type: String, default: "" },
     isCompleted: { type: Boolean, default: false },
     isWhatsAppNotificationSent: { type: Boolean, default: false },
+    isAmountRefunded: { type: Boolean, default: false },
     orderId: { type: String, default: "", required: true, unique: true },
     paymentId: { type: String, default: "" },
     paymentLink: { type: String, default: "" },

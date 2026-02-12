@@ -18,9 +18,11 @@ const TaxSearch = () => {
   const [mobile, setMobile] = useState('')
   const [vehicleNo, setVehicleNo] = useState('')
   const [mode, setMode] = useState('')
+  const [isAmountRefunded, setIsAmountRefunded] = useState('')
   const [filterStatus, _] = useState([
     Constants.ORDER_STATUS.CONFIRMED,
     Constants.ORDER_STATUS.CLOSED,
+    Constants.ORDER_STATUS.CANCELLED,
   ])
 
   const { loading, taxes = [], totalPages, totalTaxes } = useSelector((state) => state.allTaxes || {})
@@ -36,6 +38,7 @@ const TaxSearch = () => {
     if (mobile) updatedFilters.mobileNumber = mobile
     if (vehicleNo) updatedFilters.vehicleNumber = vehicleNo
     if (mode) updatedFilters.category = mode
+    if (isAmountRefunded !== '') updatedFilters.isAmountRefunded = isAmountRefunded === 'yes'
 
     setFilters(updatedFilters)
 
@@ -54,6 +57,7 @@ const TaxSearch = () => {
     setMobile('')
     setVehicleNo('')
     setMode('')
+    setIsAmountRefunded('')
     setHasSearched(false)
     setFilters({})
     dispatch(
@@ -67,15 +71,17 @@ const TaxSearch = () => {
   }
 
   useEffect(() => {
-    dispatch(
-      getAllTaxes({
-        ...filters,
-        status: filterStatus,
-        page: 1,
-        perPage: Constants.ITEMS_PER_PAGE,
-        // state: user?.states,
-      }),
-    )
+    if (hasSearched) {
+      dispatch(
+        getAllTaxes({
+          ...filters,
+          status: filterStatus,
+          page: currentPage,
+          perPage: Constants.ITEMS_PER_PAGE,
+          // state: user?.states,
+        }),
+      )
+    }
   }, [dispatch, currentPage])
 
   const modeOptions = user?.categories.length > 0 ? 
@@ -94,21 +100,21 @@ const TaxSearch = () => {
       <CForm onSubmit={handleSearch}>
         <CRow className="mb-4 g-3">
           {/* Mode Select */}
-          <CCol xs={12} lg={3}>
+          <CCol xs={12} lg={2}>
             <SelectBox
               placeholder="Mode"
               value={mode}
               onChange={(e) => setMode(e.target.value)}
               id="mode"
               options={modeOptions}
-              defaultOption="Select Mode"
+              defaultOption="Mode"
             />
           </CCol>
 
           {/* Mobile Number */}
-          <CCol xs={12} lg={3}>
+          <CCol xs={12} lg={2}>
             <TextInput
-              placeholder="Enter Mobile Number"
+              placeholder="Mobile Number"
               value={mobile}
               onChange={(e) => setMobile(e.target.value)}
               id="mobile"
@@ -116,17 +122,31 @@ const TaxSearch = () => {
           </CCol>
 
           {/* Vehicle Number */}
-          <CCol xs={12} lg={3}>
+          <CCol xs={12} lg={2}>
             <TextInput
-              placeholder="Enter Vehicle Number"
+              placeholder="Vehicle Number"
               value={vehicleNo}
               onChange={(e) => setVehicleNo(e.target.value)}
               id="vehicleNo"
             />
           </CCol>
 
-          {/* Buttons */}
-          <CCol xs={12} lg={3}>
+          {/* Amount Refunded Filter */}
+          <CCol xs={12} lg={2}>
+            <SelectBox
+              placeholder="Amount Refunded"
+              value={isAmountRefunded}
+              onChange={(e) => setIsAmountRefunded(e.target.value)}
+              id="isAmountRefunded"
+              options={[
+                { value: 'yes', label: 'Yes' },
+                { value: 'no', label: 'No' },
+              ]}
+              defaultOption="Amount Refunded"
+            />
+          </CCol>
+
+          <CCol xs={12} lg={4}>
             <CRow className="g-2">
               <CCol xs={6}>
                 <Button title="Search" type="submit" color="success" fullWidth fullHeight />
@@ -155,7 +175,7 @@ const TaxSearch = () => {
         </div>
       )}
 
-      {hasSearched && taxes.map((tax) => <TaxCard key={tax._id} data={tax} />)}
+      {hasSearched && taxes.map((tax) => <TaxCard key={tax._id} data={tax} showStatus />)}
       {hasSearched && taxes.length > 0 && totalPages > 1 && (
         <Pagination
           totalPages={totalPages}

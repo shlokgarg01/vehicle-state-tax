@@ -80,6 +80,7 @@ class ApiFeatures {
       "paymentId",
       "isCompleted",
       "isWhatsAppNotificationSent",
+      "isAmountRefunded",
     ];
 
     Object.entries(queryCopy).forEach(([key, value]) => {

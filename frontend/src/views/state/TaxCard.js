@@ -2,9 +2,9 @@
 import React, { useEffect, useRef, useState } from 'react'
 import { CCard, CCardBody, CRow, CCol, CContainer } from '@coreui/react'
 import CIcon from '@coreui/icons-react'
-import { cibWhatsapp, cilCloudDownload, cilCloudUpload, cilCopy } from '@coreui/icons'
+import { cibWhatsapp, cilCloudDownload, cilCloudUpload, cilCopy, cilPhone } from '@coreui/icons'
 import { useDispatch, useSelector } from 'react-redux'
-import { getAllTaxes, resendTaxWhatsApp, updateTax, uploadTax } from '../../actions/orderActions'
+import { resendTaxWhatsApp, updateTax, uploadTax } from '../../actions/orderActions'
 import { removeSpaces, removeUnderScoreAndCapitalize } from '../../helpers/strings'
 import { showToast } from '../../utils/toast'
 import { TAX_CONSTANTS } from '../../constants/taxConstants'
@@ -12,7 +12,7 @@ import { getDateFromDateString, getDateTimeFromDateString } from '../../helpers/
 import CONSTANTS from '../../utils/constants'
 import Modal from '../../components/Modal/Modal'
 
-const FieldRow = ({ label, value, copyable }) => {
+const FieldRow = ({ label, value, copyable, isPhone }) => {
   if (!value) return null
 
   const copyTextFallback = (text) => {
@@ -28,6 +28,19 @@ const FieldRow = ({ label, value, copyable }) => {
     document.body.removeChild(textArea)
   }
 
+  const handleCopy = () => {
+    navigator.clipboard ? navigator.clipboard.writeText(value) : copyTextFallback(value) // navigator.clipboard is null on apps deployed on HTTP, so in our case we were not able to copy on production, but it works on localhost. Hence using a fallback way.
+    showToast('Copied', 'success', 500)
+  }
+
+  const handleCall = () => {
+    window.open(`tel:${value}`, '_self')
+  }
+
+  const handleWhatsApp = () => {
+    window.open(`https://wa.me/${value}`, '_blank')
+  }
+
   return (
     <div className="d-flex flex-column">
       <strong className="text-dark">{label}</strong>
@@ -38,22 +51,41 @@ const FieldRow = ({ label, value, copyable }) => {
             icon={cilCopy}
             size="md"
             style={{ cursor: 'pointer' }}
-            onClick={() => {
-              navigator.clipboard ? navigator.clipboard.writeText(value) : copyTextFallback(value) // navigator.clipboard is null on apps deployed on HTTP, so in our case we were not able to copy on production, but it works on localhost. Hence using a fallback way.
-              showToast('Copied', 'success', 500)
-            }}
+            onClick={handleCopy}
+            className="me-1"
+            title="Copy"
           />
+        )}
+        {isPhone && (
+          <>
+            <CIcon
+              icon={cilPhone}
+              size="md"
+              style={{ cursor: 'pointer', color: '#007bff' , marginLeft: 5 }}
+              onClick={handleCall}
+              className="me-1"
+              title="Call"
+            />
+            <CIcon
+              icon={cibWhatsapp}
+              size="md"
+              style={{ cursor: 'pointer', color: '#25D366' , marginLeft: 5 }}
+              onClick={handleWhatsApp}
+              title="Open WhatsApp"
+            />
+          </>
         )}
       </div>
     </div>
   )
 }
 
-const TaxCard = ({ data, onUploadComplete, setIsUploading }) => {
+const TaxCard = ({ data, onUploadComplete, setIsUploading, showStatus }) => {
   const dispatch = useDispatch()
   const fileInputRef = useRef(null)
   const [localFileUrl, setLocalFileUrl] = useState(data.fileUrl)
   const [showRefundModal, setShowRefundModal] = useState(false)
+  const [showMarkRefundedModal, setShowMarkRefundedModal] = useState(false)
   const whatsappSent = data?.isWhatsAppNotificationSent
 
   const {
@@ -61,7 +93,7 @@ const TaxCard = ({ data, onUploadComplete, setIsUploading }) => {
     uploaded,
     error: uploadError,
   } = useSelector((state) => state.uploadTax || {})
-  const { loading: updateTaxLoading, success } = useSelector((state) => state.updateTax)
+  const { loading: updateTaxLoading, success, tax: updatedTax } = useSelector((state) => state.updateTax)
   const {
     loading: sendWhatsAppLoading,
     success: sendWhatsAppSuccess,
@@ -93,8 +125,13 @@ const TaxCard = ({ data, onUploadComplete, setIsUploading }) => {
     setShowRefundModal(false)
   }
 
+  const handleMarkAmountRefunded = () => {
+    dispatch(updateTax(data._id, { isAmountRefunded: true }))
+    setShowMarkRefundedModal(false)
+  }
+
   useEffect(() => {
-    if (success) {
+    if (success && updatedTax._id === data._id) {
       showToast('Tax Updated successfully')
       dispatch({ type: TAX_CONSTANTS.UPDATE_TAX_RESET })
     }
@@ -104,6 +141,7 @@ const TaxCard = ({ data, onUploadComplete, setIsUploading }) => {
       showToast(sendWhatsAppMessage || 'WhatsApp notification sent')
       dispatch({ type: TAX_CONSTANTS.SEND_WHATSAPP_RESET })
     }
+
     if (sendWhatsAppError && isThisCard) {
       showToast(sendWhatsAppError, 'error')
       dispatch({ type: TAX_CONSTANTS.SEND_WHATSAPP_RESET })
@@ -131,7 +169,7 @@ const TaxCard = ({ data, onUploadComplete, setIsUploading }) => {
       onUploadComplete?.()
       setIsUploading?.(false)
     }
-  }, [uploaded, uploadError, success, sendWhatsAppSuccess, sendWhatsAppError, sendWhatsAppOrderId])
+  }, [uploaded, uploadError, success, sendWhatsAppSuccess, sendWhatsAppError, sendWhatsAppOrderId, data._id, data.orderId, dispatch])
 
   const rows = [
     data.vehicleNumber && (
@@ -139,7 +177,7 @@ const TaxCard = ({ data, onUploadComplete, setIsUploading }) => {
     ),
     data.amount && <FieldRow label="Amount" value={`₹${data.amount}`} />,
 
-    data.mobileNumber && <FieldRow label="Mobile" value={data.mobileNumber} copyable />,
+    data.mobileNumber && <FieldRow label="Mobile" value={data.mobileNumber} copyable isPhone />,
     data.seatCapacity && <FieldRow label="Seating Capacity" value={data.seatCapacity} />,
     data.startDate && <FieldRow label="Tax From" value={getDateFromDateString(data.startDate)} />,
     data.endDate && <FieldRow label="Tax Upto" value={getDateFromDateString(data.endDate)} />,
@@ -166,9 +204,36 @@ const TaxCard = ({ data, onUploadComplete, setIsUploading }) => {
                   <h6 className="fw-bold text-uppercase mb-1">
                     {`${removeUnderScoreAndCapitalize(data.state)} - ${removeUnderScoreAndCapitalize(data.border)}`}
                   </h6>
-                  <h6 className="fw-bold text-uppercase mb-1">
-                    {removeUnderScoreAndCapitalize(data.category)}
-                  </h6>
+                  <div className="d-flex flex-column align-items-end">
+                    <h6 className="fw-bold text-uppercase mb-1">
+                      {removeUnderScoreAndCapitalize(data.category)}
+                    </h6>
+                    {showStatus && data.status && (
+                      <span
+                        className="badge"
+                        style={{
+                          backgroundColor:
+                            data.status === CONSTANTS.ORDER_STATUS.CONFIRMED
+                              ? '#28a745'
+                              : data.status === CONSTANTS.ORDER_STATUS.CLOSED
+                              ? '#007bff'
+                              : data.status === CONSTANTS.ORDER_STATUS.CANCELLED
+                              ? '#dc3545'
+                              : '#6c757d',
+                          color: 'white',
+                          fontSize: '0.75rem',
+                        }}
+                      >
+                        {data.status === CONSTANTS.ORDER_STATUS.CONFIRMED
+                          ? 'New'
+                          : data.status === CONSTANTS.ORDER_STATUS.CLOSED
+                          ? 'Completed'
+                          : data.status === CONSTANTS.ORDER_STATUS.CANCELLED
+                          ? 'Refunded'
+                          : removeUnderScoreAndCapitalize(data.status)}
+                      </span>
+                    )}
+                  </div>
                 </div>
                 <p className="text-muted small mb-0">{getDateTimeFromDateString(data.createdAt)}</p>
               </CCol>
@@ -208,6 +273,41 @@ const TaxCard = ({ data, onUploadComplete, setIsUploading }) => {
                       onSubmitBtnClick={handleRefundConfirm}
                     />
                   </>
+                }
+                {
+                  data.status === CONSTANTS.ORDER_STATUS.CANCELLED && (
+                    <>
+                      {data.isAmountRefunded ? (
+                        <div className="d-flex align-items-center gap-2">
+                          <span className="text-success fw-semibold">
+                            Amount Refunded
+                          </span>
+                        </div>
+                      ) : (
+                        <>
+                          <button
+                            className="btn btn-outline-success btn-sm"
+                            style={{ minWidth: 150 }}
+                            onClick={() => setShowMarkRefundedModal(true)}
+                            disabled={updateTaxLoading}
+                          >
+                            {updateTaxLoading ? 'Updating...' : 'Amount Refunded'}
+                          </button>
+                          <Modal
+                            visible={showMarkRefundedModal}
+                            onVisibleToggle={() => setShowMarkRefundedModal(false)}
+                            onClose={() => setShowMarkRefundedModal(false)}
+                            title="Mark Amount as Refunded"
+                            body={<div>Have you processed the refund from your side? This will mark the amount as refunded.</div>}
+                            closeBtnText="Cancel"
+                            submitBtnText="Yes, Mark as Refunded"
+                            submitBtnColor="success"
+                            onSubmitBtnClick={handleMarkAmountRefunded}
+                          />
+                        </>
+                      )}
+                    </>
+                  )
                 }
                 {localFileUrl ? (
                   <>

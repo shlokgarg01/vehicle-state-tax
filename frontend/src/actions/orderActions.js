@@ -31,7 +31,7 @@ export const updateTax = (id, taxData) => async (dispatch) => {
 
     dispatch({
       type: TAX_CONSTANTS.UPDATE_TAX_SUCCESS,
-      payload: data.tax,
+      payload: data.data.tax,
     })
   } catch (error) {
     dispatch({
