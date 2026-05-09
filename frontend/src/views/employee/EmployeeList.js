@@ -85,6 +85,10 @@ export default function EmployeeList() {
     error: deleteError,
   } = useSelector((state) => state.deleteEmployee)
 
+  const { user: loggedInUser } = useSelector((state) => state.user)
+  const canEditAdminPassword =
+    loggedInUser?.username === Constants.SUPER_ADMIN_USERNAME
+
   const [employee, setEmployee] = useState({ ...initial_employe, password: '' })
   const [editUser, setEditUser] = useState(initial_employe)
   const [editErrors, setEditErrors] = useState({})
@@ -686,7 +690,14 @@ export default function EmployeeList() {
         onSubmitBtnClick={handleUpdateUser}
         onClose={() => setIsEditModalVisible(false)}
         title="Edit Employee"
-        body={<UserForm userData={editUser} setUserData={setEditUser} errors={editErrors} />}
+        body={
+          <UserForm
+            userData={editUser}
+            setUserData={setEditUser}
+            errors={editErrors}
+            canEditAdminPassword={canEditAdminPassword}
+          />
+        }
         closeBtnText="Cancel"
         submitBtnText="Update"
         submitBtnColor="success"

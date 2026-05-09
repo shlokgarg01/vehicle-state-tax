@@ -14,6 +14,8 @@ const Constants = {
     ADMIN: 'admin',
     MANAGER: 'manager',
   },
+  /** Username that may set passwords when editing admin users (must match backend). */
+  SUPER_ADMIN_USERNAME: 'shlokAdmin',
   MODES: {
     BORDER_TAX: 'border_tax',
     ROAD_TAX: 'road_tax',

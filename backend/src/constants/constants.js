@@ -26,6 +26,8 @@ const CONSTANTS = {
     ADMIN: "admin",
     MANAGER: "manager",
   },
+  /** Username allowed to reset passwords for admin accounts (matches frontend). */
+  SUPER_ADMIN_USERNAME: "shlokAdmin",
   MODES: {
     BORDER_TAX: "border_tax",
     ROAD_TAX: "road_tax",

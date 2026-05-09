@@ -6,7 +6,7 @@ import SelectBox from './SelectBox'
 import States from '../../utils/states'
 import { removeUnderScoreAndCapitalize } from '../../helpers/strings'
 
-const UserForm = ({ userData, setUserData, errors }) => {
+const UserForm = ({ userData, setUserData, errors, canEditAdminPassword = false }) => {
   const [showPassword, setShowPassword] = useState(false)
   const handlePasswordToggle = () => {
     setShowPassword((prev) => !prev)
@@ -76,7 +76,7 @@ const UserForm = ({ userData, setUserData, errors }) => {
         }))}
         onChange={(selected) => setUserData({ ...userData, categories: selected })}
       />
-      {userData.role !== Constants.ROLES.ADMIN && (
+      {(userData.role !== Constants.ROLES.ADMIN || canEditAdminPassword) && (
         <TextInput
           label="Password"
           type={showPassword ? 'text' : 'password'}
