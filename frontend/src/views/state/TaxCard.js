@@ -2,7 +2,13 @@
 import React, { useEffect, useRef, useState } from 'react'
 import { CCard, CCardBody, CRow, CCol, CContainer } from '@coreui/react'
 import CIcon from '@coreui/icons-react'
-import { cibWhatsapp, cilCloudDownload, cilCloudUpload, cilCopy, cilPhone } from '@coreui/icons'
+import {
+  cibWhatsapp,
+  cilCloudDownload,
+  cilCloudUpload,
+  cilCopy,
+  cilPhone,
+} from '@coreui/icons'
 import { useDispatch, useSelector } from 'react-redux'
 import { resendTaxWhatsApp, updateTax, uploadTax } from '../../actions/orderActions'
 import { removeSpaces, removeUnderScoreAndCapitalize } from '../../helpers/strings'
@@ -14,6 +20,11 @@ import Modal from '../../components/Modal/Modal'
 
 const FieldRow = ({ label, value, copyable, isPhone }) => {
   if (!value) return null
+  const [showFullPhone, setShowFullPhone] = useState(false)
+
+  const normalizedValue = String(value)
+  const maskedPhoneNumber = `***${normalizedValue.slice(-4)}`
+  const displayedValue = isPhone && !showFullPhone ? maskedPhoneNumber : normalizedValue
 
   const copyTextFallback = (text) => {
     const textArea = document.createElement('textarea')
@@ -29,23 +40,25 @@ const FieldRow = ({ label, value, copyable, isPhone }) => {
   }
 
   const handleCopy = () => {
-    navigator.clipboard ? navigator.clipboard.writeText(value) : copyTextFallback(value) // navigator.clipboard is null on apps deployed on HTTP, so in our case we were not able to copy on production, but it works on localhost. Hence using a fallback way.
+    navigator.clipboard
+      ? navigator.clipboard.writeText(normalizedValue)
+      : copyTextFallback(normalizedValue) // navigator.clipboard is null on apps deployed on HTTP, so in our case we were not able to copy on production, but it works on localhost. Hence using a fallback way.
     showToast('Copied', 'success', 500)
   }
 
   const handleCall = () => {
-    window.open(`tel:${value}`, '_self')
+    window.open(`tel:${normalizedValue}`, '_self')
   }
 
   const handleWhatsApp = () => {
-    window.open(`https://wa.me/${value}`, '_blank')
+    window.open(`https://wa.me/${normalizedValue}`, '_blank')
   }
 
   return (
     <div className="d-flex flex-column">
       <strong className="text-dark">{label}</strong>
       <div className="d-flex align-items-center text-muted">
-        <span className="me-2 small">{value}</span>
+        <span className="me-2 small">{displayedValue}</span>
         {copyable && (
           <CIcon
             icon={cilCopy}
@@ -55,6 +68,52 @@ const FieldRow = ({ label, value, copyable, isPhone }) => {
             className="me-1"
             title="Copy"
           />
+        )}
+        {isPhone && (
+          <span
+            role="button"
+            aria-label={showFullPhone ? 'Hide Number' : 'Show Number'}
+            title={showFullPhone ? 'Hide Number' : 'Show Number'}
+            onClick={() => setShowFullPhone((prev) => !prev)}
+            className="me-1 d-inline-flex align-items-center"
+            style={{ cursor: 'pointer', marginLeft: 5 }}
+          >
+            {showFullPhone ? (
+              // Eye-off icon (hidden state)
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <path d="M17.94 17.94A10.94 10.94 0 0 1 12 20C5 20 1 12 1 12a21.77 21.77 0 0 1 5.06-7.94" />
+                <path d="M9.9 4.24A10.94 10.94 0 0 1 12 4c7 0 11 8 11 8a21.68 21.68 0 0 1-3.17 5.17" />
+                <path d="M14.12 14.12a3 3 0 0 1-4.24-4.24" />
+                <line x1="1" y1="1" x2="23" y2="23" />
+              </svg>
+            ) : (
+              // Eye icon (shown state)
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8S1 12 1 12z" />
+                <circle cx="12" cy="12" r="3" />
+              </svg>
+            )}
+          </span>
         )}
         {isPhone && (
           <>
@@ -82,6 +141,8 @@ const FieldRow = ({ label, value, copyable, isPhone }) => {
 
 const TaxCard = ({ data, onUploadComplete, setIsUploading, showStatus }) => {
   const dispatch = useDispatch()
+  const { user: loggedInUser } = useSelector((state) => state.user)
+  const canViewContactNumber = Boolean(loggedInUser?.canViewContactNumber)
   const fileInputRef = useRef(null)
   const [localFileUrl, setLocalFileUrl] = useState(data.fileUrl)
   const [showRefundModal, setShowRefundModal] = useState(false)
@@ -177,7 +238,9 @@ const TaxCard = ({ data, onUploadComplete, setIsUploading, showStatus }) => {
     ),
     data.amount && <FieldRow label="Amount" value={`₹${data.amount}`} />,
 
-    data.mobileNumber && <FieldRow label="Mobile" value={data.mobileNumber} copyable isPhone />,
+    data.mobileNumber && canViewContactNumber && (
+      <FieldRow label="Mobile" value={data.mobileNumber} copyable isPhone />
+    ),
     data.seatCapacity && <FieldRow label="Seating Capacity" value={data.seatCapacity} />,
     data.startDate && <FieldRow label="Tax From" value={getDateFromDateString(data.startDate)} />,
     data.endDate && <FieldRow label="Tax Upto" value={getDateFromDateString(data.endDate)} />,

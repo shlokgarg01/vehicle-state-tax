@@ -49,6 +49,10 @@ const employeeSchema = new Schema(
       enum: Object.values(CONSTANTS.STATUS),
       default: CONSTANTS.STATUS.ACTIVE,
     },
+    canViewContactNumber: {
+      type: Boolean,
+      default: false,
+    },
   },
   { timestamps: true }
 );

@@ -12,6 +12,16 @@ import path from "path";
 import { sendUsersListOnMail } from "../utils/sendNotifications.js";
 import { formatReadableDateTime } from "../helpers/dateHelper.js";
 
+const parseBooleanField = (value, defaultValue = false) => {
+  if (value === undefined || value === null || value === "") {
+    return defaultValue;
+  }
+  if (value === true || value === "true" || value === "on" || value === "1") {
+    return true;
+  }
+  return false;
+};
+
 export const createEmployee = asyncHandler(async (req, res, next) => {
   try {
     const { username, email, password, contactNumber, name } = req.body;
@@ -64,6 +74,7 @@ export const createEmployee = asyncHandler(async (req, res, next) => {
 
     const uploadResponse = image ? await uploadFile(image, "new_image") : null;
     const employeeImage = uploadResponse?.url || null;
+    const canViewContactNumber = parseBooleanField(req.body?.canViewContactNumber || false);
 
     const employee = await Employee.create({
       username,
@@ -74,6 +85,7 @@ export const createEmployee = asyncHandler(async (req, res, next) => {
       name,
       states,
       categories,
+      canViewContactNumber,
     });
 
     res.status(201).json({
@@ -90,6 +102,7 @@ export const createEmployee = asyncHandler(async (req, res, next) => {
         states: employee.states,
         categories: employee.categories,
         name: employee.name,
+        canViewContactNumber: employee.canViewContactNumber,
       },
     });
   } catch (error) {
@@ -193,6 +206,11 @@ export const updateEmployee = asyncHandler(async (req, res, next) => {
   if (status !== undefined) {
     employee.status = status;
   }
+
+  if (req.body.canViewContactNumber !== undefined) {
+    employee.canViewContactNumber = parseBooleanField(req.body.canViewContactNumber);
+  }
+
   if (employee.image) {
     await deleteFile(employee.image);
   }
@@ -222,6 +240,7 @@ export const updateEmployee = asyncHandler(async (req, res, next) => {
       name: employee.name,
       states: employee.states,
       categories: employee.categories,
+      canViewContactNumber: employee.canViewContactNumber,
     },
   });
 });

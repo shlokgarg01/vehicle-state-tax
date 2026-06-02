@@ -1,4 +1,5 @@
 import React, { useState } from 'react'
+import { CFormCheck } from '@coreui/react'
 import TextInput from './TextInput'
 import Constants from '../../utils/constants'
 import MultiSelectedBox from './MultiSelectedBox'
@@ -102,6 +103,14 @@ const UserForm = ({ userData, setUserData, errors, canEditAdminPassword = false 
           label: stat,
         }))}
         errors={errors}
+      />
+      <CFormCheck
+        id="canViewContactNumber"
+        label="View Order Contact Numbers"
+        checked={Boolean(userData.canViewContactNumber)}
+        onChange={(e) =>
+          setUserData({ ...userData, canViewContactNumber: e.target.checked })
+        }
       />
       {/* Image preview */}
       {userData.preview || userData.imageUrl ? (

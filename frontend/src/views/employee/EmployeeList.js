@@ -9,6 +9,7 @@ import {
   CCardHeader,
   CCol,
   CForm,
+  CFormCheck,
   CRow,
   CTable,
   CTableHead,
@@ -55,6 +56,7 @@ export default function EmployeeList() {
     name: '',
     states: [],
     categories: [],
+    canViewContactNumber: false,
   }
 
   // Redux: Create employee
@@ -137,6 +139,7 @@ export default function EmployeeList() {
     updatedEmployee.categories.forEach((category) => {
       formData.append('categories[]', category)
     })
+    formData.append('canViewContactNumber', String(Boolean(employee.canViewContactNumber)))
 
     dispatch(createEmployee(formData))
   }
@@ -204,6 +207,7 @@ export default function EmployeeList() {
     } else {
       formData.append('categories[]', '')
     }
+    formData.append('canViewContactNumber', String(Boolean(editUser.canViewContactNumber)))
 
     dispatch(updateSingleEmployee(editUser._id, formData))
     setIsEditModalVisible(false)
@@ -411,6 +415,20 @@ export default function EmployeeList() {
                     {editErrors?.contactNumber && (
                       <p className="text-danger small mt-1">{editErrors.contactNumber}</p>
                     )}
+                  </CCol>
+                </CRow>
+
+                <CRow className="mb-4 align-items-center">
+                  <CCol md={3} />
+                  <CCol md={9}>
+                    <CFormCheck
+                      id="create-canViewContactNumber"
+                      label="View Order Contact Numbers"
+                      checked={Boolean(employee.canViewContactNumber)}
+                      onChange={(e) =>
+                        setEmployee({ ...employee, canViewContactNumber: e.target.checked })
+                      }
+                    />
                   </CCol>
                 </CRow>
 
