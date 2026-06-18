@@ -9,6 +9,7 @@ import taxModeRoutes from "./taxModeRoutes.js";
 import priceRoutes from "./priceRoutes.js";
 import constantRoutes from "./constantsRoutes.js";
 import citiesRoutes from "./citiesRoutes.js";
+import walletRoutes from "./walletRoutes.js";
 
 const router = express.Router();
 
@@ -21,5 +22,6 @@ router.use("/taxMode", taxModeRoutes);
 router.use("/price", priceRoutes);
 router.use("/constants", constantRoutes)
 router.use('/cities', citiesRoutes)
+router.use("/wallet", walletRoutes)
 
 export default router;

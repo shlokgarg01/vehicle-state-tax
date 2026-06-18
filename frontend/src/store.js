@@ -14,6 +14,7 @@ import * as priceReducer from './reducers/priceReducer'
 import * as orderReducer from './reducers/orderReducer'
 import * as dashboardReducer from './reducers/dashboardReducer'
 import * as constantsReducer from './reducers/constantsReducer'
+import * as walletReducer from './reducers/walletReducer'
 const initialState = { sidebarShow: true }
 
 const toggleSidebar = (state = initialState, { type, ...rest }) => {
@@ -66,6 +67,10 @@ const rootReducer = combineReducers({
   dashboard: dashboardReducer.dashboardReducer,
   whatsAppMessage: constantsReducer.whatsAppMessageReducer,
   constants: constantsReducer.constantsReducer,
+  withdrawals: walletReducer.withdrawalsReducer,
+  completeWithdrawal: walletReducer.completeWithdrawalReducer,
+  rejectWithdrawal: walletReducer.rejectWithdrawalReducer,
+  refundToWallet: walletReducer.refundToWalletReducer,
 })
 
 // ✅ persist config

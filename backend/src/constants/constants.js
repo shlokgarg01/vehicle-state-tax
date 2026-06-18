@@ -11,6 +11,29 @@ const CONSTANTS = {
       SUCCESS: "SUCCESS",
     },
   },
+  PAYMENT_METHOD: {
+    GATEWAY: "gateway",
+    WALLET: "wallet",
+  },
+  PAYMENT_STATUS: {
+    PENDING: "pending",
+    COMPLETED: "completed",
+    FAILED: "failed",
+  },
+  WALLET_TRANSACTION_TYPE: {
+    TAX_DEBIT: "tax_debit",
+    REFUND_CREDIT: "refund_credit",
+    PAYMENT_ROLLBACK: "payment_rollback",
+    WITHDRAWAL_HOLD: "withdrawal_hold",
+    WITHDRAWAL_DEBIT: "withdrawal_debit",
+    WITHDRAWAL_RELEASE: "withdrawal_release",
+  },
+  WITHDRAWAL_STATUS: {
+    PENDING: "pending",
+    COMPLETED: "completed",
+    REJECTED: "rejected",
+    CANCELLED: "cancelled",
+  },
   TAX_CATEGORIES: {
     ROAD_TAX: "road_tax",
     BORDER_TAX: "border_tax",

@@ -10,6 +10,7 @@ import {
   cilBell,
   cilTruck,
   cibWhatsapp,
+  cilMoney,
 } from '@coreui/icons'
 import { CNavGroup, CNavItem } from '@coreui/react'
 import Constants from './utils/constants'
@@ -188,6 +189,12 @@ const _nav = (role) => {
           to: '/all_india_tax/price',
         },
       ],
+    },
+    isAdmin && {
+      component: CNavItem,
+      name: 'Wallet Withdrawals',
+      to: '/wallet/withdrawals',
+      icon: <CIcon icon={cilMoney} customClassName="nav-icon" />,
     },
     isAdmin && {
       component: CNavItem,

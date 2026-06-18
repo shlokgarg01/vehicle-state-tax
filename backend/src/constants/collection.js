@@ -8,7 +8,10 @@ const COLLECTION_NAMES = {
   TAX_MODE: "TaxMode",
   USER: "User",
   CONSTANTS: "Constants",
-  CITIES: "Cities"
+  CITIES: "Cities",
+  WALLET: "Wallet",
+  WALLET_TRANSACTION: "WalletTransaction",
+  WITHDRAWAL_REQUEST: "WithdrawalRequest",
 };
 
 export default COLLECTION_NAMES;

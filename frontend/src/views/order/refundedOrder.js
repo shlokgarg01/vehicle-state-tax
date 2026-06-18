@@ -12,6 +12,17 @@ const RefundedOrder = () => {
   const { user } = useSelector((state) => state.user)
   const [currentPage, setCurrentPage] = useState(1)
 
+  const refreshList = () => {
+    dispatch(
+      getAllTaxes({
+        status: Constants.ORDER_STATUS.CANCELLED,
+        page: currentPage,
+        state: user?.states,
+        category: user?.categories,
+      })
+    )
+  }
+
   useEffect(() => {
     dispatch(
       getAllTaxes({
@@ -41,7 +52,7 @@ const RefundedOrder = () => {
       )}
 
       {refundedTaxes?.map((tax) => (
-        <TaxCard key={tax._id} data={tax} />
+        <TaxCard key={tax._id} data={tax} onRefundComplete={refreshList} />
       ))}
       <Pagination
         currentPage={currentPage}

@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { CCard, CCardBody, CCardHeader, CCol, CForm, CFormSwitch, CRow } from '@coreui/react'
+import TextInput from '../../components/Form/TextInput'
 import Button from '../../components/Form/Button'
 import { showToast } from '../../utils/toast'
 import {
@@ -23,15 +24,19 @@ const AdminSettings = () => {
 
   const welcomeKey = 'SEND_WELCOME_WHATSAPP'
   const taxKey = 'SEND_TAX_WHATSAPP'
+  const refundPasswordKey = 'REFUND_PASSWORD'
   const initialWelcome = useMemo(() => toBool(values?.[welcomeKey]), [values?.[welcomeKey]])
   const initialTax = useMemo(() => toBool(values?.[taxKey]), [values?.[taxKey]])
+  const initialRefundPassword = values?.[refundPasswordKey] || ''
 
   const [welcomeToggle, setWelcomeToggle] = useState(false)
   const [taxToggle, setTaxToggle] = useState(false)
+  const [refundPassword, setRefundPassword] = useState('')
 
   useEffect(() => {
     dispatch(getConstantByKey(welcomeKey))
     dispatch(getConstantByKey(taxKey))
+    dispatch(getConstantByKey(refundPasswordKey))
   }, [dispatch])
 
   useEffect(() => {
@@ -43,6 +48,10 @@ const AdminSettings = () => {
   }, [initialTax])
 
   useEffect(() => {
+    setRefundPassword(initialRefundPassword)
+  }, [initialRefundPassword])
+
+  useEffect(() => {
     if (updated?.[welcomeKey]) {
       showToast('Welcome WhatsApp updated')
       dispatch(resetConstantUpdate(welcomeKey))
@@ -50,6 +59,10 @@ const AdminSettings = () => {
     if (updated?.[taxKey]) {
       showToast('Tax WhatsApp updated')
       dispatch(resetConstantUpdate(taxKey))
+    }
+    if (updated?.[refundPasswordKey]) {
+      showToast('Refund password updated')
+      dispatch(resetConstantUpdate(refundPasswordKey))
     }
   }, [updated, dispatch])
 
@@ -61,6 +74,10 @@ const AdminSettings = () => {
     if (errors?.[taxKey]) {
       showToast(errors[taxKey], 'error')
       dispatch(resetConstantUpdate(taxKey))
+    }
+    if (errors?.[refundPasswordKey]) {
+      showToast(errors[refundPasswordKey], 'error')
+      dispatch(resetConstantUpdate(refundPasswordKey))
     }
   }, [errors, dispatch])
 
@@ -74,6 +91,13 @@ const AdminSettings = () => {
     if (taxToggle !== initialTax) {
       changes.push({ key: taxKey, value: taxToggle })
     }
+    if (refundPassword !== initialRefundPassword) {
+      if (!refundPassword.trim()) {
+        showToast('Refund password cannot be empty', 'error')
+        return
+      }
+      changes.push({ key: refundPasswordKey, value: refundPassword.trim() })
+    }
 
     if (!changes.length) {
       showToast('No changes to update')
@@ -85,7 +109,8 @@ const AdminSettings = () => {
     )
   }
 
-  const isSubmitting = updating?.[welcomeKey] || updating?.[taxKey]
+  const isSubmitting =
+    updating?.[welcomeKey] || updating?.[taxKey] || updating?.[refundPasswordKey]
 
   return (
     <div className="container-fluid p-4">
@@ -118,6 +143,22 @@ const AdminSettings = () => {
                   checked={taxToggle}
                   onChange={(e) => setTaxToggle(e.target.checked)}
                 />
+              </CCol>
+            </CRow>
+
+            <CRow className="mb-4">
+              <CCol md={6}>
+                <TextInput
+                  label="Refund Password"
+                  type="password"
+                  placeholder="Enter refund password"
+                  value={refundPassword}
+                  onChange={(e) => setRefundPassword(e.target.value)}
+                  id="refundPassword"
+                />
+                <small className="text-muted">
+                  Required to refund cancelled orders to wallet
+                </small>
               </CCol>
             </CRow>
 

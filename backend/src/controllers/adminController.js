@@ -5,6 +5,9 @@ import Employee from "../models/Employee.js";
 import CONSTANTS from "../constants/constants.js";
 import { ErrorHandler } from "../utils/errorHandlerUtils.js";
 import Tax from "../models/Tax.js";
+import Wallet from "../models/Wallet.js";
+import WalletTransaction from "../models/WalletTransaction.js";
+import WithdrawalRequest from "../models/WithdrawalRequest.js";
 import { deleteFile, uploadFile } from "../helpers/uploadHelpers.js";
 import fs from "fs";
 import os from "os";
@@ -75,6 +78,7 @@ export const createEmployee = asyncHandler(async (req, res, next) => {
     const uploadResponse = image ? await uploadFile(image, "new_image") : null;
     const employeeImage = uploadResponse?.url || null;
     const canViewContactNumber = parseBooleanField(req.body?.canViewContactNumber || false);
+    const canRefund = parseBooleanField(req.body?.canRefund || false);
 
     const employee = await Employee.create({
       username,
@@ -86,6 +90,7 @@ export const createEmployee = asyncHandler(async (req, res, next) => {
       states,
       categories,
       canViewContactNumber,
+      canRefund,
     });
 
     res.status(201).json({
@@ -103,6 +108,7 @@ export const createEmployee = asyncHandler(async (req, res, next) => {
         categories: employee.categories,
         name: employee.name,
         canViewContactNumber: employee.canViewContactNumber,
+        canRefund: employee.canRefund,
       },
     });
   } catch (error) {
@@ -211,6 +217,10 @@ export const updateEmployee = asyncHandler(async (req, res, next) => {
     employee.canViewContactNumber = parseBooleanField(req.body.canViewContactNumber);
   }
 
+  if (req.body.canRefund !== undefined) {
+    employee.canRefund = parseBooleanField(req.body.canRefund);
+  }
+
   if (employee.image) {
     await deleteFile(employee.image);
   }
@@ -241,6 +251,7 @@ export const updateEmployee = asyncHandler(async (req, res, next) => {
       states: employee.states,
       categories: employee.categories,
       canViewContactNumber: employee.canViewContactNumber,
+      canRefund: employee.canRefund,
     },
   });
 });
@@ -381,6 +392,9 @@ export const dashboardAnalytics = async (req, res) => {
       totalAmount,
       totalRefundedAmount,
       totalCommission,
+      totalWalletBalance,
+      totalWithdrawalsProcessed,
+      totalWalletAmountUsed,
     ] = await Promise.all([
       User.countDocuments(baseQuery),
       Employee.countDocuments(baseQuery),
@@ -418,6 +432,27 @@ export const dashboardAnalytics = async (req, res) => {
         { $match: taxBaseQuery },
         { $group: { _id: null, total: { $sum: { $ifNull: ["$commission", 0] } } } }
       ]).then(result => result[0]?.total || 0),
+      Wallet.aggregate([
+        { $group: { _id: null, total: { $sum: { $ifNull: ["$balance", 0] } } } },
+      ]).then((result) => result[0]?.total || 0),
+      WithdrawalRequest.aggregate([
+        {
+          $match: {
+            status: CONSTANTS.WITHDRAWAL_STATUS.COMPLETED,
+            processedAt: { $gte: startDate, $lte: endDate },
+          },
+        },
+        { $group: { _id: null, total: { $sum: { $ifNull: ["$amount", 0] } } } },
+      ]).then((result) => result[0]?.total || 0),
+      WalletTransaction.aggregate([
+        {
+          $match: {
+            type: CONSTANTS.WALLET_TRANSACTION_TYPE.TAX_DEBIT,
+            createdAt: { $gte: startDate, $lte: endDate },
+          },
+        },
+        { $group: { _id: null, total: { $sum: { $ifNull: ["$amount", 0] } } } },
+      ]).then((result) => result[0]?.total || 0),
     ]);
 
     res.status(200).json({
@@ -435,6 +470,9 @@ export const dashboardAnalytics = async (req, res) => {
         totalRefundedAmount,
         totalAmount,
         totalCommission,
+        totalWalletBalance,
+        totalWithdrawalsProcessed,
+        totalWalletAmountUsed,
       },
     });
   } catch (error) {

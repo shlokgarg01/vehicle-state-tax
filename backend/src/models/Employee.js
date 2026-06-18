@@ -53,6 +53,10 @@ const employeeSchema = new Schema(
       type: Boolean,
       default: false,
     },
+    canRefund: {
+      type: Boolean,
+      default: false,
+    },
   },
   { timestamps: true }
 );

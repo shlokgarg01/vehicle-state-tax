@@ -77,6 +77,7 @@ const NewOrder = () => {
           key={tax._id}
           data={tax}
           onUploadComplete={handleRefresh}
+          onRefundComplete={handleRefresh}
           setIsUploading={setIsUploading}
         />
       ))}

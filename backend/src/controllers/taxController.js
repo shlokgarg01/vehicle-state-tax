@@ -106,7 +106,7 @@ export const getUserTaxHistory = async (req, res) => {
 
 export const createTaxAndPaymentURL = async (req, res) => {
   try {
-    const { orderId, amount, mobileNumber, category, ...taxData } = req.body;
+    const { orderId, amount, mobileNumber, category, paymentMethod, ...taxData } = req.body;
 
     let price = 0;
     if ([CONSTANTS.MODES.BORDER_TAX, CONSTANTS.MODES.ROAD_TAX].includes(taxData.category)) {
@@ -135,6 +135,32 @@ export const createTaxAndPaymentURL = async (req, res) => {
     }
     taxData.commission = commission
 
+    const selectedPaymentMethod = (paymentMethod || CONSTANTS.PAYMENT_METHOD.GATEWAY).toLowerCase();
+
+    if (selectedPaymentMethod === CONSTANTS.PAYMENT_METHOD.WALLET) {
+      const result = await TaxManager.createTaxWithWalletPayment(req.user?._id, {
+        ...taxData,
+        category,
+        orderId,
+        amount,
+        mobileNumber,
+      });
+
+      return res.status(200).json({
+        success: true,
+        message: result.requiresGateway
+          ? "Partial wallet payment applied. Complete remaining amount via gateway."
+          : "Payment completed via wallet.",
+        data: {
+          paymentLink: result.paymentLink,
+          taxEntry: result.taxEntry,
+          walletAmountPaid: result.walletAmountPaid,
+          gatewayAmountPaid: result.gatewayAmountPaid,
+          requiresGateway: result.requiresGateway,
+        },
+      });
+    }
+
     const paymentLink = await TaxManager.createPaymentLink(
       orderId,
       amount,
@@ -147,6 +173,9 @@ export const createTaxAndPaymentURL = async (req, res) => {
       amount,
       mobileNumber,
       paymentLink,
+      paymentMethod: CONSTANTS.PAYMENT_METHOD.GATEWAY,
+      gatewayAmountPaid: amount,
+      paymentStatus: CONSTANTS.PAYMENT_STATUS.PENDING,
     });
 
     res.status(200).json({
@@ -165,15 +194,25 @@ export const createTaxAndPaymentURL = async (req, res) => {
 export const paymentStatusCheck = async (req, res) => {
   try {
     const { orderId } = req.params;
+    let tax = await TaxManager.getTaxByOrderId(orderId);
+
+    if (tax.paymentStatus === CONSTANTS.PAYMENT_STATUS.FAILED) {
+      return res.status(400).json({
+        success: false,
+        message: "Payment failed. Wallet amount has been refunded.",
+        data: { tax },
+      });
+    }
+
     const isPaymentCompleted = await TaxManager.getPaymentStatus(orderId);
 
     if (isPaymentCompleted) {
-      let tax = await TaxManager.getTaxByOrderId(orderId);
       if (tax.status === CONSTANTS.ORDER_STATUS.CREATED) {
         tax = await TaxManager.updateTaxByOrderId(orderId, {
           status: CONSTANTS.ORDER_STATUS.CONFIRMED,
+          paymentStatus: CONSTANTS.PAYMENT_STATUS.COMPLETED,
         });
-        res.status(200).json({
+        return res.status(200).json({
           success: true,
           message: "Payment is successful.",
           data: { tax },
@@ -190,6 +229,7 @@ export const paymentStatusCheck = async (req, res) => {
     res.status(400).json({
       success: false,
       message: "Payment not completed yet.",
+      data: { tax },
     });
   } catch (e) {
     res.status(500).json({
@@ -296,6 +336,33 @@ export const updateTax = async (req, res) => {
     res.status(500).json({ success: false, message: error.message });
   }
 };
+
+export const refundTaxToWallet = catchAsyncErrors(async (req, res, next) => {
+  const { id } = req.params;
+  const { password } = req.body || {};
+
+  const isAdmin = req.user.role === CONSTANTS.USER_ROLES.ADMIN;
+  if (!isAdmin && !req.user.canRefund) {
+    return next(new ErrorHandler("You are not allowed to refund to wallet", 403));
+  }
+
+  if (!password) {
+    return next(new ErrorHandler("Password is required", 400));
+  }
+
+  const storedPassword = await ConstantsManager.getConstantValue("REFUND_PASSWORD");
+  if (!storedPassword || password !== storedPassword) {
+    return next(new ErrorHandler("Invalid refund password", 403));
+  }
+
+  const tax = await TaxManager.refundTaxToWallet(id);
+
+  res.status(200).json({
+    success: true,
+    message: "Full amount refunded to user wallet",
+    data: { tax },
+  });
+});
 
 export const paymentRedirect = async (req, res) => {
   try {

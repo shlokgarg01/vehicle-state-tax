@@ -112,6 +112,14 @@ const UserForm = ({ userData, setUserData, errors, canEditAdminPassword = false 
           setUserData({ ...userData, canViewContactNumber: e.target.checked })
         }
       />
+      <CFormCheck
+        id="canRefund"
+        label="Can Refund to Wallet"
+        checked={Boolean(userData.canRefund)}
+        onChange={(e) =>
+          setUserData({ ...userData, canRefund: e.target.checked })
+        }
+      />
       {/* Image preview */}
       {userData.preview || userData.imageUrl ? (
         <img

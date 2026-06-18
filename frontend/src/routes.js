@@ -24,9 +24,10 @@ import searchOrder from './views/order/searchOrder'
 import RefundedOrder from './views/order/refundedOrder'
 import WhatsAppMessage from './views/pages/WhatsAppMessage'
 import AdminSettings from './views/pages/AdminSettings'
+import WithdrawalList from './views/wallet/WithdrawalList'
 
 const routes = [
-  { path: '/', exact: true, name: 'Home', element: Home },
+  { path: '/', exact: true, name: 'Home', element: Home, adminOnly: true },
 
   { path: '/orders/new', name: 'Create Price', element: newOrder },
   { path: '/orders/completed', name: 'Create Price', element: CompleteOrder },
@@ -56,6 +57,7 @@ const routes = [
   { path: '/banners/list', name: 'List Banner ', element: BannerList },
   { path: '/whatsapp-message', name: 'WhatsApp Message', element: WhatsAppMessage },
   { path: '/admin', name: 'Admin', element: AdminSettings },
+  { path: '/wallet/withdrawals', name: 'Wallet Withdrawals', element: WithdrawalList, adminOnly: true },
 ]
 
 export default routes

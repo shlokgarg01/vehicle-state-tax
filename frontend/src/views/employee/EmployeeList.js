@@ -57,6 +57,7 @@ export default function EmployeeList() {
     states: [],
     categories: [],
     canViewContactNumber: false,
+    canRefund: false,
   }
 
   // Redux: Create employee
@@ -140,6 +141,7 @@ export default function EmployeeList() {
       formData.append('categories[]', category)
     })
     formData.append('canViewContactNumber', String(Boolean(employee.canViewContactNumber)))
+    formData.append('canRefund', String(Boolean(employee.canRefund)))
 
     dispatch(createEmployee(formData))
   }
@@ -208,6 +210,7 @@ export default function EmployeeList() {
       formData.append('categories[]', '')
     }
     formData.append('canViewContactNumber', String(Boolean(editUser.canViewContactNumber)))
+    formData.append('canRefund', String(Boolean(editUser.canRefund)))
 
     dispatch(updateSingleEmployee(editUser._id, formData))
     setIsEditModalVisible(false)
@@ -427,6 +430,20 @@ export default function EmployeeList() {
                       checked={Boolean(employee.canViewContactNumber)}
                       onChange={(e) =>
                         setEmployee({ ...employee, canViewContactNumber: e.target.checked })
+                      }
+                    />
+                  </CCol>
+                </CRow>
+
+                <CRow className="mb-4 align-items-center">
+                  <CCol md={3} />
+                  <CCol md={9}>
+                    <CFormCheck
+                      id="create-canRefund"
+                      label="Can Refund to Wallet"
+                      checked={Boolean(employee.canRefund)}
+                      onChange={(e) =>
+                        setEmployee({ ...employee, canRefund: e.target.checked })
                       }
                     />
                   </CCol>

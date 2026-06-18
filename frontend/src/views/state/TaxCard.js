@@ -11,6 +11,8 @@ import {
 } from '@coreui/icons'
 import { useDispatch, useSelector } from 'react-redux'
 import { resendTaxWhatsApp, updateTax, uploadTax } from '../../actions/orderActions'
+import { refundTaxToWallet } from '../../actions/walletAction'
+import { WALLET_CONSTANTS } from '../../constants/walletConstants'
 import { removeSpaces, removeUnderScoreAndCapitalize } from '../../helpers/strings'
 import { showToast } from '../../utils/toast'
 import { TAX_CONSTANTS } from '../../constants/taxConstants'
@@ -139,13 +141,17 @@ const FieldRow = ({ label, value, copyable, isPhone }) => {
   )
 }
 
-const TaxCard = ({ data, onUploadComplete, setIsUploading, showStatus }) => {
+const TaxCard = ({ data, onUploadComplete, onRefundComplete, setIsUploading, showStatus }) => {
   const dispatch = useDispatch()
   const { user: loggedInUser } = useSelector((state) => state.user)
   const canViewContactNumber = Boolean(loggedInUser?.canViewContactNumber)
+  const canRefundToWallet =
+    loggedInUser?.role === CONSTANTS.ROLES.ADMIN || Boolean(loggedInUser?.canRefund)
   const fileInputRef = useRef(null)
   const [localFileUrl, setLocalFileUrl] = useState(data.fileUrl)
+  const [showCancelModal, setShowCancelModal] = useState(false)
   const [showRefundModal, setShowRefundModal] = useState(false)
+  const [refundPassword, setRefundPassword] = useState('')
   const [showMarkRefundedModal, setShowMarkRefundedModal] = useState(false)
   const whatsappSent = data?.isWhatsAppNotificationSent
 
@@ -155,6 +161,13 @@ const TaxCard = ({ data, onUploadComplete, setIsUploading, showStatus }) => {
     error: uploadError,
   } = useSelector((state) => state.uploadTax || {})
   const { loading: updateTaxLoading, success, tax: updatedTax } = useSelector((state) => state.updateTax)
+  const {
+    loading: refundLoading,
+    success: refundSuccess,
+    tax: refundedTax,
+    error: refundError,
+    currentTaxId: refundTaxId,
+  } = useSelector((state) => state.refundToWallet || {})
   const {
     loading: sendWhatsAppLoading,
     success: sendWhatsAppSuccess,
@@ -181,9 +194,19 @@ const TaxCard = ({ data, onUploadComplete, setIsUploading, showStatus }) => {
     dispatch(uploadTax(formData))
   }
 
-  const handleRefundConfirm = () => {
+  const handleCancelConfirm = () => {
     dispatch(updateTax(data._id, { status: CONSTANTS.ORDER_STATUS.CANCELLED }))
+    setShowCancelModal(false)
+  }
+
+  const handleRefundToWalletConfirm = () => {
+    if (!refundPassword.trim()) {
+      showToast('Please enter the refund password', 'error')
+      return
+    }
+    dispatch(refundTaxToWallet(data._id, refundPassword.trim()))
     setShowRefundModal(false)
+    setRefundPassword('')
   }
 
   const handleMarkAmountRefunded = () => {
@@ -195,6 +218,17 @@ const TaxCard = ({ data, onUploadComplete, setIsUploading, showStatus }) => {
     if (success && updatedTax._id === data._id) {
       showToast('Tax Updated successfully')
       dispatch({ type: TAX_CONSTANTS.UPDATE_TAX_RESET })
+    }
+
+    if (refundSuccess && refundedTax?._id === data._id) {
+      showToast('Full amount refunded to user wallet')
+      dispatch({ type: WALLET_CONSTANTS.REFUND_TO_WALLET_RESET })
+      onRefundComplete?.()
+    }
+
+    if (refundError && refundTaxId === data._id) {
+      showToast(refundError, 'error')
+      dispatch({ type: WALLET_CONSTANTS.REFUND_TO_WALLET_RESET })
     }
 
     const isThisCard = sendWhatsAppOrderId === data.orderId
@@ -230,13 +264,25 @@ const TaxCard = ({ data, onUploadComplete, setIsUploading, showStatus }) => {
       onUploadComplete?.()
       setIsUploading?.(false)
     }
-  }, [uploaded, uploadError, success, sendWhatsAppSuccess, sendWhatsAppError, sendWhatsAppOrderId, data._id, data.orderId, dispatch])
+  }, [uploaded, uploadError, success, refundSuccess, refundError, refundedTax, refundTaxId, sendWhatsAppSuccess, sendWhatsAppError, sendWhatsAppOrderId, data._id, data.orderId, dispatch])
 
   const rows = [
     data.vehicleNumber && (
       <FieldRow label="Vehicle No." value={removeSpaces(data.vehicleNumber)} copyable />
     ),
     data.amount && <FieldRow label="Amount" value={`₹${data.amount}`} />,
+    data.paymentMethod && (
+      <FieldRow
+        label="Payment"
+        value={
+          data.paymentMethod === 'wallet'
+            ? data.gatewayAmountPaid > 0
+              ? `Wallet ₹${data.walletAmountPaid || 0} + Gateway ₹${data.gatewayAmountPaid}`
+              : `Wallet ₹${data.walletAmountPaid || data.amount}`
+            : 'Gateway'
+        }
+      />
+    ),
 
     data.mobileNumber && canViewContactNumber && (
       <FieldRow label="Mobile" value={data.mobileNumber} copyable isPhone />
@@ -319,37 +365,91 @@ const TaxCard = ({ data, onUploadComplete, setIsUploading, showStatus }) => {
                     <button
                       className="btn btn-outline-danger btn-sm"
                       style={{ minWidth: 90 }}
-                      onClick={() => setShowRefundModal(true)}
+                      onClick={() => setShowCancelModal(true)}
                       disabled={updateTaxLoading}
                     >
-                      {updateTaxLoading ? 'Refunding...' : 'Refund'}
+                      {updateTaxLoading ? 'Cancelling...' : 'Cancel Order'}
                     </button>
                     <Modal
-                      visible={showRefundModal}
-                      onVisibleToggle={() => setShowRefundModal(false)}
-                      onClose={() => setShowRefundModal(false)}
-                      title="Refund Tax"
-                      body={<div>Are you sure you want to refund this tax?</div>}
+                      visible={showCancelModal}
+                      onVisibleToggle={() => setShowCancelModal(false)}
+                      onClose={() => setShowCancelModal(false)}
+                      title="Cancel Order"
+                      body={
+                        <div>
+                          Are you sure you want to cancel this order? The amount will not be refunded automatically.
+                        </div>
+                      }
                       closeBtnText="No"
-                      submitBtnText="Yes, Refund"
+                      submitBtnText="Yes, Cancel"
                       submitBtnColor="danger"
-                      onSubmitBtnClick={handleRefundConfirm}
+                      onSubmitBtnClick={handleCancelConfirm}
                     />
                   </>
                 }
                 {
                   data.status === CONSTANTS.ORDER_STATUS.CANCELLED && (
                     <>
-                      {data.isAmountRefunded ? (
+                      {data.refundedToWallet ? (
                         <div className="d-flex align-items-center gap-2">
                           <span className="text-success fw-semibold">
-                            Amount Refunded
+                            Credited to Wallet
+                          </span>
+                        </div>
+                      ) : data.isAmountRefunded ? (
+                        <div className="d-flex align-items-center gap-2">
+                          <span className="text-success fw-semibold">
+                            Refunded via Gateway
                           </span>
                         </div>
                       ) : (
                         <>
+                          {canRefundToWallet && (
+                            <>
+                              <button
+                                className="btn btn-outline-success btn-sm"
+                                style={{ minWidth: 150 }}
+                                onClick={() => setShowRefundModal(true)}
+                                disabled={refundLoading && refundTaxId === data._id}
+                              >
+                                {refundLoading && refundTaxId === data._id
+                                  ? 'Refunding...'
+                                  : 'Refund to Wallet'}
+                              </button>
+                              <Modal
+                                visible={showRefundModal}
+                                onVisibleToggle={() => {
+                                  setShowRefundModal(false)
+                                  setRefundPassword('')
+                                }}
+                                onClose={() => {
+                                  setShowRefundModal(false)
+                                  setRefundPassword('')
+                                }}
+                                title="Refund to Wallet"
+                                body={
+                                  <div>
+                                    <p className="mb-2">
+                                      Enter the refund password to credit ₹{data.amount} to the user&apos;s wallet.
+                                    </p>
+                                    <input
+                                      type="password"
+                                      className="form-control"
+                                      placeholder="Refund password"
+                                      value={refundPassword}
+                                      onChange={(e) => setRefundPassword(e.target.value)}
+                                    />
+                                  </div>
+                                }
+                                closeBtnText="Cancel"
+                                submitBtnText="Refund"
+                                submitBtnColor="success"
+                                onSubmitBtnClick={handleRefundToWalletConfirm}
+                              />
+                            </>
+                          )}
                           <button
-                            className="btn btn-outline-success btn-sm"
+                            className="btn btn-outline-secondary btn-sm"
                             style={{ minWidth: 150 }}
                             onClick={() => setShowMarkRefundedModal(true)}
                             disabled={updateTaxLoading}

@@ -51,6 +51,14 @@ class ConstantsManager {
     return token.value;
   };
 
+  static getConstantValue = async (key, defaultValue = "") => {
+    const constant = await Constants.findOne({ key });
+    if (!constant || constant.value === undefined || constant.value === null) {
+      return defaultValue;
+    }
+    return String(constant.value);
+  };
+
   static getBooleanConstant = async (key, defaultValue = false) => {
     const constant = await Constants.findOne({ key });
     if (!constant || constant.value === undefined || constant.value === null) {

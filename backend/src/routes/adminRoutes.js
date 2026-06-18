@@ -8,7 +8,12 @@ import {
   dashboardAnalytics,
   triggerUsersExport,
 } from "../controllers/adminController.js";
-import { resendTaxWhatsAppNotification } from "../controllers/taxController.js";
+import { resendTaxWhatsAppNotification, refundTaxToWallet } from "../controllers/taxController.js";
+import {
+  getAllWithdrawals,
+  completeWithdrawal,
+  rejectWithdrawal,
+} from "../controllers/walletController.js";
 import {
   isAuthenticatedUser,
   authorizeRoles,
@@ -80,6 +85,36 @@ adminRoutes.post(
   isAuthenticatedUser,
   authorizeRoles([CONSTANTS.USER_ROLES.ADMIN]),
   triggerUsersExport
+);
+
+// wallet withdrawals
+adminRoutes.get(
+  "/wallet/withdrawals",
+  isAuthenticatedUser,
+  authorizeRoles([CONSTANTS.USER_ROLES.ADMIN]),
+  getAllWithdrawals
+);
+
+adminRoutes.put(
+  "/wallet/withdrawals/:id/complete",
+  isAuthenticatedUser,
+  authorizeRoles([CONSTANTS.USER_ROLES.ADMIN]),
+  completeWithdrawal
+);
+
+adminRoutes.put(
+  "/wallet/withdrawals/:id/reject",
+  isAuthenticatedUser,
+  authorizeRoles([CONSTANTS.USER_ROLES.ADMIN]),
+  rejectWithdrawal
+);
+
+// refund tax to wallet
+adminRoutes.post(
+  "/tax/:id/refund-to-wallet",
+  isAuthenticatedUser,
+  authorizeRoles([CONSTANTS.USER_ROLES.ADMIN, CONSTANTS.USER_ROLES.MANAGER]),
+  refundTaxToWallet
 );
 
 export default adminRoutes;

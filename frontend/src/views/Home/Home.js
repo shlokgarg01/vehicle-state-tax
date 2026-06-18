@@ -1,7 +1,7 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import React, { useEffect, useRef, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
-import { CWidgetStatsA, CCol, CRow, CSpinner, CContainer } from '@coreui/react'
+import { CWidgetStatsA, CSpinner, CContainer } from '@coreui/react'
 import { CChartLine } from '@coreui/react-chartjs'
 import { getStyle } from '@coreui/utils'
 import { getDashboardData } from '../../actions/dashboardAction'
@@ -13,82 +13,59 @@ const getRandomNumbers = () =>
   Array.from({ length: 7 }, () => Math.floor(Math.random() * (79 - 40 + 1)) + 40)
 
 const DashboardCard = ({ title, value, color }) => {
-  const widgetChartRef1 = useRef(null)
+  const widgetChartRef = useRef(null)
 
   return (
-    <CCol sm={6} md={4} lg={3} className="mb-4">
-      <CWidgetStatsA
-        color={color}
-        value={
-          <>
-            {value} <div className="fs-8 fw-normal">{title}</div>
-          </>
-        }
-        chart={
-          <CChartLine
-            ref={widgetChartRef1}
-            className="mt-3 mx-3"
-            style={{ height: '70px' }}
-            data={{
-              labels: ['', '', '', '', '', '', ''],
-              datasets: [
-                {
-                  label: '',
-                  backgroundColor: 'transparent',
-                  borderColor: 'rgba(255,255,255,.55)',
-                  pointBackgroundColor: getStyle(`--cui-${color}`),
-                  data: getRandomNumbers(),
-                },
-              ],
-            }}
-            options={{
-              plugins: {
-                legend: {
-                  display: false,
-                },
+    <CWidgetStatsA
+      color={color}
+      className="dashboard-stat-card h-100"
+      value={
+        <>
+          {value ?? 0} <div className="fs-8 fw-normal">{title}</div>
+        </>
+      }
+      chart={
+        <CChartLine
+          ref={widgetChartRef}
+          className="mt-2 mx-2"
+          style={{ height: '55px' }}
+          data={{
+            labels: ['', '', '', '', '', '', ''],
+            datasets: [
+              {
+                label: '',
+                backgroundColor: 'transparent',
+                borderColor: 'rgba(255,255,255,.55)',
+                pointBackgroundColor: getStyle(`--cui-${color}`),
+                data: getRandomNumbers(),
               },
-              maintainAspectRatio: false,
-              scales: {
-                x: {
-                  border: {
-                    display: false,
-                  },
-                  grid: {
-                    display: false,
-                    drawBorder: false,
-                  },
-                  ticks: {
-                    display: false,
-                  },
-                },
-                y: {
-                  min: 30,
-                  max: 89,
-                  display: false,
-                  grid: {
-                    display: false,
-                  },
-                  ticks: {
-                    display: false,
-                  },
-                },
+            ],
+          }}
+          options={{
+            plugins: { legend: { display: false } },
+            maintainAspectRatio: false,
+            scales: {
+              x: {
+                border: { display: false },
+                grid: { display: false, drawBorder: false },
+                ticks: { display: false },
               },
-              elements: {
-                line: {
-                  borderWidth: 1,
-                  tension: 0.4,
-                },
-                point: {
-                  radius: 4,
-                  hitRadius: 10,
-                  hoverRadius: 4,
-                },
+              y: {
+                min: 30,
+                max: 89,
+                display: false,
+                grid: { display: false },
+                ticks: { display: false },
               },
-            }}
-          />
-        }
-      />
-    </CCol>
+            },
+            elements: {
+              line: { borderWidth: 1, tension: 0.4 },
+              point: { radius: 4, hitRadius: 10, hoverRadius: 4 },
+            },
+          }}
+        />
+      }
+    />
   )
 }
 
@@ -129,7 +106,15 @@ const Home = () => {
     { title: 'Loading Vehicle', value: data?.counts?.loadingVehicle, color: 'success' },
     { title: 'Users', value: data?.counts?.users, color: 'dark' },
     { title: 'Employees', value: data?.counts?.employees, color: 'primary' },
+    { title: 'Withdrawals Processed', value: data?.counts?.totalWithdrawalsProcessed, color: 'warning' },
+    { title: 'Wallet Amount Used', value: data?.counts?.totalWalletAmountUsed, color: 'info' },
   ]
+
+  const walletBalanceCard = {
+    title: 'Total Wallet Balance',
+    value: data?.counts?.totalWalletBalance,
+    color: 'success',
+  }
 
   const rangeOptions = [
     { label: 'Last 1 Day', value: 0 },
@@ -154,9 +139,47 @@ const Home = () => {
 
   return (
     <CContainer fluid className="py-4">
+      <style>{`
+        .dashboard-cards-grid {
+          display: grid;
+          grid-template-columns: repeat(2, 1fr);
+          gap: 0.75rem;
+        }
+        @media (min-width: 768px) {
+          .dashboard-cards-grid {
+            grid-template-columns: repeat(3, 1fr);
+          }
+        }
+        @media (min-width: 992px) {
+          .dashboard-cards-grid {
+            grid-template-columns: repeat(5, 1fr);
+            gap: 1rem;
+          }
+        }
+        .dashboard-stat-card .card-body {
+          min-height: 112px;
+          padding-top: 0.65rem;
+          padding-bottom: 0.5rem;
+        }
+        .dashboard-stat-card .card-chart {
+          opacity: 1;
+        }
+        .dashboard-wallet-grid {
+          display: grid;
+          grid-template-columns: repeat(2, 1fr);
+          gap: 0.75rem;
+        }
+        @media (min-width: 992px) {
+          .dashboard-wallet-grid {
+            grid-template-columns: repeat(5, 1fr);
+            gap: 1rem;
+          }
+        }
+      `}</style>
+
       {/* Filters */}
-      <CRow className="mb-3">
-        <CCol md={3}>
+      <div className="row mb-3">
+        <div className="col-md-3">
           <SelectBox
             id="rangeType"
             name="rangeType"
@@ -164,8 +187,8 @@ const Home = () => {
             options={rangeOptions}
             defaultOption="Select Range"
           />
-        </CCol>
-        <CCol md={2}>
+        </div>
+        <div className="col-md-2">
           <DateSelector
             placeholder="Start Date"
             value={startDate}
@@ -173,17 +196,17 @@ const Home = () => {
             onChange={(e) => setStartDate(e.target.value)}
             marginBottom
           />
-        </CCol>
-        <CCol md={2}>
+        </div>
+        <div className="col-md-2">
           <DateSelector
             placeholder="End Date"
             value={endDate}
-            id="startDate"
+            id="endDate"
             onChange={(e) => setEndDate(e.target.value)}
             marginBottom
           />
-        </CCol>
-        <CCol md={2}>
+        </div>
+        <div className="col-md-2">
           <Button
             marginBottom
             fullWidth
@@ -191,9 +214,9 @@ const Home = () => {
             onClick={handleSubmit}
             title="Search"
             color="success"
-          ></Button>
-        </CCol>
-      </CRow>
+          />
+        </div>
+      </div>
 
       {loading ? (
         <div
@@ -205,11 +228,26 @@ const Home = () => {
       ) : error ? (
         <div className="alert alert-danger text-center">{error}</div>
       ) : (
-        <CRow>
-          {cards.map((card, idx) => (
-            <DashboardCard key={idx} title={card.title} value={card.value} color={card.color} />
-          ))}
-        </CRow>
+        <>
+          <div className="dashboard-cards-grid">
+            {cards.map((card, idx) => (
+              <DashboardCard key={idx} title={card.title} value={card.value} color={card.color} />
+            ))}
+          </div>
+
+          <div className="mt-4 pt-1">
+            <p className="text-muted small mb-2">
+              The metric below is not affected by the date filter above.
+            </p>
+            <div className="dashboard-wallet-grid">
+              <DashboardCard
+                title={walletBalanceCard.title}
+                value={walletBalanceCard.value}
+                color={walletBalanceCard.color}
+              />
+            </div>
+          </div>
+        </>
       )}
     </CContainer>
   )
