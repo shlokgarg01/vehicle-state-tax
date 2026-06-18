@@ -79,6 +79,7 @@ export const createEmployee = asyncHandler(async (req, res, next) => {
     const employeeImage = uploadResponse?.url || null;
     const canViewContactNumber = parseBooleanField(req.body?.canViewContactNumber || false);
     const canRefund = parseBooleanField(req.body?.canRefund || false);
+    const canWithdraw = parseBooleanField(req.body?.canWithdraw || false);
 
     const employee = await Employee.create({
       username,
@@ -91,6 +92,7 @@ export const createEmployee = asyncHandler(async (req, res, next) => {
       categories,
       canViewContactNumber,
       canRefund,
+      canWithdraw,
     });
 
     res.status(201).json({
@@ -109,6 +111,7 @@ export const createEmployee = asyncHandler(async (req, res, next) => {
         name: employee.name,
         canViewContactNumber: employee.canViewContactNumber,
         canRefund: employee.canRefund,
+        canWithdraw: employee.canWithdraw,
       },
     });
   } catch (error) {
@@ -221,6 +224,10 @@ export const updateEmployee = asyncHandler(async (req, res, next) => {
     employee.canRefund = parseBooleanField(req.body.canRefund);
   }
 
+  if (req.body.canWithdraw !== undefined) {
+    employee.canWithdraw = parseBooleanField(req.body.canWithdraw);
+  }
+
   if (employee.image) {
     await deleteFile(employee.image);
   }
@@ -252,6 +259,7 @@ export const updateEmployee = asyncHandler(async (req, res, next) => {
       categories: employee.categories,
       canViewContactNumber: employee.canViewContactNumber,
       canRefund: employee.canRefund,
+      canWithdraw: employee.canWithdraw,
     },
   });
 });
@@ -442,7 +450,16 @@ export const dashboardAnalytics = async (req, res) => {
             processedAt: { $gte: startDate, $lte: endDate },
           },
         },
-        { $group: { _id: null, total: { $sum: { $ifNull: ["$amount", 0] } } } },
+        {
+          $group: {
+            _id: null,
+            total: {
+              $sum: {
+                $ifNull: ["$payoutAmount", "$amount"],
+              },
+            },
+          },
+        },
       ]).then((result) => result[0]?.total || 0),
       WalletTransaction.aggregate([
         {

@@ -57,7 +57,7 @@ const routes = [
   { path: '/banners/list', name: 'List Banner ', element: BannerList },
   { path: '/whatsapp-message', name: 'WhatsApp Message', element: WhatsAppMessage },
   { path: '/admin', name: 'Admin', element: AdminSettings },
-  { path: '/wallet/withdrawals', name: 'Wallet Withdrawals', element: WithdrawalList, adminOnly: true },
+  { path: '/wallet/withdrawals', name: 'Wallet Withdrawals', element: WithdrawalList, withdrawAccess: true },
 ]
 
 export default routes

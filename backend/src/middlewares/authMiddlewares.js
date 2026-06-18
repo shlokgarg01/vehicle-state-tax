@@ -4,6 +4,7 @@ import { ErrorHandler } from "../utils/errorHandlerUtils.js";
 import Employee from "../models/Employee.js";
 import config from "../config/config.js";
 import catchAsyncErrors from "./catchAsyncErrors.js";
+import CONSTANTS from "../constants/constants.js";
 
 export const isAuthenticatedUser = catchAsyncErrors(async (req, res, next) => {
   let token = req.headers["authorization"];
@@ -39,4 +40,15 @@ export const authorizeRoles = (roles) => {
 
     next();
   };
+};
+
+export const authorizeWithdrawAccess = (req, res, next) => {
+  const isAdmin = req.user.role === CONSTANTS.USER_ROLES.ADMIN;
+  if (isAdmin || req.user.canWithdraw) {
+    return next();
+  }
+
+  return next(
+    new ErrorHandler("You are not allowed to access withdrawal requests", 403)
+  );
 };

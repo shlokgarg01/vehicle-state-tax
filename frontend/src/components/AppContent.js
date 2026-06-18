@@ -16,6 +16,11 @@ const AppContent = () => {
         <Routes>
           {routes.map((route, idx) => {
             const isAdminOnly = route.adminOnly && user?.role !== Constants.ROLES.ADMIN
+            const lacksWithdrawAccess =
+              route.withdrawAccess &&
+              user?.role !== Constants.ROLES.ADMIN &&
+              !user?.canWithdraw
+            const isRestricted = isAdminOnly || lacksWithdrawAccess
 
             return (
               route.element && (
@@ -25,7 +30,7 @@ const AppContent = () => {
                   exact={route.exact}
                   name={route.name}
                   element={
-                    isAdminOnly ? (
+                    isRestricted ? (
                       <Navigate
                         to={user?.role === Constants.ROLES.MANAGER ? '/orders/new' : '/'}
                         replace

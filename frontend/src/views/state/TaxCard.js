@@ -288,14 +288,14 @@ const TaxCard = ({ data, onUploadComplete, onRefundComplete, setIsUploading, sho
       <FieldRow label="Mobile" value={data.mobileNumber} copyable isPhone />
     ),
     data.seatCapacity && <FieldRow label="Seating Capacity" value={data.seatCapacity} />,
+    data.taxMode && (
+      <FieldRow label="Tax Mode" value={removeUnderScoreAndCapitalize(data.taxMode)} />
+    ),
     data.startDate && <FieldRow label="Tax From" value={getDateFromDateString(data.startDate)} />,
     data.endDate && <FieldRow label="Tax Upto" value={getDateFromDateString(data.endDate)} />,
     data.vehicleType && <FieldRow label="Vehicle Type" value={data.vehicleType} />,
 
     data.weight && <FieldRow label="Weight" value={data.weight} />,
-    data.taxMode && (
-      <FieldRow label="Tax Mode" value={removeUnderScoreAndCapitalize(data.taxMode)} />
-    ),
 
     data.chasisNumber && <FieldRow label="Chassis Number" value={data.chasisNumber} />,
     data.whoCompleted && <FieldRow label="Who Completed" value={data.whoCompleted?.username} />,
@@ -448,14 +448,14 @@ const TaxCard = ({ data, onUploadComplete, onRefundComplete, setIsUploading, sho
                               />
                             </>
                           )}
-                          <button
+                          {/* <button
                             className="btn btn-outline-secondary btn-sm"
                             style={{ minWidth: 150 }}
                             onClick={() => setShowMarkRefundedModal(true)}
                             disabled={updateTaxLoading}
                           >
                             {updateTaxLoading ? 'Updating...' : 'Amount Refunded'}
-                          </button>
+                          </button> */}
                           <Modal
                             visible={showMarkRefundedModal}
                             onVisibleToggle={() => setShowMarkRefundedModal(false)}

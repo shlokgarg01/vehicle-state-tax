@@ -4,7 +4,10 @@ import WithdrawalRequest from "../models/WithdrawalRequest.js";
 import User from "../models/User.js";
 import Employee from "../models/Employee.js";
 import CONSTANTS from "../constants/constants.js";
+import ConstantsManager from "./constantsManager.js";
 import { ErrorHandler } from "../utils/errorHandlerUtils.js";
+
+const REFUND_DEDUCTION_PERCENT_KEY = "REFUND_DEDUCTION_PERCENT";
 
 class WalletManager {
   static validateBankDetails = (bankDetails = {}) => {
@@ -72,12 +75,44 @@ class WalletManager {
     return Math.max(0, wallet.balance - wallet.heldBalance);
   };
 
+  static getWithdrawalDeductionPercent = async () => {
+    const percent = await ConstantsManager.getNumericConstant(
+      REFUND_DEDUCTION_PERCENT_KEY,
+      0
+    );
+    return Math.min(100, Math.max(0, percent));
+  };
+
+  static getWalletDebitAmount = (withdrawal) =>
+    withdrawal.walletDebitAmount ?? withdrawal.amount;
+
+  static getPayoutAmount = (withdrawal) =>
+    withdrawal.payoutAmount ?? withdrawal.amount;
+
+  static calculateWithdrawalAmounts = (walletDebitInput, deductionPercent) => {
+    const walletDebitAmount = Math.floor(Number(walletDebitInput));
+    const percent = Math.min(100, Math.max(0, Number(deductionPercent) || 0));
+    const payoutAmount = Math.floor(
+      walletDebitAmount - (walletDebitAmount * percent) / 100
+    );
+    const deductionAmount = walletDebitAmount - payoutAmount;
+
+    return {
+      walletDebitAmount,
+      payoutAmount,
+      deductionPercent: percent,
+      deductionAmount,
+    };
+  };
+
   static getWalletSummary = async (userId) => {
     const wallet = await this.getOrCreateWallet(userId);
+    const withdrawalDeductionPercent = await this.getWithdrawalDeductionPercent();
     return {
       balance: wallet.balance,
       heldBalance: wallet.heldBalance,
       availableBalance: this.getAvailableBalance(wallet),
+      withdrawalDeductionPercent,
     };
   };
 
@@ -197,6 +232,25 @@ class WalletManager {
       throw new ErrorHandler("Withdrawal amount must be greater than zero", 400);
     }
 
+    const deductionPercent = await this.getWithdrawalDeductionPercent();
+    const {
+      walletDebitAmount,
+      payoutAmount,
+      deductionPercent: appliedPercent,
+      deductionAmount,
+    } = this.calculateWithdrawalAmounts(amount, deductionPercent);
+
+    if (walletDebitAmount <= 0) {
+      throw new ErrorHandler("Withdrawal amount must be greater than zero", 400);
+    }
+
+    if (payoutAmount <= 0) {
+      throw new ErrorHandler(
+        "Withdrawal amount is too low after processing fee",
+        400
+      );
+    }
+
     const normalizedBankDetails = this.validateBankDetails(bankDetails);
     const wallet = await this.getOrCreateWallet(userId);
 
@@ -204,10 +258,10 @@ class WalletManager {
       {
         _id: wallet._id,
         $expr: {
-          $gte: [{ $subtract: ["$balance", "$heldBalance"] }, amount],
+          $gte: [{ $subtract: ["$balance", "$heldBalance"] }, walletDebitAmount],
         },
       },
-      { $inc: { heldBalance: amount } },
+      { $inc: { heldBalance: walletDebitAmount } },
       { new: true }
     );
 
@@ -218,7 +272,11 @@ class WalletManager {
     try {
       const withdrawalRequest = await WithdrawalRequest.create({
         userId,
-        amount,
+        amount: payoutAmount,
+        walletDebitAmount,
+        payoutAmount,
+        deductionPercent: appliedPercent,
+        deductionAmount,
         bankDetails: normalizedBankDetails,
         status: CONSTANTS.WITHDRAWAL_STATUS.PENDING,
       });
@@ -227,10 +285,10 @@ class WalletManager {
         userId,
         walletId: updatedWallet._id,
         type: CONSTANTS.WALLET_TRANSACTION_TYPE.WITHDRAWAL_HOLD,
-        amount,
+        amount: walletDebitAmount,
         balanceAfter: updatedWallet.balance,
         withdrawalRequestId: withdrawalRequest._id,
-        description: `Withdrawal hold for request ${withdrawalRequest._id}`,
+        description: `Withdrawal hold for request ${withdrawalRequest._id} (payout ₹${payoutAmount})`,
       });
 
       withdrawalRequest.holdTransactionId = holdTxn._id;
@@ -240,7 +298,7 @@ class WalletManager {
     } catch (error) {
       await Wallet.findOneAndUpdate(
         { _id: wallet._id },
-        { $inc: { heldBalance: -amount } }
+        { $inc: { heldBalance: -walletDebitAmount } }
       );
       throw error;
     }
@@ -260,16 +318,18 @@ class WalletManager {
       throw new ErrorHandler("Wallet not found", 404);
     }
 
+    const walletDebitAmount = this.getWalletDebitAmount(withdrawal);
+
     const updatedWallet = await Wallet.findOneAndUpdate(
       {
         _id: wallet._id,
-        heldBalance: { $gte: withdrawal.amount },
-        balance: { $gte: withdrawal.amount },
+        heldBalance: { $gte: walletDebitAmount },
+        balance: { $gte: walletDebitAmount },
       },
       {
         $inc: {
-          balance: -withdrawal.amount,
-          heldBalance: -withdrawal.amount,
+          balance: -walletDebitAmount,
+          heldBalance: -walletDebitAmount,
         },
       },
       { new: true }
@@ -284,10 +344,10 @@ class WalletManager {
         userId: withdrawal.userId,
         walletId: updatedWallet._id,
         type: CONSTANTS.WALLET_TRANSACTION_TYPE.WITHDRAWAL_DEBIT,
-        amount: withdrawal.amount,
+        amount: walletDebitAmount,
         balanceAfter: updatedWallet.balance,
         withdrawalRequestId: withdrawal._id,
-        description: `Withdrawal completed for request ${withdrawal._id}`,
+        description: `Withdrawal completed for request ${withdrawal._id} (payout ₹${this.getPayoutAmount(withdrawal)})`,
       });
 
       withdrawal.status = CONSTANTS.WITHDRAWAL_STATUS.COMPLETED;
@@ -302,8 +362,8 @@ class WalletManager {
         { _id: wallet._id },
         {
           $inc: {
-            balance: withdrawal.amount,
-            heldBalance: withdrawal.amount,
+            balance: walletDebitAmount,
+            heldBalance: walletDebitAmount,
           },
         }
       );
@@ -325,9 +385,11 @@ class WalletManager {
       throw new ErrorHandler("Wallet not found", 404);
     }
 
+    const walletDebitAmount = this.getWalletDebitAmount(withdrawal);
+
     const updatedWallet = await Wallet.findOneAndUpdate(
-      { _id: wallet._id, heldBalance: { $gte: withdrawal.amount } },
-      { $inc: { heldBalance: -withdrawal.amount } },
+      { _id: wallet._id, heldBalance: { $gte: walletDebitAmount } },
+      { $inc: { heldBalance: -walletDebitAmount } },
       { new: true }
     );
 
@@ -340,7 +402,7 @@ class WalletManager {
         userId: withdrawal.userId,
         walletId: updatedWallet._id,
         type: CONSTANTS.WALLET_TRANSACTION_TYPE.WITHDRAWAL_RELEASE,
-        amount: withdrawal.amount,
+        amount: walletDebitAmount,
         balanceAfter: updatedWallet.balance,
         withdrawalRequestId: withdrawal._id,
         description: `Withdrawal hold released for request ${withdrawal._id}`,
@@ -356,7 +418,7 @@ class WalletManager {
     } catch (error) {
       await Wallet.findOneAndUpdate(
         { _id: wallet._id },
-        { $inc: { heldBalance: withdrawal.amount } }
+        { $inc: { heldBalance: walletDebitAmount } }
       );
       throw error;
     }

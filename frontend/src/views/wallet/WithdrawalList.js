@@ -32,6 +32,7 @@ import {
 } from '../../actions/walletAction'
 import { WALLET_CONSTANTS } from '../../constants/walletConstants'
 import Constants from '../../utils/constants'
+import UpiPaymentQr from '../../components/UpiPaymentQr'
 
 const STATUS_FILTERS = [
   { label: 'All', value: '', countKey: 'all' },
@@ -94,13 +95,39 @@ const DetailLine = ({ label, value, copyable }) => {
   )
 }
 
-const PayoutDetails = ({ bank = {} }) => {
+const getPayoutAmount = (withdrawal) =>
+  withdrawal?.payoutAmount ?? withdrawal?.amount ?? 0
+
+const getWalletDebitAmount = (withdrawal) =>
+  withdrawal?.walletDebitAmount ?? withdrawal?.amount ?? 0
+
+const WithdrawalAmountCell = ({ withdrawal }) => {
+  const payoutAmount = getPayoutAmount(withdrawal)
+  const walletDebitAmount = getWalletDebitAmount(withdrawal)
+  const hasDeduction = walletDebitAmount > payoutAmount
+
+  return (
+    <div>
+      <div className="fw-semibold">₹{payoutAmount}</div>
+      {hasDeduction && (
+        <div className="text-muted" style={{ fontSize: '0.75rem' }}>
+          Wallet debit ₹{walletDebitAmount}
+          {withdrawal.deductionAmount > 0 && ` · Fee ₹${withdrawal.deductionAmount}`}
+        </div>
+      )}
+    </div>
+  )
+}
+
+const PayoutDetails = ({ bank = {}, amount, requestId, showQr = false }) => {
   const hasBank = Boolean(bank.accountNumber)
   const hasUpi = Boolean(bank.upiId)
 
   if (!hasBank && !hasUpi) {
     return <span className="text-muted small">—</span>
   }
+
+  const qrNote = requestId ? `Withdrawal ${requestId}` : 'Wallet withdrawal'
 
   if (hasUpi && !hasBank) {
     return (
@@ -109,6 +136,15 @@ const PayoutDetails = ({ bank = {} }) => {
           UPI
         </div>
         <DetailLine label="UPI ID" value={bank.upiId} copyable />
+        {showQr && (
+          <UpiPaymentQr
+            upiId={bank.upiId}
+            amount={amount}
+            payeeName={bank.accountHolderName}
+            note={qrNote}
+            size={120}
+          />
+        )}
       </div>
     )
   }
@@ -123,6 +159,15 @@ const PayoutDetails = ({ bank = {} }) => {
       <DetailLine label="A/C No." value={bank.accountNumber} copyable />
       <DetailLine label="IFSC" value={bank.ifscCode} copyable />
       {hasUpi && <DetailLine label="UPI" value={bank.upiId} copyable />}
+      {showQr && hasUpi && (
+        <UpiPaymentQr
+          upiId={bank.upiId}
+          amount={amount}
+          payeeName={bank.accountHolderName}
+          note={qrNote}
+          size={120}
+        />
+      )}
     </div>
   )
 }
@@ -273,7 +318,9 @@ export default function WithdrawalList() {
                           {w.userId?.contactNumber || '—'}
                           {w.userId?.contactNumber && <CopyBtn value={w.userId.contactNumber} />}
                         </CTableDataCell>
-                        <CTableDataCell className="fw-semibold">₹{w.amount}</CTableDataCell>
+                        <CTableDataCell>
+                          <WithdrawalAmountCell withdrawal={w} />
+                        </CTableDataCell>
                         <CTableDataCell style={{ minWidth: 200, verticalAlign: 'top' }}>
                           <PayoutDetails bank={w.bankDetails} />
                         </CTableDataCell>
@@ -362,11 +409,24 @@ export default function WithdrawalList() {
         body={
           <div>
             <p className="mb-2 small">
-              Upload payment proof for <strong>₹{selectedWithdrawal?.amount}</strong>
+              Upload payment proof for{' '}
+              <strong>₹{getPayoutAmount(selectedWithdrawal)}</strong>
+              {getWalletDebitAmount(selectedWithdrawal) >
+                getPayoutAmount(selectedWithdrawal) && (
+                <span className="text-muted">
+                  {' '}
+                  (wallet debit ₹{getWalletDebitAmount(selectedWithdrawal)})
+                </span>
+              )}
             </p>
             {selectedWithdrawal?.bankDetails && (
               <div className="mb-3 p-2 rounded border bg-light small">
-                <PayoutDetails bank={selectedWithdrawal.bankDetails} />
+                <PayoutDetails
+                  bank={selectedWithdrawal.bankDetails}
+                  amount={getPayoutAmount(selectedWithdrawal)}
+                  requestId={selectedWithdrawal._id}
+                  showQr={Boolean(selectedWithdrawal.bankDetails?.upiId)}
+                />
               </div>
             )}
             <input

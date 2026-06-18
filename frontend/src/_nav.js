@@ -15,9 +15,11 @@ import {
 import { CNavGroup, CNavItem } from '@coreui/react'
 import Constants from './utils/constants'
 
-const _nav = (role) => {
+const _nav = (user) => {
+  const role = user?.role
   const isAdmin = role === Constants.ROLES.ADMIN
   const isManager = role === Constants.ROLES.MANAGER
+  const canWithdraw = isAdmin || Boolean(user?.canWithdraw)
 
   return [
     isAdmin && {
@@ -190,7 +192,7 @@ const _nav = (role) => {
         },
       ],
     },
-    isAdmin && {
+    canWithdraw && {
       component: CNavItem,
       name: 'Wallet Withdrawals',
       to: '/wallet/withdrawals',

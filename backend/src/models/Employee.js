@@ -57,6 +57,10 @@ const employeeSchema = new Schema(
       type: Boolean,
       default: false,
     },
+    canWithdraw: {
+      type: Boolean,
+      default: false,
+    },
   },
   { timestamps: true }
 );

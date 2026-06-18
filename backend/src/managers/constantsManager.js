@@ -59,6 +59,16 @@ class ConstantsManager {
     return String(constant.value);
   };
 
+  static getNumericConstant = async (key, defaultValue = 0) => {
+    const constant = await Constants.findOne({ key });
+    if (!constant || constant.value === undefined || constant.value === null) {
+      return defaultValue;
+    }
+
+    const parsed = Number(String(constant.value).trim());
+    return Number.isFinite(parsed) ? parsed : defaultValue;
+  };
+
   static getBooleanConstant = async (key, defaultValue = false) => {
     const constant = await Constants.findOne({ key });
     if (!constant || constant.value === undefined || constant.value === null) {

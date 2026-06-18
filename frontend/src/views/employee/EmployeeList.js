@@ -58,6 +58,7 @@ export default function EmployeeList() {
     categories: [],
     canViewContactNumber: false,
     canRefund: false,
+    canWithdraw: false,
   }
 
   // Redux: Create employee
@@ -142,6 +143,7 @@ export default function EmployeeList() {
     })
     formData.append('canViewContactNumber', String(Boolean(employee.canViewContactNumber)))
     formData.append('canRefund', String(Boolean(employee.canRefund)))
+    formData.append('canWithdraw', String(Boolean(employee.canWithdraw)))
 
     dispatch(createEmployee(formData))
   }
@@ -211,6 +213,7 @@ export default function EmployeeList() {
     }
     formData.append('canViewContactNumber', String(Boolean(editUser.canViewContactNumber)))
     formData.append('canRefund', String(Boolean(editUser.canRefund)))
+    formData.append('canWithdraw', String(Boolean(editUser.canWithdraw)))
 
     dispatch(updateSingleEmployee(editUser._id, formData))
     setIsEditModalVisible(false)
@@ -444,6 +447,20 @@ export default function EmployeeList() {
                       checked={Boolean(employee.canRefund)}
                       onChange={(e) =>
                         setEmployee({ ...employee, canRefund: e.target.checked })
+                      }
+                    />
+                  </CCol>
+                </CRow>
+
+                <CRow className="mb-4 align-items-center">
+                  <CCol md={3} />
+                  <CCol md={9}>
+                    <CFormCheck
+                      id="create-canWithdraw"
+                      label="Can Process Withdrawals"
+                      checked={Boolean(employee.canWithdraw)}
+                      onChange={(e) =>
+                        setEmployee({ ...employee, canWithdraw: e.target.checked })
                       }
                     />
                   </CCol>

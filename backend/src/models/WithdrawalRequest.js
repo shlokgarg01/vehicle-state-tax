@@ -14,6 +14,25 @@ const withdrawalRequestSchema = new mongoose.Schema(
       required: true,
       min: 1,
     },
+    walletDebitAmount: {
+      type: Number,
+      min: 1,
+    },
+    payoutAmount: {
+      type: Number,
+      min: 1,
+    },
+    deductionPercent: {
+      type: Number,
+      default: 0,
+      min: 0,
+      max: 100,
+    },
+    deductionAmount: {
+      type: Number,
+      default: 0,
+      min: 0,
+    },
     status: {
       type: String,
       enum: Object.values(CONSTANTS.WITHDRAWAL_STATUS),

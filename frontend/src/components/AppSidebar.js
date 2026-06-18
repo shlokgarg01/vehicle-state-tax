@@ -40,7 +40,7 @@ const AppSidebar = () => {
           onClick={() => dispatch({ type: 'set', sidebarShow: false })}
         />
       </CSidebarHeader>
-      <AppSidebarNav items={navigation(user?.role)} />
+      <AppSidebarNav items={navigation(user)} />
     </CSidebar>
   )
 }

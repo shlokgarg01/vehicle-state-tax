@@ -17,6 +17,7 @@ import {
 import {
   isAuthenticatedUser,
   authorizeRoles,
+  authorizeWithdrawAccess,
 } from "../middlewares/authMiddlewares.js";
 import CONSTANTS from "../constants/constants.js";
 
@@ -91,21 +92,24 @@ adminRoutes.post(
 adminRoutes.get(
   "/wallet/withdrawals",
   isAuthenticatedUser,
-  authorizeRoles([CONSTANTS.USER_ROLES.ADMIN]),
+  authorizeRoles([CONSTANTS.USER_ROLES.ADMIN, CONSTANTS.USER_ROLES.MANAGER]),
+  authorizeWithdrawAccess,
   getAllWithdrawals
 );
 
 adminRoutes.put(
   "/wallet/withdrawals/:id/complete",
   isAuthenticatedUser,
-  authorizeRoles([CONSTANTS.USER_ROLES.ADMIN]),
+  authorizeRoles([CONSTANTS.USER_ROLES.ADMIN, CONSTANTS.USER_ROLES.MANAGER]),
+  authorizeWithdrawAccess,
   completeWithdrawal
 );
 
 adminRoutes.put(
   "/wallet/withdrawals/:id/reject",
   isAuthenticatedUser,
-  authorizeRoles([CONSTANTS.USER_ROLES.ADMIN]),
+  authorizeRoles([CONSTANTS.USER_ROLES.ADMIN, CONSTANTS.USER_ROLES.MANAGER]),
+  authorizeWithdrawAccess,
   rejectWithdrawal
 );
 

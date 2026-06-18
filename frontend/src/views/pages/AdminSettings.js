@@ -25,18 +25,22 @@ const AdminSettings = () => {
   const welcomeKey = 'SEND_WELCOME_WHATSAPP'
   const taxKey = 'SEND_TAX_WHATSAPP'
   const refundPasswordKey = 'REFUND_PASSWORD'
+  const refundDeductionPercentKey = 'REFUND_DEDUCTION_PERCENT'
   const initialWelcome = useMemo(() => toBool(values?.[welcomeKey]), [values?.[welcomeKey]])
   const initialTax = useMemo(() => toBool(values?.[taxKey]), [values?.[taxKey]])
   const initialRefundPassword = values?.[refundPasswordKey] || ''
+  const initialRefundDeductionPercent = values?.[refundDeductionPercentKey] ?? '0'
 
   const [welcomeToggle, setWelcomeToggle] = useState(false)
   const [taxToggle, setTaxToggle] = useState(false)
   const [refundPassword, setRefundPassword] = useState('')
+  const [refundDeductionPercent, setRefundDeductionPercent] = useState('0')
 
   useEffect(() => {
     dispatch(getConstantByKey(welcomeKey))
     dispatch(getConstantByKey(taxKey))
     dispatch(getConstantByKey(refundPasswordKey))
+    dispatch(getConstantByKey(refundDeductionPercentKey))
   }, [dispatch])
 
   useEffect(() => {
@@ -52,6 +56,10 @@ const AdminSettings = () => {
   }, [initialRefundPassword])
 
   useEffect(() => {
+    setRefundDeductionPercent(initialRefundDeductionPercent)
+  }, [initialRefundDeductionPercent])
+
+  useEffect(() => {
     if (updated?.[welcomeKey]) {
       showToast('Welcome WhatsApp updated')
       dispatch(resetConstantUpdate(welcomeKey))
@@ -63,6 +71,10 @@ const AdminSettings = () => {
     if (updated?.[refundPasswordKey]) {
       showToast('Refund password updated')
       dispatch(resetConstantUpdate(refundPasswordKey))
+    }
+    if (updated?.[refundDeductionPercentKey]) {
+      showToast('Withdrawal deduction percent updated')
+      dispatch(resetConstantUpdate(refundDeductionPercentKey))
     }
   }, [updated, dispatch])
 
@@ -78,6 +90,10 @@ const AdminSettings = () => {
     if (errors?.[refundPasswordKey]) {
       showToast(errors[refundPasswordKey], 'error')
       dispatch(resetConstantUpdate(refundPasswordKey))
+    }
+    if (errors?.[refundDeductionPercentKey]) {
+      showToast(errors[refundDeductionPercentKey], 'error')
+      dispatch(resetConstantUpdate(refundDeductionPercentKey))
     }
   }, [errors, dispatch])
 
@@ -98,6 +114,14 @@ const AdminSettings = () => {
       }
       changes.push({ key: refundPasswordKey, value: refundPassword.trim() })
     }
+    if (refundDeductionPercent !== initialRefundDeductionPercent) {
+      const percent = Number(refundDeductionPercent)
+      if (!Number.isFinite(percent) || percent < 0 || percent > 100) {
+        showToast('Withdrawal deduction percent must be between 0 and 100', 'error')
+        return
+      }
+      changes.push({ key: refundDeductionPercentKey, value: String(percent) })
+    }
 
     if (!changes.length) {
       showToast('No changes to update')
@@ -110,7 +134,10 @@ const AdminSettings = () => {
   }
 
   const isSubmitting =
-    updating?.[welcomeKey] || updating?.[taxKey] || updating?.[refundPasswordKey]
+    updating?.[welcomeKey] ||
+    updating?.[taxKey] ||
+    updating?.[refundPasswordKey] ||
+    updating?.[refundDeductionPercentKey]
 
   return (
     <div className="container-fluid p-4">
@@ -147,18 +174,52 @@ const AdminSettings = () => {
             </CRow>
 
             <CRow className="mb-4">
-              <CCol md={6}>
-                <TextInput
-                  label="Refund Password"
-                  type="password"
-                  placeholder="Enter refund password"
-                  value={refundPassword}
-                  onChange={(e) => setRefundPassword(e.target.value)}
-                  id="refundPassword"
-                />
-                <small className="text-muted">
-                  Required to refund cancelled orders to wallet
-                </small>
+              <CCol
+                md={8}
+                className="d-flex align-items-center justify-content-between gap-3 flex-wrap"
+              >
+                <div>
+                  <h6 className="mb-1">Refund Password</h6>
+                  <small className="text-muted">
+                    Required to refund cancelled orders to wallet
+                  </small>
+                </div>
+                <div style={{ minWidth: 220, maxWidth: 280, flex: '0 0 220px' }}>
+                  <TextInput
+                    type="password"
+                    placeholder="Enter refund password"
+                    value={refundPassword}
+                    onChange={(e) => setRefundPassword(e.target.value)}
+                    id="refundPassword"
+                  />
+                </div>
+              </CCol>
+            </CRow>
+
+            <CRow className="mb-4">
+              <CCol
+                md={8}
+                className="d-flex align-items-center justify-content-between gap-3 flex-wrap"
+              >
+                <div>
+                  <h6 className="mb-1">Withdrawal Deduction Percent</h6>
+                  <small className="text-muted">
+                    Percent deducted from wallet withdrawals only. User receives amount minus this
+                    fee; full amount is debited from wallet.
+                  </small>
+                </div>
+                <div style={{ minWidth: 220, maxWidth: 280, flex: '0 0 220px' }}>
+                  <TextInput
+                    type="number"
+                    min="0"
+                    max="100"
+                    step="0.01"
+                    placeholder="0"
+                    value={refundDeductionPercent}
+                    onChange={(e) => setRefundDeductionPercent(e.target.value)}
+                    id="refundDeductionPercent"
+                  />
+                </div>
               </CCol>
             </CRow>
 
