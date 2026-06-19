@@ -176,6 +176,10 @@ const TaxCard = ({ data, onUploadComplete, onRefundComplete, setIsUploading, sho
     currentOrderId: sendWhatsAppOrderId,
   } = useSelector((state) => state.sendWhatsApp || {})
 
+  useEffect(() => {
+    setLocalFileUrl(data.fileUrl)
+  }, [data.fileUrl])
+
   const handleFileChange = (e) => {
     const file = e.target.files[0]
     if (!file) return

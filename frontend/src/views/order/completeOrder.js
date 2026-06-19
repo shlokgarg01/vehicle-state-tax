@@ -70,7 +70,12 @@ const CompleteOrder = () => {
 
   return (
     <div className="p-4">
-      <TaxOrderFilters onSearch={handleSearch} onClear={handleClear} modeOptions={modeOptions} />
+      <TaxOrderFilters
+        onSearch={handleSearch}
+        onClear={handleClear}
+        modeOptions={modeOptions}
+        showAmountRefunded={false}
+      />
 
       {loading && <Loader />}
       {error && <div className="alert alert-danger">Error: {error}</div>}

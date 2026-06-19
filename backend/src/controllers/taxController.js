@@ -34,12 +34,26 @@ export const getAllTaxes = async (req, res) => {
   try {
     const resultsPerPage = parseInt(req.query.perPage) || 10;
     const { sort } = req.query;
-    delete req.query['sort'];
+    const queryCopy = { ...req.query };
+    delete queryCopy.sort;
 
     let baseQuery = Tax.find();
 
+    const createdAtFilter = {};
+    if (queryCopy.startDate) {
+      createdAtFilter.$gte = new Date(`${queryCopy.startDate}T00:00:00+05:30`);
+      delete queryCopy.startDate;
+    }
+    if (queryCopy.endDate) {
+      createdAtFilter.$lte = new Date(`${queryCopy.endDate}T23:59:59.999+05:30`);
+      delete queryCopy.endDate;
+    }
+    if (Object.keys(createdAtFilter).length > 0) {
+      baseQuery = baseQuery.find({ createdAt: createdAtFilter });
+    }
+
     // Apply filters/search BEFORE populate and sort for better performance
-    let apiFeature = new ApiFeatures(baseQuery, req.query)
+    let apiFeature = new ApiFeatures(baseQuery, queryCopy)
       .search()
       .filter();
 
