@@ -129,7 +129,7 @@ export default function UserSearch() {
               title="Reset"
               onClick={() => {
                 setSearch('')
-
+                setCurrentPage(1)
                 dispatch(getAndSearchUsers({ page: 1 }))
               }}
               type="button"
@@ -168,6 +168,7 @@ export default function UserSearch() {
                   <CTableHeaderCell scope="col">S.No</CTableHeaderCell>
                   {/* <CTableHeaderCell scope="col">Name</CTableHeaderCell> */}
                   <CTableHeaderCell scope="col">Contact Number</CTableHeaderCell>
+                  <CTableHeaderCell scope="col">Wallet Balance</CTableHeaderCell>
                   <CTableHeaderCell scope="col">Last Login</CTableHeaderCell>
                   <CTableHeaderCell scope="col">WhatsApp</CTableHeaderCell>
                 </CTableRow>
@@ -181,6 +182,14 @@ export default function UserSearch() {
                     </CTableHeaderCell>
                     {/* contact number */}
                     <CTableDataCell>{stateData.contactNumber}</CTableDataCell>
+                    <CTableDataCell>
+                      ₹{stateData.walletAvailableBalance ?? stateData.walletBalance ?? 0}
+                      {(stateData.walletHeldBalance ?? 0) > 0 && (
+                        <span className="text-muted small d-block">
+                          ₹{stateData.walletBalance} total · ₹{stateData.walletHeldBalance} held
+                        </span>
+                      )}
+                    </CTableDataCell>
                     <CTableDataCell>
                       {stateData.lastLogin ? getDateFromDateString(stateData.lastLogin) : 'N/A'}
                     </CTableDataCell>

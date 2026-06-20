@@ -147,6 +147,12 @@ const TaxCard = ({ data, onUploadComplete, onRefundComplete, setIsUploading, sho
   const canViewContactNumber = Boolean(loggedInUser?.canViewContactNumber)
   const canRefundToWallet =
     loggedInUser?.role === CONSTANTS.ROLES.ADMIN || Boolean(loggedInUser?.canRefund)
+  const isEligibleForWalletRefund = (() => {
+    if (!data.createdAt) return false
+    const eligibleFrom = new Date(`${CONSTANTS.WALLET_REFUND_ELIGIBLE_FROM}T00:00:00+05:30`)
+    return new Date(data.createdAt) >= eligibleFrom
+  })()
+  const showRefundToWallet = canRefundToWallet && isEligibleForWalletRefund
   const fileInputRef = useRef(null)
   const [localFileUrl, setLocalFileUrl] = useState(data.fileUrl)
   const [showCancelModal, setShowCancelModal] = useState(false)
@@ -408,7 +414,7 @@ const TaxCard = ({ data, onUploadComplete, onRefundComplete, setIsUploading, sho
                         </div>
                       ) : (
                         <>
-                          {canRefundToWallet && (
+                          {showRefundToWallet && (
                             <>
                               <button
                                 className="btn btn-outline-success btn-sm"

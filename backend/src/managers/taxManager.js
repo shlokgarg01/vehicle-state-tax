@@ -186,6 +186,16 @@ class TaxManager {
       throw new ErrorHandler("Tax is not linked to a user", 400);
     }
 
+    const eligibleFrom = new Date(
+      `${CONSTANTS.WALLET_REFUND_ELIGIBLE_FROM}T00:00:00+05:30`
+    );
+    if (new Date(tax.createdAt) < eligibleFrom) {
+      throw new ErrorHandler(
+        "Wallet refund is not available for orders before 19 June 2026",
+        400
+      );
+    }
+
     const updatedTax = await Tax.findOneAndUpdate(
       {
         _id: taxId,

@@ -12,6 +12,7 @@ const COLLECTION_NAMES = {
   WALLET: "Wallet",
   WALLET_TRANSACTION: "WalletTransaction",
   WITHDRAWAL_REQUEST: "WithdrawalRequest",
+  SAVED_PAYOUT_DETAIL: "SavedPayoutDetail",
 };
 
 export default COLLECTION_NAMES;

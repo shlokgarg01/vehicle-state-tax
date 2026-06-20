@@ -298,12 +298,32 @@ export const searchUsers = asyncHandler(async (req, res) => {
 
     const filteredUsersQuery = apiFeatures.query.clone();
     const filteredUsersCount = await filteredUsersQuery.countDocuments();
-    const users = await apiFeatures.query;
+    const users = await apiFeatures.query.lean();
     const totalUsersCount = await User.countDocuments();
+
+    const userIds = users.map((user) => user._id);
+    const wallets = await Wallet.find({ userId: { $in: userIds } })
+      .select("userId balance heldBalance")
+      .lean();
+    const walletByUserId = new Map(
+      wallets.map((wallet) => [wallet.userId.toString(), wallet])
+    );
+
+    const usersWithWallet = users.map((user) => {
+      const wallet = walletByUserId.get(user._id.toString());
+      const balance = wallet?.balance ?? 0;
+      const heldBalance = wallet?.heldBalance ?? 0;
+      return {
+        ...user,
+        walletBalance: balance,
+        walletHeldBalance: heldBalance,
+        walletAvailableBalance: Math.max(0, balance - heldBalance),
+      };
+    });
+
     res.status(200).json({
       success: true,
-      // count: users.length,
-      users,
+      users: usersWithWallet,
       resultsPerPage,
       totalUsersCount,
       filteredUsersCount,
@@ -327,22 +347,32 @@ export const triggerUsersExport = asyncHandler(async (req, res, next) => {
     await fs.promises.mkdir(tmpDir, { recursive: true });
     const filePath = path.join(tmpDir, `users_${Date.now()}.csv`);
     const writeStream = fs.createWriteStream(filePath, { encoding: "utf8" });
-    writeStream.write("S.No,Contact Number,Last Login,Created At\n");
+    writeStream.write("S.No,Contact Number,Wallet Balance,Last Login,Created At\n");
 
     try {
+      const wallets = await Wallet.find({}).select("userId balance heldBalance").lean();
+      const walletByUserId = new Map(
+        wallets.map((wallet) => [wallet.userId.toString(), wallet])
+      );
+
       const cursor = User.find(
-        {},
-        { contactNumber: 1, lastLogin: 1, createdAt: 1, _id: 0 }
+        { deleted: { $ne: true } },
+        { contactNumber: 1, lastLogin: 1, createdAt: 1 }
       )
-      .sort({ lastLogin: -1 })
-      .cursor();
+        .sort({ lastLogin: -1 })
+        .cursor();
 
       let index = 1;
       for await (const user of cursor) {
         const contact = user.contactNumber || "";
+        const wallet = walletByUserId.get(user._id.toString());
+        const walletBalance = Math.max(
+          0,
+          (wallet?.balance ?? 0) - (wallet?.heldBalance ?? 0)
+        );
         const lastLogin = user.lastLogin ? formatReadableDateTime(user.lastLogin) : "";
         const createdAt = user.createdAt ? formatReadableDateTime(user.createdAt) : "";
-        writeStream.write(`${index},${contact},${lastLogin},${createdAt}\n`);
+        writeStream.write(`${index},${contact},${walletBalance},${lastLogin},${createdAt}\n`);
         index += 1;
       }
 

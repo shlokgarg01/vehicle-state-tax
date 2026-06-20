@@ -1,6 +1,7 @@
 import Wallet from "../models/Wallet.js";
 import WalletTransaction from "../models/WalletTransaction.js";
 import WithdrawalRequest from "../models/WithdrawalRequest.js";
+import SavedPayoutDetail from "../models/SavedPayoutDetail.js";
 import User from "../models/User.js";
 import Employee from "../models/Employee.js";
 import CONSTANTS from "../constants/constants.js";
@@ -8,8 +9,36 @@ import ConstantsManager from "./constantsManager.js";
 import { ErrorHandler } from "../utils/errorHandlerUtils.js";
 
 const REFUND_DEDUCTION_PERCENT_KEY = "REFUND_DEDUCTION_PERCENT";
+const MAX_SAVED_PAYOUT_DETAILS = 20;
 
 class WalletManager {
+  static normalizePayoutTitle = (title) => {
+    const normalized = String(title || "").trim();
+    if (!normalized) {
+      throw new ErrorHandler("Title is required", 400);
+    }
+    if (normalized.length > 80) {
+      throw new ErrorHandler("Title must be 80 characters or less", 400);
+    }
+    return normalized;
+  };
+
+  static bankDetailsFromSavedRecord = (record = {}) => ({
+    accountHolderName: record.accountHolderName,
+    accountNumber: record.accountNumber,
+    ifscCode: record.ifscCode,
+    bankName: record.bankName,
+    upiId: record.upiId,
+  });
+
+  static formatSavedPayoutDetail = (record) => ({
+    _id: record._id,
+    title: record.title,
+    bankDetails: this.bankDetailsFromSavedRecord(record),
+    createdAt: record.createdAt,
+    updatedAt: record.updatedAt,
+  });
+
   static validateBankDetails = (bankDetails = {}) => {
     const {
       accountHolderName = "",
@@ -53,6 +82,113 @@ class WalletManager {
     }
 
     return normalized;
+  };
+
+  static resolveWithdrawalBankDetails = async (
+    userId,
+    { bankDetails, savedPayoutDetailId }
+  ) => {
+    if (savedPayoutDetailId) {
+      const saved = await SavedPayoutDetail.findOne({
+        _id: savedPayoutDetailId,
+        userId,
+      });
+      if (!saved) {
+        throw new ErrorHandler("Saved payout detail not found", 404);
+      }
+      return this.validateBankDetails(this.bankDetailsFromSavedRecord(saved));
+    }
+
+    if (!bankDetails) {
+      throw new ErrorHandler(
+        "Either savedPayoutDetailId or bank details are required",
+        400
+      );
+    }
+
+    return this.validateBankDetails(bankDetails);
+  };
+
+  static getSavedPayoutDetails = async (userId) => {
+    const payoutDetails = await SavedPayoutDetail.find({ userId })
+      .sort({ createdAt: -1 })
+      .lean();
+    return payoutDetails.map((record) => this.formatSavedPayoutDetail(record));
+  };
+
+  static createSavedPayoutDetail = async (userId, { title, bankDetails }) => {
+    const normalizedTitle = this.normalizePayoutTitle(title);
+    const normalizedBankDetails = this.validateBankDetails(bankDetails);
+
+    const existingCount = await SavedPayoutDetail.countDocuments({ userId });
+    if (existingCount >= MAX_SAVED_PAYOUT_DETAILS) {
+      throw new ErrorHandler(
+        `You can save up to ${MAX_SAVED_PAYOUT_DETAILS} payout details`,
+        400
+      );
+    }
+
+    const duplicateTitle = await SavedPayoutDetail.findOne({
+      userId,
+      title: normalizedTitle,
+    });
+    if (duplicateTitle) {
+      throw new ErrorHandler("A saved detail with this title already exists", 400);
+    }
+
+    const payoutDetail = await SavedPayoutDetail.create({
+      userId,
+      title: normalizedTitle,
+      ...normalizedBankDetails,
+    });
+
+    return this.formatSavedPayoutDetail(payoutDetail);
+  };
+
+  static updateSavedPayoutDetail = async (
+    userId,
+    payoutDetailId,
+    { title, bankDetails }
+  ) => {
+    const payoutDetail = await SavedPayoutDetail.findOne({
+      _id: payoutDetailId,
+      userId,
+    });
+    if (!payoutDetail) {
+      throw new ErrorHandler("Saved payout detail not found", 404);
+    }
+
+    if (title !== undefined) {
+      const normalizedTitle = this.normalizePayoutTitle(title);
+      const duplicateTitle = await SavedPayoutDetail.findOne({
+        userId,
+        title: normalizedTitle,
+        _id: { $ne: payoutDetailId },
+      });
+      if (duplicateTitle) {
+        throw new ErrorHandler("A saved detail with this title already exists", 400);
+      }
+      payoutDetail.title = normalizedTitle;
+    }
+
+    if (bankDetails !== undefined) {
+      const normalizedBankDetails = this.validateBankDetails(bankDetails);
+      Object.assign(payoutDetail, normalizedBankDetails);
+    }
+
+    await payoutDetail.save();
+    return this.formatSavedPayoutDetail(payoutDetail);
+  };
+
+  static deleteSavedPayoutDetail = async (userId, payoutDetailId) => {
+    const payoutDetail = await SavedPayoutDetail.findOneAndDelete({
+      _id: payoutDetailId,
+      userId,
+    });
+    if (!payoutDetail) {
+      throw new ErrorHandler("Saved payout detail not found", 404);
+    }
+    return this.formatSavedPayoutDetail(payoutDetail);
   };
 
   static getOrCreateWallet = async (userId) => {
@@ -226,7 +362,7 @@ class WalletManager {
   };
 
   static createWithdrawalRequest = async (userId, withdrawalData) => {
-    const { amount, bankDetails } = withdrawalData;
+    const { amount, bankDetails, savedPayoutDetailId } = withdrawalData;
 
     if (!amount || amount <= 0) {
       throw new ErrorHandler("Withdrawal amount must be greater than zero", 400);
@@ -251,7 +387,10 @@ class WalletManager {
       );
     }
 
-    const normalizedBankDetails = this.validateBankDetails(bankDetails);
+    const normalizedBankDetails = await this.resolveWithdrawalBankDetails(
+      userId,
+      { bankDetails, savedPayoutDetailId }
+    );
     const wallet = await this.getOrCreateWallet(userId);
 
     const updatedWallet = await Wallet.findOneAndUpdate(

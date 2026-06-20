@@ -31,17 +31,88 @@ export const createWithdrawalRequest = catchAsyncErrors(async (req, res) => {
       bankName: req.body.bankName,
       upiId: req.body.upiId,
     };
-  WalletManager.validateBankDetails(bankDetails);
 
   const withdrawal = await WalletManager.createWithdrawalRequest(req.user._id, {
     amount: Number(req.body.amount),
-    bankDetails,
+    bankDetails: req.body.savedPayoutDetailId ? undefined : bankDetails,
+    savedPayoutDetailId: req.body.savedPayoutDetailId,
   });
 
   res.status(201).json({
     success: true,
     message: "Withdrawal request submitted",
     data: { withdrawal },
+  });
+});
+
+export const getSavedPayoutDetails = catchAsyncErrors(async (req, res) => {
+  const payoutDetails = await WalletManager.getSavedPayoutDetails(req.user._id);
+  res.status(200).json({
+    success: true,
+    data: { payoutDetails },
+  });
+});
+
+export const createSavedPayoutDetail = catchAsyncErrors(async (req, res) => {
+  const bankDetails =
+    req.body.bankDetails || {
+      accountHolderName: req.body.accountHolderName,
+      accountNumber: req.body.accountNumber,
+      ifscCode: req.body.ifscCode,
+      bankName: req.body.bankName,
+      upiId: req.body.upiId,
+    };
+
+  const payoutDetail = await WalletManager.createSavedPayoutDetail(req.user._id, {
+    title: req.body.title,
+    bankDetails,
+  });
+
+  res.status(201).json({
+    success: true,
+    message: "Payout detail saved",
+    data: { payoutDetail },
+  });
+});
+
+export const updateSavedPayoutDetail = catchAsyncErrors(async (req, res) => {
+  const bankDetails =
+    req.body.bankDetails !== undefined
+      ? req.body.bankDetails || {
+          accountHolderName: req.body.accountHolderName,
+          accountNumber: req.body.accountNumber,
+          ifscCode: req.body.ifscCode,
+          bankName: req.body.bankName,
+          upiId: req.body.upiId,
+        }
+      : undefined;
+
+  const payoutDetail = await WalletManager.updateSavedPayoutDetail(
+    req.user._id,
+    req.params.id,
+    {
+      title: req.body.title,
+      bankDetails,
+    }
+  );
+
+  res.status(200).json({
+    success: true,
+    message: "Payout detail updated",
+    data: { payoutDetail },
+  });
+});
+
+export const deleteSavedPayoutDetail = catchAsyncErrors(async (req, res) => {
+  const payoutDetail = await WalletManager.deleteSavedPayoutDetail(
+    req.user._id,
+    req.params.id
+  );
+
+  res.status(200).json({
+    success: true,
+    message: "Payout detail deleted",
+    data: { payoutDetail },
   });
 });
 

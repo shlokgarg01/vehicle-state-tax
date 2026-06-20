@@ -1,5 +1,5 @@
 const CONSTANTS = {
-  ITEMS_PER_PAGE: 10,
+  ITEMS_PER_PAGE: 25,
   ORDER_STATUS: {
     CREATED: "created",
     CONFIRMED: "confirmed",
@@ -84,6 +84,7 @@ const CONSTANTS = {
     FOUR_HUNDRED_KG: 400,
     FIVE_HUNDRED_KG: 500,
   },
+  WALLET_REFUND_ELIGIBLE_FROM: "2026-06-19",
 };
 
 export default CONSTANTS;
