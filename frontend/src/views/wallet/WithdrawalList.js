@@ -8,6 +8,7 @@ import {
   CRow,
   CBadge,
   CButton,
+  CForm,
   CTable,
   CTableHead,
   CTableHeaderCell,
@@ -22,6 +23,8 @@ import Pagination from '../../components/Pagination/Pagination'
 import NoData from '../../components/NoData'
 import Loader from '../../components/Loader/Loader'
 import TextArea from '../../components/Form/TextArea'
+import DateSelector from '../../components/Form/DateSelector'
+import Button from '../../components/Form/Button'
 import { showToast } from '../../utils/toast'
 import { getDateTimeFromDateString } from '../../helpers/Date'
 import { removeUnderScoreAndCapitalize } from '../../helpers/strings'
@@ -176,15 +179,17 @@ export default function WithdrawalList() {
   const dispatch = useDispatch()
   const [page, setPage] = useState(1)
   const [statusFilter, setStatusFilter] = useState('')
+  const [startDate, setStartDate] = useState('')
+  const [endDate, setEndDate] = useState('')
+  const [appliedDateFilters, setAppliedDateFilters] = useState({ startDate: '', endDate: '' })
   const [selectedWithdrawal, setSelectedWithdrawal] = useState(null)
   const [showCompleteModal, setShowCompleteModal] = useState(false)
   const [showRejectModal, setShowRejectModal] = useState(false)
   const [proofFile, setProofFile] = useState(null)
   const [rejectionReason, setRejectionReason] = useState('')
 
-  const { withdrawals, totalPages, total, counts, loading, error } = useSelector(
-    (state) => state.withdrawals
-  )
+  const { withdrawals, totalPages, total, counts, totalRefunded, perPage, loading, error } =
+    useSelector((state) => state.withdrawals)
   const {
     loading: completeLoading,
     success: completeSuccess,
@@ -202,9 +207,11 @@ export default function WithdrawalList() {
         page,
         perPage: Constants.ITEMS_PER_PAGE,
         status: statusFilter,
+        startDate: appliedDateFilters.startDate,
+        endDate: appliedDateFilters.endDate,
       })
     )
-  }, [dispatch, page, statusFilter])
+  }, [dispatch, page, statusFilter, appliedDateFilters])
 
   useEffect(() => {
     fetchWithdrawals()
@@ -254,43 +261,98 @@ export default function WithdrawalList() {
     dispatch(completeWithdrawal(selectedWithdrawal._id, formData))
   }
 
+  const handleDateSearch = (e) => {
+    e.preventDefault()
+    setAppliedDateFilters({ startDate, endDate })
+    setPage(1)
+  }
+
+  const handleDateClear = () => {
+    setStartDate('')
+    setEndDate('')
+    setAppliedDateFilters({ startDate: '', endDate: '' })
+    setPage(1)
+  }
+
+  const hasDateFilter = Boolean(appliedDateFilters.startDate || appliedDateFilters.endDate)
+
   const handleReject = () => {
     dispatch(rejectWithdrawal(selectedWithdrawal._id, rejectionReason))
   }
+
+  const itemsPerPage = perPage || Constants.ITEMS_PER_PAGE
 
   return (
     <CRow>
       <CCol xs={12}>
         <CCard className="border-0 shadow-sm">
           <CCardBody className="p-3 p-md-4">
-            <div className="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
-              <div>
-                <h5 className="mb-0">Wallet Withdrawals</h5>
-                <span className="text-muted small">
+            <div className="mb-3">
+              <h5 className="mb-2">Wallet Withdrawals</h5>
+              <div className="d-flex flex-wrap align-items-center gap-3 small">
+                <span className="text-muted">
                   {total || 0} request{total === 1 ? '' : 's'}
-                  {!statusFilter}
+                  {hasDateFilter ? ' in selected range' : ''}
+                </span>
+                <span className="text-success fw-semibold">
+                  Total refunded: ₹{totalRefunded ?? 0}
                 </span>
               </div>
-              <div className="btn-group btn-group-sm">
-                {STATUS_FILTERS.map(({ label, value, countKey }) => {
-                  const isActive = statusFilter === value
-                  const count = counts?.[countKey]
-                  return (
-                    <CButton
-                      key={value || 'all'}
-                      color={isActive ? 'dark' : 'light'}
-                      className={isActive ? '' : 'text-muted border'}
-                      onClick={() => {
-                        setStatusFilter(value)
-                        setPage(1)
-                      }}
-                    >
-                      {label}
-                      {count !== undefined && ` (${count})`}
-                    </CButton>
-                  )
-                })}
+            </div>
+
+            <div className="rounded border bg-light p-3 mb-3">
+              <div className="d-flex flex-column flex-md-row flex-md-wrap align-items-md-center justify-content-md-between gap-2 mb-3 pb-3 border-bottom">
+                <span className="small text-muted fw-semibold mb-0">Status</span>
+                <div className="btn-group btn-group-sm flex-wrap">
+                  {STATUS_FILTERS.map(({ label, value, countKey }) => {
+                    const isActive = statusFilter === value
+                    const count = counts?.[countKey]
+                    return (
+                      <CButton
+                        key={value || 'all'}
+                        color={isActive ? 'dark' : 'light'}
+                        className={isActive ? '' : 'text-muted border'}
+                        onClick={() => {
+                          setStatusFilter(value)
+                          setPage(1)
+                        }}
+                      >
+                        {label}
+                        {count !== undefined && ` (${count})`}
+                      </CButton>
+                    )
+                  })}
+                </div>
               </div>
+
+              <CForm onSubmit={handleDateSearch}>
+                <div className="d-flex flex-column flex-lg-row align-items-lg-end gap-3">
+                  <div className="flex-grow-1" style={{ maxWidth: '180px' }}>
+                    <label htmlFor="withdrawalStartDate" className="form-label small text-muted mb-1">
+                      From
+                    </label>
+                    <DateSelector
+                      value={startDate}
+                      onChange={(e) => setStartDate(e.target.value)}
+                      id="withdrawalStartDate"
+                    />
+                  </div>
+                  <div className="flex-grow-1" style={{ maxWidth: '180px' }}>
+                    <label htmlFor="withdrawalEndDate" className="form-label small text-muted mb-1">
+                      To
+                    </label>
+                    <DateSelector
+                      value={endDate}
+                      onChange={(e) => setEndDate(e.target.value)}
+                      id="withdrawalEndDate"
+                    />
+                  </div>
+                  <div className="d-flex gap-2 flex-shrink-0">
+                    <Button title="Apply" type="submit" color="dark" btnSmall />
+                    <Button title="Clear" type="button" color="danger" btnSmall onClick={handleDateClear} />
+                  </div>
+                </div>
+              </CForm>
             </div>
 
             {loading ? (
@@ -300,6 +362,7 @@ export default function WithdrawalList() {
                 <CTable hover responsive align="middle" className="mb-0 small">
                   <CTableHead className="text-muted">
                     <CTableRow>
+                      <CTableHeaderCell style={{ width: 56 }}>S.No</CTableHeaderCell>
                       <CTableHeaderCell>Date</CTableHeaderCell>
                       <CTableHeaderCell>User</CTableHeaderCell>
                       <CTableHeaderCell>Amount</CTableHeaderCell>
@@ -309,8 +372,11 @@ export default function WithdrawalList() {
                     </CTableRow>
                   </CTableHead>
                   <CTableBody>
-                    {withdrawals.map((w) => (
+                    {withdrawals.map((w, index) => (
                       <CTableRow key={w._id}>
+                        <CTableDataCell className="text-muted">
+                          {(page - 1) * itemsPerPage + index + 1}
+                        </CTableDataCell>
                         <CTableDataCell className="text-nowrap">
                           {getDateTimeFromDateString(w.createdAt)}
                         </CTableDataCell>

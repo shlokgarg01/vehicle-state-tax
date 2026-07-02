@@ -335,6 +335,19 @@ export const resendTaxWhatsAppNotification = catchAsyncErrors(async (req, res, n
 export const updateTax = async (req, res) => {
   try {
     const { id } = req.params;
+
+    if (req.body.status === CONSTANTS.ORDER_STATUS.CANCELLED) {
+      const updatedTax = await TaxManager.cancelTax(
+        id,
+        req.body.cancellationReason
+      );
+      return res.status(200).json({
+        success: true,
+        message: "Order cancelled",
+        data: { tax: updatedTax },
+      });
+    }
+
     const updatedTax = await Tax.findByIdAndUpdate(id, req.body, { new: true });
     if (!updatedTax) {
       return res.status(404).json({ success: false, message: "Tax not found" });
@@ -347,7 +360,8 @@ export const updateTax = async (req, res) => {
       }
     });
   } catch (error) {
-    res.status(500).json({ success: false, message: error.message });
+    const statusCode = error.statusCode || 500;
+    res.status(statusCode).json({ success: false, message: error.message });
   }
 };
 

@@ -64,6 +64,7 @@ const taxSchema = new mongoose.Schema(
       default: CONSTANTS.ORDER_STATUS.CREATED,
       required: true,
     },
+    cancellationReason: { type: String, default: "" },
   },
   { timestamps: true }
 );

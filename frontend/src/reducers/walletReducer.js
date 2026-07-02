@@ -16,6 +16,7 @@ export const withdrawalsReducer = (
         page: action.payload.page,
         perPage: action.payload.perPage,
         totalPages: Math.ceil(action.payload.total / action.payload.perPage),
+        totalRefunded: action.payload.totalRefunded ?? 0,
       }
     case WALLET_CONSTANTS.GET_WITHDRAWALS_FAIL:
       return { ...state, loading: false, error: action.payload }

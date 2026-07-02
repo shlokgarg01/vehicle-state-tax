@@ -14,9 +14,12 @@ export const getWithdrawals =
       const page = params.page || 1
       const perPage = params.perPage || Constants.ITEMS_PER_PAGE
       const status = params.status || ''
+      const { startDate, endDate } = params
 
       let url = `${ADMIN_WALLET_PREFIX}/withdrawals?page=${page}&perPage=${perPage}`
       if (status) url += `&status=${status}`
+      if (startDate) url += `&startDate=${startDate}`
+      if (endDate) url += `&endDate=${endDate}`
 
       const { data } = await axiosInstance.get(url)
       dispatch({

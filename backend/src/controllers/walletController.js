@@ -135,8 +135,14 @@ export const getUserWithdrawals = catchAsyncErrors(async (req, res) => {
 export const getAllWithdrawals = catchAsyncErrors(async (req, res) => {
   const page = parseInt(req.query.page) || 1;
   const perPage = parseInt(req.query.perPage) || 10;
-  const { status } = req.query;
-  const result = await WalletManager.getAllWithdrawals({ page, perPage, status });
+  const { status, startDate, endDate } = req.query;
+  const result = await WalletManager.getAllWithdrawals({
+    page,
+    perPage,
+    status,
+    startDate,
+    endDate,
+  });
 
   res.status(200).json({
     success: true,

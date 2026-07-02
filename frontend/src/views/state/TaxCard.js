@@ -19,6 +19,7 @@ import { TAX_CONSTANTS } from '../../constants/taxConstants'
 import { getDateFromDateString, getDateTimeFromDateString } from '../../helpers/Date'
 import CONSTANTS from '../../utils/constants'
 import Modal from '../../components/Modal/Modal'
+import TextArea from '../../components/Form/TextArea'
 
 const FieldRow = ({ label, value, copyable, isPhone }) => {
   if (!value) return null
@@ -156,6 +157,7 @@ const TaxCard = ({ data, onUploadComplete, onRefundComplete, setIsUploading, sho
   const fileInputRef = useRef(null)
   const [localFileUrl, setLocalFileUrl] = useState(data.fileUrl)
   const [showCancelModal, setShowCancelModal] = useState(false)
+  const [cancellationReason, setCancellationReason] = useState('')
   const [showRefundModal, setShowRefundModal] = useState(false)
   const [refundPassword, setRefundPassword] = useState('')
   const [showMarkRefundedModal, setShowMarkRefundedModal] = useState(false)
@@ -166,7 +168,9 @@ const TaxCard = ({ data, onUploadComplete, onRefundComplete, setIsUploading, sho
     uploaded,
     error: uploadError,
   } = useSelector((state) => state.uploadTax || {})
-  const { loading: updateTaxLoading, success, tax: updatedTax } = useSelector((state) => state.updateTax)
+  const { loading: updateTaxLoading, success, tax: updatedTax, error: updateTaxError } = useSelector(
+    (state) => state.updateTax
+  )
   const {
     loading: refundLoading,
     success: refundSuccess,
@@ -205,8 +209,21 @@ const TaxCard = ({ data, onUploadComplete, onRefundComplete, setIsUploading, sho
   }
 
   const handleCancelConfirm = () => {
-    dispatch(updateTax(data._id, { status: CONSTANTS.ORDER_STATUS.CANCELLED }))
+    if (!cancellationReason.trim()) {
+      showToast('Please enter a cancellation reason', 'error')
+      return
+    }
+    dispatch(
+      updateTax(data._id, {
+        status: CONSTANTS.ORDER_STATUS.CANCELLED,
+        cancellationReason: cancellationReason.trim(),
+      })
+    )
+  }
+
+  const closeCancelModal = () => {
     setShowCancelModal(false)
+    setCancellationReason('')
   }
 
   const handleRefundToWalletConfirm = () => {
@@ -226,7 +243,19 @@ const TaxCard = ({ data, onUploadComplete, onRefundComplete, setIsUploading, sho
 
   useEffect(() => {
     if (success && updatedTax._id === data._id) {
-      showToast('Tax Updated successfully')
+      const message =
+        updatedTax.status === CONSTANTS.ORDER_STATUS.CANCELLED
+          ? 'Order cancelled successfully'
+          : 'Tax Updated successfully'
+      showToast(message)
+      if (updatedTax.status === CONSTANTS.ORDER_STATUS.CANCELLED) {
+        closeCancelModal()
+      }
+      dispatch({ type: TAX_CONSTANTS.UPDATE_TAX_RESET })
+    }
+
+    if (updateTaxError) {
+      showToast(updateTaxError, 'error')
       dispatch({ type: TAX_CONSTANTS.UPDATE_TAX_RESET })
     }
 
@@ -309,6 +338,9 @@ const TaxCard = ({ data, onUploadComplete, onRefundComplete, setIsUploading, sho
 
     data.chasisNumber && <FieldRow label="Chassis Number" value={data.chasisNumber} />,
     data.whoCompleted && <FieldRow label="Who Completed" value={data.whoCompleted?.username} />,
+    data.status === CONSTANTS.ORDER_STATUS.CANCELLED && data.cancellationReason && (
+      <FieldRow label="Cancel Reason" value={data.cancellationReason} />
+    ),
   ]
 
   return (
@@ -382,12 +414,23 @@ const TaxCard = ({ data, onUploadComplete, onRefundComplete, setIsUploading, sho
                     </button>
                     <Modal
                       visible={showCancelModal}
-                      onVisibleToggle={() => setShowCancelModal(false)}
-                      onClose={() => setShowCancelModal(false)}
+                      onVisibleToggle={closeCancelModal}
+                      onClose={closeCancelModal}
                       title="Cancel Order"
                       body={
                         <div>
-                          Are you sure you want to cancel this order? The amount will not be refunded automatically.
+                          <p className="mb-3 small">
+                            Are you sure you want to cancel this order? The amount will not be
+                            refunded automatically.
+                          </p>
+                          <TextArea
+                            label="Cancellation Reason"
+                            placeholder="Enter reason for cancellation"
+                            value={cancellationReason}
+                            onChange={(e) => setCancellationReason(e.target.value)}
+                            id="cancellationReason"
+                            rows={3}
+                          />
                         </div>
                       }
                       closeBtnText="No"

@@ -593,17 +593,61 @@ class WalletManager {
     return { withdrawals, total, page, perPage };
   };
 
-  static getAllWithdrawals = async ({ page = 1, perPage = 20, status } = {}) => {
+  static buildCreatedAtFilter = (startDate, endDate) => {
+    const createdAt = {};
+    if (startDate) {
+      createdAt.$gte = new Date(`${startDate}T00:00:00+05:30`);
+    }
+    if (endDate) {
+      createdAt.$lte = new Date(`${endDate}T23:59:59.999+05:30`);
+    }
+    return Object.keys(createdAt).length ? createdAt : null;
+  };
+
+  static getAllWithdrawals = async ({
+    page = 1,
+    perPage = 20,
+    status,
+    startDate,
+    endDate,
+  } = {}) => {
     const filter = {};
     if (status) filter.status = status;
 
-    const skip = (page - 1) * perPage;
+    const createdAtFilter = this.buildCreatedAtFilter(startDate, endDate);
+    if (createdAtFilter) filter.createdAt = createdAtFilter;
 
-    const [total, pending, completed, rejected] = await Promise.all([
+    const skip = (page - 1) * perPage;
+    const countBase = createdAtFilter ? { createdAt: createdAtFilter } : {};
+
+    const [total, pending, completed, rejected, totalRefundedAgg] = await Promise.all([
       WithdrawalRequest.countDocuments(filter),
-      WithdrawalRequest.countDocuments({ status: CONSTANTS.WITHDRAWAL_STATUS.PENDING }),
-      WithdrawalRequest.countDocuments({ status: CONSTANTS.WITHDRAWAL_STATUS.COMPLETED }),
-      WithdrawalRequest.countDocuments({ status: CONSTANTS.WITHDRAWAL_STATUS.REJECTED }),
+      WithdrawalRequest.countDocuments({
+        ...countBase,
+        status: CONSTANTS.WITHDRAWAL_STATUS.PENDING,
+      }),
+      WithdrawalRequest.countDocuments({
+        ...countBase,
+        status: CONSTANTS.WITHDRAWAL_STATUS.COMPLETED,
+      }),
+      WithdrawalRequest.countDocuments({
+        ...countBase,
+        status: CONSTANTS.WITHDRAWAL_STATUS.REJECTED,
+      }),
+      WithdrawalRequest.aggregate([
+        {
+          $match: {
+            ...countBase,
+            status: CONSTANTS.WITHDRAWAL_STATUS.COMPLETED,
+          },
+        },
+        {
+          $group: {
+            _id: null,
+            total: { $sum: { $ifNull: ["$payoutAmount", "$amount"] } },
+          },
+        },
+      ]),
     ]);
 
     const counts = {
@@ -686,7 +730,9 @@ class WalletManager {
       ]);
     }
 
-    return { withdrawals, total, page, perPage, counts };
+    const totalRefunded = totalRefundedAgg[0]?.total ?? 0;
+
+    return { withdrawals, total, page, perPage, counts, totalRefunded };
   };
 }
 

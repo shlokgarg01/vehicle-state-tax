@@ -88,6 +88,30 @@ class TaxManager {
     return taxEntry;
   };
 
+  static cancelTax = async (taxId, cancellationReason) => {
+    const reason = String(cancellationReason || "").trim();
+    if (!reason) {
+      throw new ErrorHandler("Cancellation reason is required", 400);
+    }
+
+    const tax = await Tax.findById(taxId);
+    if (!tax) {
+      throw new ErrorHandler("Tax not found", 404);
+    }
+    if (tax.status !== CONSTANTS.ORDER_STATUS.CONFIRMED) {
+      throw new ErrorHandler("Only confirmed orders can be cancelled", 400);
+    }
+
+    return Tax.findByIdAndUpdate(
+      taxId,
+      {
+        status: CONSTANTS.ORDER_STATUS.CANCELLED,
+        cancellationReason: reason,
+      },
+      { new: true, runValidators: true }
+    );
+  };
+
   static createTaxWithWalletPayment = async (userId, taxData) => {
     const { orderId, amount, mobileNumber, ...rest } = taxData;
     const walletSummary = await WalletManager.getWalletSummary(userId);
