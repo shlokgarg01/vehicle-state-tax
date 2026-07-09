@@ -44,6 +44,7 @@ export const sendOTPForLogin = asyncHandler(async (req, res, next) => {
 export const authenticateViaOTP = asyncHandler(async (req, res, next) => {
   try {
     const { contactNumber, otp, appVersion, fcmToken } = req.body;
+    console.log("contactNumber & fcmToken ------------------>>>>>>>>>>>>>>>>>", contactNumber, fcmToken);
 
     if (!contactNumber || !otp) {
       return next(new ErrorHandler("Contact number and OTP are required", 400));
