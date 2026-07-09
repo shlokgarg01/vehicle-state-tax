@@ -9,7 +9,6 @@ import {
   cilChartPie,
   cilBell,
   cilTruck,
-  cibWhatsapp,
   cilMoney,
 } from '@coreui/icons'
 import { CNavGroup, CNavItem } from '@coreui/react'
@@ -199,16 +198,26 @@ const _nav = (user) => {
       icon: <CIcon icon={cilMoney} customClassName="nav-icon" />,
     },
     isAdmin && {
-      component: CNavItem,
-      name: 'WhatsApp Message',
-      to: '/whatsapp-message',
-      icon: <CIcon icon={cibWhatsapp} customClassName="nav-icon" />,
-    },
-    isAdmin && {
-      component: CNavItem,
+      component: CNavGroup,
       name: 'Admin',
-      to: '/admin',
       icon: <CIcon icon={cilStar} customClassName="nav-icon" />,
+      items: [
+        {
+          component: CNavItem,
+          name: 'Push Notifications',
+          to: '/notifications',
+        },
+        {
+          component: CNavItem,
+          name: 'WhatsApp Message',
+          to: '/whatsapp-message',
+        },
+        {
+          component: CNavItem,
+          name: 'Settings',
+          to: '/admin',
+        },
+      ],
     },
   ].filter(Boolean)
 }

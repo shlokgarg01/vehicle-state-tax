@@ -13,6 +13,7 @@ const COLLECTION_NAMES = {
   WALLET_TRANSACTION: "WalletTransaction",
   WITHDRAWAL_REQUEST: "WithdrawalRequest",
   SAVED_PAYOUT_DETAIL: "SavedPayoutDetail",
+  PUSH_NOTIFICATIONS_HISTORY: "pushnotificationhistory",
 };
 
 export default COLLECTION_NAMES;

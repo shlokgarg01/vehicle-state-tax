@@ -25,6 +25,7 @@ import RefundedOrder from './views/order/refundedOrder'
 import WhatsAppMessage from './views/pages/WhatsAppMessage'
 import AdminSettings from './views/pages/AdminSettings'
 import WithdrawalList from './views/wallet/WithdrawalList'
+import PushNotificationList from './views/notifications/PushNotificationList'
 
 const routes = [
   { path: '/', exact: true, name: 'Home', element: Home, adminOnly: true },
@@ -57,6 +58,7 @@ const routes = [
   { path: '/banners/list', name: 'List Banner ', element: BannerList },
   { path: '/whatsapp-message', name: 'WhatsApp Message', element: WhatsAppMessage },
   { path: '/admin', name: 'Admin', element: AdminSettings },
+  { path: '/notifications', name: 'Push Notifications', element: PushNotificationList, adminOnly: true },
   { path: '/wallet/withdrawals', name: 'Wallet Withdrawals', element: WithdrawalList, withdrawAccess: true },
 ]
 

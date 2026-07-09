@@ -43,7 +43,7 @@ export const sendOTPForLogin = asyncHandler(async (req, res, next) => {
 //  Verify OTP and login
 export const authenticateViaOTP = asyncHandler(async (req, res, next) => {
   try {
-    const { contactNumber, otp, appVersion } = req.body;
+    const { contactNumber, otp, appVersion, fcmToken } = req.body;
 
     if (!contactNumber || !otp) {
       return next(new ErrorHandler("Contact number and OTP are required", 400));
@@ -77,10 +77,14 @@ export const authenticateViaOTP = asyncHandler(async (req, res, next) => {
     }
 
     const token = generateToken(user);
-    await User.findByIdAndUpdate(user._id, {
+    const userUpdate = {
       lastLogin: new Date(),
-      appVersion,
-    });
+      appVersion: appVersion || "",
+    };
+    if (fcmToken !== undefined && fcmToken !== null) {
+      userUpdate.fcmToken = String(fcmToken).trim();
+    }
+    await User.findByIdAndUpdate(user._id, userUpdate);
 
     res.status(200).json({
       success: true,

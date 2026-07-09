@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react'
+import React, { useEffect, useRef } from 'react'
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import './Login.css'
@@ -14,23 +14,29 @@ const Login = () => {
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
   const { user, error, loading, isAuthenticated } = useSelector((state) => state.user)
+  const loginSubmitted = useRef(false)
 
   const handleSubmit = (e) => {
     e.preventDefault()
+    loginSubmitted.current = true
     dispatch(loginUser(username, password))
   }
 
   useEffect(() => {
-    if (isAuthenticated) {
-      showToast('Login Successful')
+    if (isAuthenticated && user?.role) {
+      if (loginSubmitted.current) {
+        showToast('Login Successful')
+        loginSubmitted.current = false
+      }
       user.role === Constants.ROLES.ADMIN ? navigate('/') : navigate('/orders/new')
     }
 
     if (error) {
       showToast(error, 'error')
       dispatch(clearErrors())
+      loginSubmitted.current = false
     }
-  }, [dispatch, error, isAuthenticated, navigate])
+  }, [dispatch, error, isAuthenticated, navigate, user?.role])
 
   return loading ? (
     <Loader />

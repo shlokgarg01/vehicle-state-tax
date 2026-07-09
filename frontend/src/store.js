@@ -15,6 +15,7 @@ import * as orderReducer from './reducers/orderReducer'
 import * as dashboardReducer from './reducers/dashboardReducer'
 import * as constantsReducer from './reducers/constantsReducer'
 import * as walletReducer from './reducers/walletReducer'
+import * as pushNotificationReducer from './reducers/pushNotificationReducer'
 const initialState = { sidebarShow: true }
 
 const toggleSidebar = (state = initialState, { type, ...rest }) => {
@@ -71,6 +72,9 @@ const rootReducer = combineReducers({
   completeWithdrawal: walletReducer.completeWithdrawalReducer,
   rejectWithdrawal: walletReducer.rejectWithdrawalReducer,
   refundToWallet: walletReducer.refundToWalletReducer,
+
+  sendPushNotification: pushNotificationReducer.sendPushNotificationReducer,
+  pushNotifications: pushNotificationReducer.pushNotificationsReducer,
 })
 
 // ✅ persist config

@@ -85,6 +85,16 @@ const CONSTANTS = {
     FIVE_HUNDRED_KG: 500,
   },
   WALLET_REFUND_ELIGIBLE_FROM: "2026-06-19",
+  PUSH_NOTIFICATION_AUDIENCE: {
+    ALL: "all",
+  },
+  PUSH_NOTIFICATION_STATUS: {
+    PENDING: "pending",
+    PROCESSING: "processing",
+    COMPLETED: "completed",
+    FAILED: "failed",
+  },
+  FCM_BATCH_SIZE: 500,
 };
 
 export default CONSTANTS;

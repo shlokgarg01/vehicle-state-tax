@@ -15,6 +15,10 @@ import {
   rejectWithdrawal,
 } from "../controllers/walletController.js";
 import {
+  getPushNotifications,
+  sendPushNotification,
+} from "../controllers/pushNotificationController.js";
+import {
   isAuthenticatedUser,
   authorizeRoles,
   authorizeWithdrawAccess,
@@ -119,6 +123,21 @@ adminRoutes.post(
   isAuthenticatedUser,
   authorizeRoles([CONSTANTS.USER_ROLES.ADMIN, CONSTANTS.USER_ROLES.MANAGER]),
   refundTaxToWallet
+);
+
+// push notifications
+adminRoutes.post(
+  "/notifications/send",
+  isAuthenticatedUser,
+  authorizeRoles([CONSTANTS.USER_ROLES.ADMIN]),
+  sendPushNotification
+);
+
+adminRoutes.get(
+  "/notifications",
+  isAuthenticatedUser,
+  authorizeRoles([CONSTANTS.USER_ROLES.ADMIN]),
+  getPushNotifications
 );
 
 export default adminRoutes;

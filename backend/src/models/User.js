@@ -24,6 +24,10 @@ const userSchema = new Schema(
       type: String,
       default: "",
     },
+    fcmToken: {
+      type: String,
+      default: "",
+    },
   },
   { timestamps: true }
 );
@@ -32,6 +36,7 @@ userSchema.plugin(mongooseDelete, {
   overrideMethods: "all",
   deletedAt: true,
 });
+userSchema.index({ fcmToken: 1 });
 mongoose.set("debug", true);
 
 const User = mongoose.model(COLLECTION_NAMES.USER, userSchema);

@@ -18,6 +18,7 @@ const {
   REFUND_PASSWORD,
   REFUND_DEDUCTION_PERCENT,
   NOTICE,
+  APP_MIN_VERSION,
 } = Constants.CONSTANT_KEYS
 
 const BOOL_TRUE = ['true', '1', 'yes', 'y', 'on']
@@ -37,12 +38,14 @@ const AdminSettings = () => {
   const initialRefundPassword = values?.[REFUND_PASSWORD] || ''
   const initialRefundDeductionPercent = values?.[REFUND_DEDUCTION_PERCENT] ?? '0'
   const initialNotice = values?.[NOTICE] || ''
+  const initialAppMinVersion = values?.[APP_MIN_VERSION] || '0'
 
   const [welcomeToggle, setWelcomeToggle] = useState(false)
   const [taxToggle, setTaxToggle] = useState(false)
   const [refundPassword, setRefundPassword] = useState('')
   const [refundDeductionPercent, setRefundDeductionPercent] = useState('0')
   const [notice, setNotice] = useState('')
+  const [appMinVersion, setAppMinVersion] = useState('0')
 
   useEffect(() => {
     dispatch(getConstantByKey(SEND_WELCOME_WHATSAPP))
@@ -50,6 +53,7 @@ const AdminSettings = () => {
     dispatch(getConstantByKey(REFUND_PASSWORD))
     dispatch(getConstantByKey(REFUND_DEDUCTION_PERCENT))
     dispatch(getConstantByKey(NOTICE))
+    dispatch(getConstantByKey(APP_MIN_VERSION))
   }, [dispatch])
 
   useEffect(() => {
@@ -73,6 +77,10 @@ const AdminSettings = () => {
   }, [initialNotice])
 
   useEffect(() => {
+    setAppMinVersion(initialAppMinVersion)
+  }, [initialAppMinVersion])
+
+  useEffect(() => {
     if (updated?.[SEND_WELCOME_WHATSAPP]) {
       showToast('Welcome WhatsApp updated')
       dispatch(resetConstantUpdate(SEND_WELCOME_WHATSAPP))
@@ -92,6 +100,10 @@ const AdminSettings = () => {
     if (updated?.[NOTICE]) {
       showToast('App notice updated')
       dispatch(resetConstantUpdate(NOTICE))
+    }
+    if (updated?.[APP_MIN_VERSION]) {
+      showToast('Minimum app version updated')
+      dispatch(resetConstantUpdate(APP_MIN_VERSION))
     }
   }, [updated, dispatch])
 
@@ -115,6 +127,10 @@ const AdminSettings = () => {
     if (errors?.[NOTICE]) {
       showToast(errors[NOTICE], 'error')
       dispatch(resetConstantUpdate(NOTICE))
+    }
+    if (errors?.[APP_MIN_VERSION]) {
+      showToast(errors[APP_MIN_VERSION], 'error')
+      dispatch(resetConstantUpdate(APP_MIN_VERSION))
     }
   }, [errors, dispatch])
 
@@ -146,6 +162,13 @@ const AdminSettings = () => {
     if (notice !== initialNotice) {
       changes.push({ key: NOTICE, value: notice.trim() })
     }
+    if (appMinVersion !== initialAppMinVersion) {
+      if (!appMinVersion.trim()) {
+        showToast('Minimum app version cannot be empty', 'error')
+        return
+      }
+      changes.push({ key: APP_MIN_VERSION, value: appMinVersion.trim() })
+    }
 
     if (!changes.length) {
       showToast('No changes to update')
@@ -162,7 +185,8 @@ const AdminSettings = () => {
     updating?.[SEND_TAX_WHATSAPP] ||
     updating?.[REFUND_PASSWORD] ||
     updating?.[REFUND_DEDUCTION_PERCENT] ||
-    updating?.[NOTICE]
+    updating?.[NOTICE] ||
+    updating?.[APP_MIN_VERSION]
 
   return (
     <div className="container-fluid p-4">
@@ -193,6 +217,23 @@ const AdminSettings = () => {
                   checked={taxToggle}
                   onChange={(e) => setTaxToggle(e.target.checked)}
                 />
+              </CCol>
+            </CRow>
+
+            <CRow className="mb-4">
+              <CCol md={8}>
+                <h6 className="mb-1">Minimum App Version</h6>
+                <p className="text-muted small mb-2">
+                  Push notifications are sent only to users on this version or above.
+                </p>
+                <div style={{ maxWidth: 220 }}>
+                  <TextInput
+                    id="appMinVersion"
+                    placeholder="e.g. 1.2.0"
+                    value={appMinVersion}
+                    onChange={(e) => setAppMinVersion(e.target.value)}
+                  />
+                </div>
               </CCol>
             </CRow>
 

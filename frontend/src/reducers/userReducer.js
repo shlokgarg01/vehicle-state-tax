@@ -3,10 +3,15 @@ import { USER_CONSTANTS } from '../constants/userConstants'
 export const loadUserReducer = (state = { user: {} }, action) => {
   switch (action.type) {
     case USER_CONSTANTS.LOGIN_REQUEST:
-    case USER_CONSTANTS.LOAD_USER_REQUEST:
       return {
+        ...state,
         loading: true,
         isAuthenticated: false,
+      }
+    case USER_CONSTANTS.LOAD_USER_REQUEST:
+      return {
+        ...state,
+        loading: true,
       }
     case USER_CONSTANTS.LOGIN_SUCCESS:
     case USER_CONSTANTS.LOAD_USER_SUCCESS:
