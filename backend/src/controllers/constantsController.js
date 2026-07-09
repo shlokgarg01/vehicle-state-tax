@@ -34,7 +34,7 @@ export const updateConstantByKey = catchAsyncErrors(async (req, res, next) => {
     const { key } = req.params;
     const { value } = req.body;
 
-    if (!value) {
+    if (value === undefined || value === null) {
       return next(new ErrorHandler("Value is required", 400));
     }
 

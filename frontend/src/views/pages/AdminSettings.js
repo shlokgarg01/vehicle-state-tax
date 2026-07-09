@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { CCard, CCardBody, CCardHeader, CCol, CForm, CFormSwitch, CRow } from '@coreui/react'
 import TextInput from '../../components/Form/TextInput'
+import TextArea from '../../components/Form/TextArea'
 import Button from '../../components/Form/Button'
 import { showToast } from '../../utils/toast'
 import {
@@ -9,6 +10,15 @@ import {
   updateConstantByKey,
   resetConstantUpdate,
 } from '../../actions/constantsAction'
+import Constants from '../../utils/constants'
+
+const {
+  SEND_WELCOME_WHATSAPP,
+  SEND_TAX_WHATSAPP,
+  REFUND_PASSWORD,
+  REFUND_DEDUCTION_PERCENT,
+  NOTICE,
+} = Constants.CONSTANT_KEYS
 
 const BOOL_TRUE = ['true', '1', 'yes', 'y', 'on']
 
@@ -22,25 +32,24 @@ const AdminSettings = () => {
   const dispatch = useDispatch()
   const { values, updating, updated, errors } = useSelector((state) => state.constants || {})
 
-  const welcomeKey = 'SEND_WELCOME_WHATSAPP'
-  const taxKey = 'SEND_TAX_WHATSAPP'
-  const refundPasswordKey = 'REFUND_PASSWORD'
-  const refundDeductionPercentKey = 'REFUND_DEDUCTION_PERCENT'
-  const initialWelcome = useMemo(() => toBool(values?.[welcomeKey]), [values?.[welcomeKey]])
-  const initialTax = useMemo(() => toBool(values?.[taxKey]), [values?.[taxKey]])
-  const initialRefundPassword = values?.[refundPasswordKey] || ''
-  const initialRefundDeductionPercent = values?.[refundDeductionPercentKey] ?? '0'
+  const initialWelcome = useMemo(() => toBool(values?.[SEND_WELCOME_WHATSAPP]), [values?.[SEND_WELCOME_WHATSAPP]])
+  const initialTax = useMemo(() => toBool(values?.[SEND_TAX_WHATSAPP]), [values?.[SEND_TAX_WHATSAPP]])
+  const initialRefundPassword = values?.[REFUND_PASSWORD] || ''
+  const initialRefundDeductionPercent = values?.[REFUND_DEDUCTION_PERCENT] ?? '0'
+  const initialNotice = values?.[NOTICE] || ''
 
   const [welcomeToggle, setWelcomeToggle] = useState(false)
   const [taxToggle, setTaxToggle] = useState(false)
   const [refundPassword, setRefundPassword] = useState('')
   const [refundDeductionPercent, setRefundDeductionPercent] = useState('0')
+  const [notice, setNotice] = useState('')
 
   useEffect(() => {
-    dispatch(getConstantByKey(welcomeKey))
-    dispatch(getConstantByKey(taxKey))
-    dispatch(getConstantByKey(refundPasswordKey))
-    dispatch(getConstantByKey(refundDeductionPercentKey))
+    dispatch(getConstantByKey(SEND_WELCOME_WHATSAPP))
+    dispatch(getConstantByKey(SEND_TAX_WHATSAPP))
+    dispatch(getConstantByKey(REFUND_PASSWORD))
+    dispatch(getConstantByKey(REFUND_DEDUCTION_PERCENT))
+    dispatch(getConstantByKey(NOTICE))
   }, [dispatch])
 
   useEffect(() => {
@@ -60,40 +69,52 @@ const AdminSettings = () => {
   }, [initialRefundDeductionPercent])
 
   useEffect(() => {
-    if (updated?.[welcomeKey]) {
+    setNotice(initialNotice)
+  }, [initialNotice])
+
+  useEffect(() => {
+    if (updated?.[SEND_WELCOME_WHATSAPP]) {
       showToast('Welcome WhatsApp updated')
-      dispatch(resetConstantUpdate(welcomeKey))
+      dispatch(resetConstantUpdate(SEND_WELCOME_WHATSAPP))
     }
-    if (updated?.[taxKey]) {
+    if (updated?.[SEND_TAX_WHATSAPP]) {
       showToast('Tax WhatsApp updated')
-      dispatch(resetConstantUpdate(taxKey))
+      dispatch(resetConstantUpdate(SEND_TAX_WHATSAPP))
     }
-    if (updated?.[refundPasswordKey]) {
+    if (updated?.[REFUND_PASSWORD]) {
       showToast('Refund password updated')
-      dispatch(resetConstantUpdate(refundPasswordKey))
+      dispatch(resetConstantUpdate(REFUND_PASSWORD))
     }
-    if (updated?.[refundDeductionPercentKey]) {
+    if (updated?.[REFUND_DEDUCTION_PERCENT]) {
       showToast('Withdrawal deduction percent updated')
-      dispatch(resetConstantUpdate(refundDeductionPercentKey))
+      dispatch(resetConstantUpdate(REFUND_DEDUCTION_PERCENT))
+    }
+    if (updated?.[NOTICE]) {
+      showToast('App notice updated')
+      dispatch(resetConstantUpdate(NOTICE))
     }
   }, [updated, dispatch])
 
   useEffect(() => {
-    if (errors?.[welcomeKey]) {
-      showToast(errors[welcomeKey], 'error')
-      dispatch(resetConstantUpdate(welcomeKey))
+    if (errors?.[SEND_WELCOME_WHATSAPP]) {
+      showToast(errors[SEND_WELCOME_WHATSAPP], 'error')
+      dispatch(resetConstantUpdate(SEND_WELCOME_WHATSAPP))
     }
-    if (errors?.[taxKey]) {
-      showToast(errors[taxKey], 'error')
-      dispatch(resetConstantUpdate(taxKey))
+    if (errors?.[SEND_TAX_WHATSAPP]) {
+      showToast(errors[SEND_TAX_WHATSAPP], 'error')
+      dispatch(resetConstantUpdate(SEND_TAX_WHATSAPP))
     }
-    if (errors?.[refundPasswordKey]) {
-      showToast(errors[refundPasswordKey], 'error')
-      dispatch(resetConstantUpdate(refundPasswordKey))
+    if (errors?.[REFUND_PASSWORD]) {
+      showToast(errors[REFUND_PASSWORD], 'error')
+      dispatch(resetConstantUpdate(REFUND_PASSWORD))
     }
-    if (errors?.[refundDeductionPercentKey]) {
-      showToast(errors[refundDeductionPercentKey], 'error')
-      dispatch(resetConstantUpdate(refundDeductionPercentKey))
+    if (errors?.[REFUND_DEDUCTION_PERCENT]) {
+      showToast(errors[REFUND_DEDUCTION_PERCENT], 'error')
+      dispatch(resetConstantUpdate(REFUND_DEDUCTION_PERCENT))
+    }
+    if (errors?.[NOTICE]) {
+      showToast(errors[NOTICE], 'error')
+      dispatch(resetConstantUpdate(NOTICE))
     }
   }, [errors, dispatch])
 
@@ -102,17 +123,17 @@ const AdminSettings = () => {
     const changes = []
 
     if (welcomeToggle !== initialWelcome) {
-      changes.push({ key: welcomeKey, value: welcomeToggle })
+      changes.push({ key: SEND_WELCOME_WHATSAPP, value: welcomeToggle })
     }
     if (taxToggle !== initialTax) {
-      changes.push({ key: taxKey, value: taxToggle })
+      changes.push({ key: SEND_TAX_WHATSAPP, value: taxToggle })
     }
     if (refundPassword !== initialRefundPassword) {
       if (!refundPassword.trim()) {
         showToast('Refund password cannot be empty', 'error')
         return
       }
-      changes.push({ key: refundPasswordKey, value: refundPassword.trim() })
+      changes.push({ key: REFUND_PASSWORD, value: refundPassword.trim() })
     }
     if (refundDeductionPercent !== initialRefundDeductionPercent) {
       const percent = Number(refundDeductionPercent)
@@ -120,7 +141,10 @@ const AdminSettings = () => {
         showToast('Withdrawal deduction percent must be between 0 and 100', 'error')
         return
       }
-      changes.push({ key: refundDeductionPercentKey, value: String(percent) })
+      changes.push({ key: REFUND_DEDUCTION_PERCENT, value: String(percent) })
+    }
+    if (notice !== initialNotice) {
+      changes.push({ key: NOTICE, value: notice.trim() })
     }
 
     if (!changes.length) {
@@ -134,10 +158,11 @@ const AdminSettings = () => {
   }
 
   const isSubmitting =
-    updating?.[welcomeKey] ||
-    updating?.[taxKey] ||
-    updating?.[refundPasswordKey] ||
-    updating?.[refundDeductionPercentKey]
+    updating?.[SEND_WELCOME_WHATSAPP] ||
+    updating?.[SEND_TAX_WHATSAPP] ||
+    updating?.[REFUND_PASSWORD] ||
+    updating?.[REFUND_DEDUCTION_PERCENT] ||
+    updating?.[NOTICE]
 
   return (
     <div className="container-fluid p-4">
@@ -151,7 +176,6 @@ const AdminSettings = () => {
               <CCol md={6} className="d-flex align-items-center justify-content-between">
                 <div>
                   <h6 className="mb-1">Send Welcome WhatsApp</h6>
-                  <small className="text-muted">Toggle to send welcome message on signup</small>
                 </div>
                 <CFormSwitch
                   checked={welcomeToggle}
@@ -164,11 +188,26 @@ const AdminSettings = () => {
               <CCol md={6} className="d-flex align-items-center justify-content-between">
                 <div>
                   <h6 className="mb-1">Send Tax WhatsApp</h6>
-                  <small className="text-muted">Toggle to send tax PDF via WhatsApp</small>
                 </div>
                 <CFormSwitch
                   checked={taxToggle}
                   onChange={(e) => setTaxToggle(e.target.checked)}
+                />
+              </CCol>
+            </CRow>
+
+            <CRow className="mb-4">
+              <CCol md={8}>
+                <h6 className="mb-1">App Notice</h6>
+                <p className="text-muted small mb-2">
+                  Shown to users in the mobile app. Leave empty to hide.
+                </p>
+                <TextArea
+                  id="appNotice"
+                  placeholder="Enter notice text for the app"
+                  value={notice}
+                  onChange={(e) => setNotice(e.target.value)}
+                  rows={4}
                 />
               </CCol>
             </CRow>
@@ -180,9 +219,6 @@ const AdminSettings = () => {
               >
                 <div>
                   <h6 className="mb-1">Refund Password</h6>
-                  <small className="text-muted">
-                    Required to refund cancelled orders to wallet
-                  </small>
                 </div>
                 <div style={{ minWidth: 220, maxWidth: 280, flex: '0 0 220px' }}>
                   <TextInput
@@ -203,10 +239,6 @@ const AdminSettings = () => {
               >
                 <div>
                   <h6 className="mb-1">Withdrawal Deduction Percent</h6>
-                  <small className="text-muted">
-                    Percent deducted from wallet withdrawals only. User receives amount minus this
-                    fee; full amount is debited from wallet.
-                  </small>
                 </div>
                 <div style={{ minWidth: 220, maxWidth: 280, flex: '0 0 220px' }}>
                   <TextInput
