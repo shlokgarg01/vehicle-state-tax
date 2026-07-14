@@ -44,7 +44,6 @@ export const sendOTPForLogin = asyncHandler(async (req, res, next) => {
 export const authenticateViaOTP = asyncHandler(async (req, res, next) => {
   try {
     const { contactNumber, otp, appVersion, fcmToken } = req.body;
-    console.log("contactNumber & fcmToken ------------------>>>>>>>>>>>>>>>>>", contactNumber, fcmToken);
 
     if (!contactNumber || !otp) {
       return next(new ErrorHandler("Contact number and OTP are required", 400));
@@ -134,6 +133,37 @@ export const logoutUser = asyncHandler(async (req, res) => {
     success: true,
     message: "Logged out successfully.",
   });
+});
+
+export const updateFcmToken = asyncHandler(async (req, res, next) => {
+  try {
+    const { fcmToken, appVersion } = req.body;
+    if (fcmToken === undefined || fcmToken === null) {
+      return next(new ErrorHandler("FCM token is required", 400));
+    }
+
+    const userUpdate = {
+      fcmToken: String(fcmToken).trim(),
+    };
+    if (appVersion !== undefined && appVersion !== null) {
+      userUpdate.appVersion = String(appVersion).trim();
+    }
+
+    const user = await User.findByIdAndUpdate(req.user._id, userUpdate, {
+      new: true,
+    });
+    if (!user) {
+      return next(new ErrorHandler("User not found", 404));
+    }
+
+    res.status(200).json({
+      success: true,
+      message: "FCM token updated successfully",
+    });
+  } catch (error) {
+    console.error("Error in updateFcmToken:", error);
+    next(new ErrorHandler("Internal Server Error", 500));
+  }
 });
 
 export const getUserDetails = asyncHandler(async (req, res, next) => {
