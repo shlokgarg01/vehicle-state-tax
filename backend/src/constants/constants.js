@@ -95,6 +95,9 @@ const CONSTANTS = {
     FAILED: "failed",
   },
   FCM_BATCH_SIZE: 500,
+  DB_CONSTANT_KEYS: {
+    IS_RAZORPAY_LIVE: "IS_RAZORPAY_LIVE",
+  },
 };
 
 export default CONSTANTS;

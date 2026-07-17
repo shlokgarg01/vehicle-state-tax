@@ -63,6 +63,7 @@ const Constants = {
     REFUND_DEDUCTION_PERCENT: 'REFUND_DEDUCTION_PERCENT',
     NOTICE: 'NOTICE',
     APP_MIN_VERSION: 'min_app_version',
+    IS_RAZORPAY_LIVE: 'IS_RAZORPAY_LIVE',
   },
 }
 

@@ -23,6 +23,12 @@ const config = {
     password: process.env.PAYMENT_PASSWORD,
   },
 
+  razorpay: {
+    apiBaseUrl: process.env.RAZORPAY_API_BASE_URL || "https://api.razorpay.com/v1",
+    keyId: process.env.RAZORPAY_KEY_ID,
+    keySecret: process.env.RAZORPAY_KEY_SECRET,
+  },
+
   firebase: {
     bucketName: process.env.FIREBASE_STORAGE_BUCKET_NAME,
   },

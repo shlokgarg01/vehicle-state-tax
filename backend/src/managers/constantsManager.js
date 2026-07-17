@@ -1,27 +1,12 @@
-import config from "../config/config.js";
 import Constants from "../models/Constants.js";
-import { ErrorHandler } from "../utils/errorHandlerUtils.js";
-import axios from 'axios';
+import { getPaymentGateway } from "../services/paymentGateway.js";
 
 class ConstantsManager {
   constructor() {}
 
   static createPaymentGatewayToken = async () => {
-    const url = config.payment.baseUrl + "/createMerchantToken";
-    let response = await axios.post(
-      url,
-      {
-        mid: config.payment.mid,
-        password: config.payment.password,
-      },
-      { headers: { "Content-Type": "application/json" } }
-    );
-
-    if (response.data.status) {
-      return response?.data?.data?.token;
-    } else {
-      throw new ErrorHandler(response.data.msg || "Failed to create payment token", 400);
-    }
+    const gateway = await getPaymentGateway();
+    return gateway.createPaymentGatewayToken();
   };
 
   static getValidPaymentGatewayToken = async () => {

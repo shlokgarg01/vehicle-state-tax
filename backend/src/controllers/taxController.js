@@ -10,6 +10,8 @@ import { parseCustomDate } from '../helpers/dateHelper.js'
 import { sendTaxViaWhatsApp } from "../utils/sendNotifications.js";
 import { ErrorHandler } from "../utils/errorHandlerUtils.js";
 import ConstantsManager from "../managers/constantsManager.js";
+import { resolveBackendUrl } from "../utils/requestUrlUtils.js";
+import { verifyPaymentLinkCallback } from "../services/razorpay.js";
 
 // Create a Tax Entry
 export const createTax = async (req, res) => {
@@ -121,6 +123,7 @@ export const getUserTaxHistory = async (req, res) => {
 export const createTaxAndPaymentURL = async (req, res) => {
   try {
     const { orderId, amount, mobileNumber, category, paymentMethod, ...taxData } = req.body;
+    const backendUrl = resolveBackendUrl(req);
 
     let price = 0;
     if ([CONSTANTS.MODES.BORDER_TAX, CONSTANTS.MODES.ROAD_TAX].includes(taxData.category)) {
@@ -158,6 +161,7 @@ export const createTaxAndPaymentURL = async (req, res) => {
         orderId,
         amount,
         mobileNumber,
+        backendUrl,
       });
 
       return res.status(200).json({
@@ -178,7 +182,8 @@ export const createTaxAndPaymentURL = async (req, res) => {
     const paymentLink = await TaxManager.createPaymentLink(
       orderId,
       amount,
-      mobileNumber
+      mobileNumber,
+      { backendUrl }
     );
     const taxEntry = await TaxManager.createTaxEntry(req.user?._id, {
       ...taxData,
@@ -214,6 +219,17 @@ export const paymentStatusCheck = async (req, res) => {
       return res.status(400).json({
         success: false,
         message: "Payment failed. Wallet amount has been refunded.",
+        data: { tax },
+      });
+    }
+
+    if (
+      tax.paymentStatus === CONSTANTS.PAYMENT_STATUS.COMPLETED &&
+      tax.status !== CONSTANTS.ORDER_STATUS.CREATED
+    ) {
+      return res.status(200).json({
+        success: true,
+        message: "Payment is successful.",
         data: { tax },
       });
     }
@@ -394,6 +410,21 @@ export const refundTaxToWallet = catchAsyncErrors(async (req, res, next) => {
 
 export const paymentRedirect = async (req, res) => {
   try {
+    const callback = verifyPaymentLinkCallback(req.query);
+    if (callback.paid && callback.orderId) {
+      try {
+        const tax = await TaxManager.getTaxByOrderId(callback.orderId);
+        if (tax.status === CONSTANTS.ORDER_STATUS.CREATED) {
+          await TaxManager.updateTaxByOrderId(callback.orderId, {
+            status: CONSTANTS.ORDER_STATUS.CONFIRMED,
+            paymentStatus: CONSTANTS.PAYMENT_STATUS.COMPLETED,
+          });
+        }
+      } catch {
+        // Show thank-you page even if order lookup fails.
+      }
+    }
+
     res.send(`<pre>🎉 धन्यवाद!
 🟢 आपकी पेमेंट सफलतापूर्वक प्राप्त हो गई है।
 

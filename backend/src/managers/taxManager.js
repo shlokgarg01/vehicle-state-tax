@@ -1,10 +1,8 @@
-import axios from "axios";
-import config from "../config/config.js";
 import { ErrorHandler } from "../utils/errorHandlerUtils.js";
 import CONSTANTS from "../constants/constants.js";
 import Tax from "../models/Tax.js";
-import ConstantsManager from "./constantsManager.js";
 import WalletManager from "./walletManager.js";
+import { getPaymentGateway } from "../services/paymentGateway.js";
 
 class TaxManager {
   constructor() {}
@@ -20,55 +18,24 @@ class TaxManager {
     return populatedEntry;
   };
 
-  static createPaymentLink = async (orderId, amount, mobileNumber) => {
-    let token = await ConstantsManager.getValidPaymentGatewayToken();
-    const url = config.payment.baseUrl + "/createPaymentPage";
-
-    let response = await axios.post(
-      url,
-      {
-        mid: config.payment.mid,
-        merchantReferenceId: orderId,
-        amount: amount,
-        customer_mobile: mobileNumber,
-        customer_name: mobileNumber,
-        customer_email: mobileNumber,
-        redirect_URL: `${config.backendUrl}/api/v1/tax/paymentRedirect`,
-        failed_URL: "",
-      },
-      { headers: { token } }
+  static createPaymentLink = async (
+    orderId,
+    amount,
+    mobileNumber,
+    options = {}
+  ) => {
+    const gateway = await getPaymentGateway();
+    return gateway.createPaymentLink(
+      orderId,
+      amount,
+      mobileNumber,
+      options
     );
-
-    if (response.data.status) {
-      return response.data.data.payPageUrl;
-    } else {
-      throw new ErrorHandler(
-        response.data.msg || "Failed to create payment URL",
-        404
-      );
-    }
   };
 
   static getPaymentStatus = async (orderId) => {
-    let token = await ConstantsManager.getValidPaymentGatewayToken();
-    const url = config.payment.baseUrl + "/checkPaymentStatus";
-
-    let response = await axios.post(
-      url,
-      {
-        mid: config.payment.mid,
-        merchantReferenceId: orderId,
-      },
-      { headers: { "Content-Type": "application/json", token } }
-    );
-
-    if (response.data.status) {
-      let transactionStatus = response.data.txnStatus;
-      if (transactionStatus === CONSTANTS.PAYMENT.TRANSACTION_STATUS.SUCCESS) {
-        return true;
-      }
-    }
-    return false;
+    const gateway = await getPaymentGateway();
+    return gateway.getPaymentStatus(orderId);
   };
 
   static getTaxByOrderId = async (orderId) => {
@@ -113,7 +80,7 @@ class TaxManager {
   };
 
   static createTaxWithWalletPayment = async (userId, taxData) => {
-    const { orderId, amount, mobileNumber, ...rest } = taxData;
+    const { orderId, amount, mobileNumber, backendUrl, ...rest } = taxData;
     const walletSummary = await WalletManager.getWalletSummary(userId);
     const walletAmount = Math.min(walletSummary.availableBalance, amount);
     const gatewayAmount = amount - walletAmount;
@@ -164,7 +131,8 @@ class TaxManager {
         paymentLink = await this.createPaymentLink(
           orderId,
           gatewayAmount,
-          mobileNumber
+          mobileNumber,
+          { backendUrl }
         );
         taxEntry = await this.updateTaxByOrderId(orderId, { paymentLink });
       } catch (error) {

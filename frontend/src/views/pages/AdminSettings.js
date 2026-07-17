@@ -19,6 +19,7 @@ const {
   REFUND_DEDUCTION_PERCENT,
   NOTICE,
   APP_MIN_VERSION,
+  IS_RAZORPAY_LIVE,
 } = Constants.CONSTANT_KEYS
 
 const BOOL_TRUE = ['true', '1', 'yes', 'y', 'on']
@@ -39,9 +40,14 @@ const AdminSettings = () => {
   const initialRefundDeductionPercent = values?.[REFUND_DEDUCTION_PERCENT] ?? '0'
   const initialNotice = values?.[NOTICE] || ''
   const initialAppMinVersion = values?.[APP_MIN_VERSION] || '0'
+  const initialRazorpayLive = useMemo(() => {
+    if (values?.[IS_RAZORPAY_LIVE] === undefined) return true
+    return toBool(values?.[IS_RAZORPAY_LIVE])
+  }, [values?.[IS_RAZORPAY_LIVE]])
 
   const [welcomeToggle, setWelcomeToggle] = useState(false)
   const [taxToggle, setTaxToggle] = useState(false)
+  const [razorpayLiveToggle, setRazorpayLiveToggle] = useState(true)
   const [refundPassword, setRefundPassword] = useState('')
   const [refundDeductionPercent, setRefundDeductionPercent] = useState('0')
   const [notice, setNotice] = useState('')
@@ -54,6 +60,7 @@ const AdminSettings = () => {
     dispatch(getConstantByKey(REFUND_DEDUCTION_PERCENT))
     dispatch(getConstantByKey(NOTICE))
     dispatch(getConstantByKey(APP_MIN_VERSION))
+    dispatch(getConstantByKey(IS_RAZORPAY_LIVE))
   }, [dispatch])
 
   useEffect(() => {
@@ -81,6 +88,10 @@ const AdminSettings = () => {
   }, [initialAppMinVersion])
 
   useEffect(() => {
+    setRazorpayLiveToggle(initialRazorpayLive)
+  }, [initialRazorpayLive])
+
+  useEffect(() => {
     if (updated?.[SEND_WELCOME_WHATSAPP]) {
       showToast('Welcome WhatsApp updated')
       dispatch(resetConstantUpdate(SEND_WELCOME_WHATSAPP))
@@ -104,6 +115,10 @@ const AdminSettings = () => {
     if (updated?.[APP_MIN_VERSION]) {
       showToast('Minimum app version updated')
       dispatch(resetConstantUpdate(APP_MIN_VERSION))
+    }
+    if (updated?.[IS_RAZORPAY_LIVE]) {
+      showToast('Payment gateway updated')
+      dispatch(resetConstantUpdate(IS_RAZORPAY_LIVE))
     }
   }, [updated, dispatch])
 
@@ -131,6 +146,10 @@ const AdminSettings = () => {
     if (errors?.[APP_MIN_VERSION]) {
       showToast(errors[APP_MIN_VERSION], 'error')
       dispatch(resetConstantUpdate(APP_MIN_VERSION))
+    }
+    if (errors?.[IS_RAZORPAY_LIVE]) {
+      showToast(errors[IS_RAZORPAY_LIVE], 'error')
+      dispatch(resetConstantUpdate(IS_RAZORPAY_LIVE))
     }
   }, [errors, dispatch])
 
@@ -169,6 +188,9 @@ const AdminSettings = () => {
       }
       changes.push({ key: APP_MIN_VERSION, value: appMinVersion.trim() })
     }
+    if (razorpayLiveToggle !== initialRazorpayLive) {
+      changes.push({ key: IS_RAZORPAY_LIVE, value: razorpayLiveToggle })
+    }
 
     if (!changes.length) {
       showToast('No changes to update')
@@ -186,7 +208,8 @@ const AdminSettings = () => {
     updating?.[REFUND_PASSWORD] ||
     updating?.[REFUND_DEDUCTION_PERCENT] ||
     updating?.[NOTICE] ||
-    updating?.[APP_MIN_VERSION]
+    updating?.[APP_MIN_VERSION] ||
+    updating?.[IS_RAZORPAY_LIVE]
 
   return (
     <div className="container-fluid p-4">
@@ -196,6 +219,21 @@ const AdminSettings = () => {
         </CCardHeader>
         <CCardBody>
           <CForm onSubmit={handleSubmit}>
+            <CRow className="mb-4">
+              <CCol md={8} className="d-flex align-items-center justify-content-between">
+                <div>
+                  <h6 className="mb-1">Razorpay Payment Gateway</h6>
+                  <p className="text-muted small mb-0">
+                    When enabled, payment links are created via Razorpay. When disabled, Paygic is used.
+                  </p>
+                </div>
+                <CFormSwitch
+                  checked={razorpayLiveToggle}
+                  onChange={(e) => setRazorpayLiveToggle(e.target.checked)}
+                />
+              </CCol>
+            </CRow>
+
             <CRow className="mb-3">
               <CCol md={6} className="d-flex align-items-center justify-content-between">
                 <div>
