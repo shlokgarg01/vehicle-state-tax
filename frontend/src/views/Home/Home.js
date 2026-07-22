@@ -9,7 +9,6 @@ import SelectBox from '../../components/Form/SelectBox'
 import Button from '../../components/Form/Button'
 import DateSelector from '../../components/Form/DateSelector'
 import { formatDateInput } from '../../helpers/Date'
-import PaymentConfirmModal from '../../components/PaymentConfirmModal'
 
 const getRandomNumbers = () =>
   Array.from({ length: 7 }, () => Math.floor(Math.random() * (79 - 40 + 1)) + 40)
@@ -136,7 +135,6 @@ const Home = () => {
 
   return (
     <CContainer fluid className="py-4">
-      <PaymentConfirmModal />
       <style>{`
         .dashboard-cards-grid {
           display: grid;
