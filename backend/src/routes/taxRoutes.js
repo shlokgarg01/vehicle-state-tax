@@ -1,6 +1,7 @@
 import express from "express";
 import {
   createTax,
+  createUpiTaxOrder,
   getAllTaxes,
   getTaxById,
   getUserTaxHistory,
@@ -19,6 +20,7 @@ import CONSTANTS from "../constants/constants.js";
 const taxRoutes = express.Router();
 
 taxRoutes.post("/new", isAuthenticatedUser, createTax); // Create a tax entry
+taxRoutes.post("/upi/new", isAuthenticatedUser, createUpiTaxOrder); // Manual UPI checkout
 taxRoutes.get("/", getAllTaxes); // Get all tax records
 taxRoutes.get('/paymentRedirect', paymentRedirect)
 taxRoutes.get("/:id", isAuthenticatedUser, getTaxById); // Get tax by ID

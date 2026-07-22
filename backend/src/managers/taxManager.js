@@ -130,6 +130,87 @@ class TaxManager {
   };
 
   static createTaxWithWalletPayment = async (userId, taxData) => {
+    const { orderId, amount, mobileNumber, backendUrl, ...rest } = taxData;
+    const walletSummary = await WalletManager.getWalletSummary(userId);
+    const walletAmount = Math.min(walletSummary.availableBalance, amount);
+    const gatewayAmount = amount - walletAmount;
+
+    let taxEntry;
+    let paymentLink = "";
+
+    try {
+      taxEntry = await Tax.create({
+        ...rest,
+        orderId,
+        amount,
+        mobileNumber,
+        userId,
+        paymentMethod: CONSTANTS.PAYMENT_METHOD.WALLET,
+        walletAmountPaid: walletAmount,
+        gatewayAmountPaid: gatewayAmount,
+        paymentStatus:
+          gatewayAmount > 0
+            ? CONSTANTS.PAYMENT_STATUS.PENDING
+            : CONSTANTS.PAYMENT_STATUS.COMPLETED,
+        status:
+          gatewayAmount > 0
+            ? CONSTANTS.ORDER_STATUS.CREATED
+            : CONSTANTS.ORDER_STATUS.CONFIRMED,
+        paymentLink: "",
+      });
+
+      if (walletAmount > 0) {
+        await WalletManager.debitForTax({
+          userId,
+          amount: walletAmount,
+          orderId,
+        });
+      }
+    } catch (error) {
+      if (taxEntry?._id) {
+        await Tax.findByIdAndUpdate(taxEntry._id, {
+          status: CONSTANTS.ORDER_STATUS.CANCELLED,
+          paymentStatus: CONSTANTS.PAYMENT_STATUS.FAILED,
+        });
+      }
+      throw error;
+    }
+
+    if (gatewayAmount > 0) {
+      try {
+        paymentLink = await this.createPaymentLink(
+          orderId,
+          gatewayAmount,
+          mobileNumber,
+          { backendUrl }
+        );
+        taxEntry = await this.updateTaxByOrderId(orderId, { paymentLink });
+      } catch (error) {
+        if (walletAmount > 0) {
+          await WalletManager.rollbackTaxDebit({
+            userId,
+            amount: walletAmount,
+            orderId,
+          });
+        }
+        await this.updateTaxByOrderId(orderId, {
+          paymentStatus: CONSTANTS.PAYMENT_STATUS.FAILED,
+          status: CONSTANTS.ORDER_STATUS.CANCELLED,
+        });
+        throw error;
+      }
+    }
+
+    return {
+      paymentLink,
+      taxEntry,
+      walletAmountPaid: walletAmount,
+      gatewayAmountPaid: gatewayAmount,
+      requiresGateway: gatewayAmount > 0,
+    };
+  };
+
+  static createTaxWithWalletUpiPayment = async (userId, taxData) => {
     const { orderId, amount, mobileNumber, ...rest } = taxData;
     const walletSummary = await WalletManager.getWalletSummary(userId);
     const walletAmount = Math.min(walletSummary.availableBalance, amount);

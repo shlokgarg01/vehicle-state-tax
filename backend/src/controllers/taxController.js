@@ -14,8 +14,26 @@ import WalletManager from "../managers/walletManager.js";
 import { resolveBackendUrl } from "../utils/requestUrlUtils.js";
 import { verifyPaymentLinkCallback } from "../services/razorpay.js";
 
-// Create a Tax Entry (manual UPI flow)
+// Create a Tax Entry
 export const createTax = async (req, res) => {
+  try {
+    const taxEntry = await TaxManager.createTaxEntry(req.user?._id, req.body);
+
+    res.status(201).json({
+      success: true,
+      taxEntry,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: "Error while creating the tax",
+      error: error,
+    });
+  }
+};
+
+// Manual UPI checkout (new app flow — does not replace payment_url)
+export const createUpiTaxOrder = async (req, res) => {
   try {
     const {
       orderId,
@@ -37,7 +55,7 @@ export const createTax = async (req, res) => {
     });
 
     const selectedPaymentMethod = (
-      paymentMethod || CONSTANTS.PAYMENT_METHOD.GATEWAY
+      paymentMethod || CONSTANTS.PAYMENT_METHOD.UPI
     ).toLowerCase();
 
     const upiConfig = await ConstantsManager.getUpiConfig();
@@ -56,14 +74,17 @@ export const createTax = async (req, res) => {
         });
       }
 
-      const result = await TaxManager.createTaxWithWalletPayment(req.user?._id, {
-        ...taxData,
-        category,
-        orderId: generatedOrderId,
-        amount: numericAmount,
-        mobileNumber,
-        commission,
-      });
+      const result = await TaxManager.createTaxWithWalletUpiPayment(
+        req.user?._id,
+        {
+          ...taxData,
+          category,
+          orderId: generatedOrderId,
+          amount: numericAmount,
+          mobileNumber,
+          commission,
+        }
+      );
 
       return res.status(201).json({
         success: true,
