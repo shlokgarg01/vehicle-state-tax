@@ -10,23 +10,113 @@ import { parseCustomDate } from '../helpers/dateHelper.js'
 import { sendTaxViaWhatsApp } from "../utils/sendNotifications.js";
 import { ErrorHandler } from "../utils/errorHandlerUtils.js";
 import ConstantsManager from "../managers/constantsManager.js";
+import WalletManager from "../managers/walletManager.js";
 import { resolveBackendUrl } from "../utils/requestUrlUtils.js";
 import { verifyPaymentLinkCallback } from "../services/razorpay.js";
 
-// Create a Tax Entry
+// Create a Tax Entry (manual UPI flow)
 export const createTax = async (req, res) => {
   try {
-    const taxEntry = await TaxManager.createTaxEntry(req.user?._id, req.body);
+    const {
+      orderId,
+      amount,
+      mobileNumber,
+      category,
+      paymentMethod,
+      ...taxData
+    } = req.body;
+
+    const generatedOrderId = orderId || `${Date.now()}`;
+    const commission = await TaxManager.computeCommission({
+      category,
+      taxMode: req.body.taxMode,
+      startDate: req.body.startDate,
+      endDate: req.body.endDate,
+      seatCapacity: req.body.seatCapacity,
+      state: req.body.state,
+    });
+
+    const selectedPaymentMethod = (
+      paymentMethod || CONSTANTS.PAYMENT_METHOD.GATEWAY
+    ).toLowerCase();
+
+    const upiConfig = await ConstantsManager.getUpiConfig();
+    const numericAmount = Number(amount);
+
+    if (selectedPaymentMethod === CONSTANTS.PAYMENT_METHOD.WALLET) {
+      const walletSummary = await WalletManager.getWalletSummary(req.user?._id);
+      const walletAmount = Math.min(walletSummary.availableBalance, numericAmount);
+      const upiAmount = numericAmount - walletAmount;
+
+      if (upiAmount > 0 && !upiConfig.merchantUpiId) {
+        return res.status(400).json({
+          success: false,
+          message:
+            "UPI payment is not configured. Ask admin to set Merchant UPI ID in Admin Settings.",
+        });
+      }
+
+      const result = await TaxManager.createTaxWithWalletPayment(req.user?._id, {
+        ...taxData,
+        category,
+        orderId: generatedOrderId,
+        amount: numericAmount,
+        mobileNumber,
+        commission,
+      });
+
+      return res.status(201).json({
+        success: true,
+        message: result.requiresUpi
+          ? "Partial wallet payment applied. Complete remaining amount via UPI."
+          : "Payment completed via wallet.",
+        data: {
+          taxEntry: result.taxEntry,
+          walletAmountPaid: result.walletAmountPaid,
+          upiAmount: result.upiAmount,
+          requiresUpi: result.requiresUpi,
+          upiConfig: result.requiresUpi ? upiConfig : null,
+        },
+      });
+    }
+
+    if (!upiConfig.merchantUpiId) {
+      return res.status(400).json({
+        success: false,
+        message:
+          "UPI payment is not configured. Ask admin to set Merchant UPI ID in Admin Settings.",
+      });
+    }
+
+    const taxEntry = await TaxManager.createTaxEntry(req.user?._id, {
+      ...taxData,
+      category,
+      orderId: generatedOrderId,
+      amount: numericAmount,
+      mobileNumber,
+      commission,
+      paymentMethod: CONSTANTS.PAYMENT_METHOD.UPI,
+      gatewayAmountPaid: numericAmount,
+      paymentStatus: CONSTANTS.PAYMENT_STATUS.PENDING,
+      status: CONSTANTS.ORDER_STATUS.PAYMENT_PENDING,
+    });
 
     res.status(201).json({
       success: true,
-      taxEntry,
+      message: "Tax order created. Complete payment via UPI.",
+      data: {
+        taxEntry,
+        walletAmountPaid: 0,
+        upiAmount: numericAmount,
+        requiresUpi: true,
+        upiConfig,
+      },
     });
   } catch (error) {
-    res.status(500).json({
+    const statusCode = error.statusCode || 500;
+    res.status(statusCode).json({
       success: false,
-      message: "Error while creating the tax",
-      error: error,
+      message: error.message || "Error while creating the tax",
     });
   }
 };
@@ -362,6 +452,30 @@ export const updateTax = async (req, res) => {
         message: "Order cancelled",
         data: { tax: updatedTax },
       });
+    }
+
+    if (req.body.status === CONSTANTS.ORDER_STATUS.CONFIRMED) {
+      const tax = await Tax.findById(id);
+      if (!tax) {
+        return res.status(404).json({ success: false, message: "Tax not found" });
+      }
+
+      if (tax.status !== CONSTANTS.ORDER_STATUS.PAYMENT_PENDING) {
+        return res.status(400).json({
+          success: false,
+          message: "Only payment pending orders can be confirmed",
+        });
+      }
+
+      const isAdmin = req.user.role === CONSTANTS.USER_ROLES.ADMIN;
+      if (!isAdmin && !req.user.canConfirmPayment) {
+        return res.status(403).json({
+          success: false,
+          message: "You are not allowed to confirm payments",
+        });
+      }
+
+      req.body.paymentStatus = CONSTANTS.PAYMENT_STATUS.COMPLETED;
     }
 
     const updatedTax = await Tax.findByIdAndUpdate(id, req.body, { new: true });

@@ -80,6 +80,7 @@ export const createEmployee = asyncHandler(async (req, res, next) => {
     const canViewContactNumber = parseBooleanField(req.body?.canViewContactNumber || false);
     const canRefund = parseBooleanField(req.body?.canRefund || false);
     const canWithdraw = parseBooleanField(req.body?.canWithdraw || false);
+    const canConfirmPayment = parseBooleanField(req.body?.canConfirmPayment || false);
 
     const employee = await Employee.create({
       username,
@@ -93,6 +94,7 @@ export const createEmployee = asyncHandler(async (req, res, next) => {
       canViewContactNumber,
       canRefund,
       canWithdraw,
+      canConfirmPayment,
     });
 
     res.status(201).json({
@@ -112,6 +114,7 @@ export const createEmployee = asyncHandler(async (req, res, next) => {
         canViewContactNumber: employee.canViewContactNumber,
         canRefund: employee.canRefund,
         canWithdraw: employee.canWithdraw,
+        canConfirmPayment: employee.canConfirmPayment,
       },
     });
   } catch (error) {
@@ -228,6 +231,10 @@ export const updateEmployee = asyncHandler(async (req, res, next) => {
     employee.canWithdraw = parseBooleanField(req.body.canWithdraw);
   }
 
+  if (req.body.canConfirmPayment !== undefined) {
+    employee.canConfirmPayment = parseBooleanField(req.body.canConfirmPayment);
+  }
+
   if (employee.image) {
     await deleteFile(employee.image);
   }
@@ -260,6 +267,7 @@ export const updateEmployee = asyncHandler(async (req, res, next) => {
       canViewContactNumber: employee.canViewContactNumber,
       canRefund: employee.canRefund,
       canWithdraw: employee.canWithdraw,
+      canConfirmPayment: employee.canConfirmPayment,
     },
   });
 });

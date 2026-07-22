@@ -59,6 +59,7 @@ export default function EmployeeList() {
     canViewContactNumber: false,
     canRefund: false,
     canWithdraw: false,
+    canConfirmPayment: false,
   }
 
   // Redux: Create employee
@@ -144,6 +145,7 @@ export default function EmployeeList() {
     formData.append('canViewContactNumber', String(Boolean(employee.canViewContactNumber)))
     formData.append('canRefund', String(Boolean(employee.canRefund)))
     formData.append('canWithdraw', String(Boolean(employee.canWithdraw)))
+    formData.append('canConfirmPayment', String(Boolean(employee.canConfirmPayment)))
 
     dispatch(createEmployee(formData))
   }
@@ -214,6 +216,7 @@ export default function EmployeeList() {
     formData.append('canViewContactNumber', String(Boolean(editUser.canViewContactNumber)))
     formData.append('canRefund', String(Boolean(editUser.canRefund)))
     formData.append('canWithdraw', String(Boolean(editUser.canWithdraw)))
+    formData.append('canConfirmPayment', String(Boolean(editUser.canConfirmPayment)))
 
     dispatch(updateSingleEmployee(editUser._id, formData))
     setIsEditModalVisible(false)
@@ -461,6 +464,20 @@ export default function EmployeeList() {
                       checked={Boolean(employee.canWithdraw)}
                       onChange={(e) =>
                         setEmployee({ ...employee, canWithdraw: e.target.checked })
+                      }
+                    />
+                  </CCol>
+                </CRow>
+
+                <CRow className="mb-4 align-items-center">
+                  <CCol md={3} />
+                  <CCol md={9}>
+                    <CFormCheck
+                      id="create-canConfirmPayment"
+                      label="Can Confirm Payments"
+                      checked={Boolean(employee.canConfirmPayment)}
+                      onChange={(e) =>
+                        setEmployee({ ...employee, canConfirmPayment: e.target.checked })
                       }
                     />
                   </CCol>

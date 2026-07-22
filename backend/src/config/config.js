@@ -44,7 +44,12 @@ const config = {
     from: process.env.MAIL_FROM,
     usersTo: process.env.MAILS_USERS_TO,
     bccUsersTo: process.env.BCC_MAILS_USERS_TO
-  }
+  },
+
+  upi: {
+    merchantUpiId: process.env.BUSINESS_UPI_ID || "",
+    payeeName: process.env.UPI_PAYEE_NAME || "Vehicle State Tax",
+  },
 };
 
 export default config;

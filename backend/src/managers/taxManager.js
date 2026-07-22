@@ -1,11 +1,61 @@
 import { ErrorHandler } from "../utils/errorHandlerUtils.js";
 import CONSTANTS from "../constants/constants.js";
 import Tax from "../models/Tax.js";
+import State from "../models/State.js";
+import Price from "../models/Price.js";
 import WalletManager from "./walletManager.js";
 import { getPaymentGateway } from "../services/paymentGateway.js";
+import { parseCustomDate } from "../helpers/dateHelper.js";
 
 class TaxManager {
   constructor() {}
+
+  static computeCommission = async ({
+    category,
+    taxMode,
+    startDate,
+    endDate,
+    seatCapacity,
+    state,
+  }) => {
+    let price = null;
+    if (
+      [CONSTANTS.MODES.BORDER_TAX, CONSTANTS.MODES.ROAD_TAX].includes(category)
+    ) {
+      const stateDoc = await State.findOne({
+        name: state?.toLowerCase(),
+        mode: category,
+        status: CONSTANTS.STATUS.ACTIVE,
+      });
+      price = await Price.findOne({
+        mode: category,
+        taxMode,
+        seatCapacity,
+        state: stateDoc?._id,
+        status: CONSTANTS.STATUS.ACTIVE,
+      });
+    } else {
+      price = await Price.findOne({
+        mode: category,
+        taxMode,
+        seatCapacity,
+        status: CONSTANTS.STATUS.ACTIVE,
+      });
+    }
+
+    if (taxMode === "days") {
+      const start = parseCustomDate(startDate);
+      const end = parseCustomDate(endDate);
+      const numberOfDays =
+        Math.ceil((end - start) / (1000 * 60 * 60 * 24)) + 1;
+      if (numberOfDays <= 2) return 30;
+      if (numberOfDays <= 5) return 50;
+      if (numberOfDays <= 9) return 70;
+      return 100;
+    }
+
+    return price?.serviceCharge || 0;
+  };
 
   static createTaxEntry = async (userId, taxData) => {
     let taxEntry = new Tax({
@@ -80,13 +130,12 @@ class TaxManager {
   };
 
   static createTaxWithWalletPayment = async (userId, taxData) => {
-    const { orderId, amount, mobileNumber, backendUrl, ...rest } = taxData;
+    const { orderId, amount, mobileNumber, ...rest } = taxData;
     const walletSummary = await WalletManager.getWalletSummary(userId);
     const walletAmount = Math.min(walletSummary.availableBalance, amount);
-    const gatewayAmount = amount - walletAmount;
+    const upiAmount = amount - walletAmount;
 
     let taxEntry;
-    let paymentLink = "";
 
     try {
       taxEntry = await Tax.create({
@@ -97,14 +146,14 @@ class TaxManager {
         userId,
         paymentMethod: CONSTANTS.PAYMENT_METHOD.WALLET,
         walletAmountPaid: walletAmount,
-        gatewayAmountPaid: gatewayAmount,
+        gatewayAmountPaid: upiAmount,
         paymentStatus:
-          gatewayAmount > 0
+          upiAmount > 0
             ? CONSTANTS.PAYMENT_STATUS.PENDING
             : CONSTANTS.PAYMENT_STATUS.COMPLETED,
         status:
-          gatewayAmount > 0
-            ? CONSTANTS.ORDER_STATUS.CREATED
+          upiAmount > 0
+            ? CONSTANTS.ORDER_STATUS.PAYMENT_PENDING
             : CONSTANTS.ORDER_STATUS.CONFIRMED,
         paymentLink: "",
       });
@@ -126,37 +175,11 @@ class TaxManager {
       throw error;
     }
 
-    if (gatewayAmount > 0) {
-      try {
-        paymentLink = await this.createPaymentLink(
-          orderId,
-          gatewayAmount,
-          mobileNumber,
-          { backendUrl }
-        );
-        taxEntry = await this.updateTaxByOrderId(orderId, { paymentLink });
-      } catch (error) {
-        if (walletAmount > 0) {
-          await WalletManager.rollbackTaxDebit({
-            userId,
-            amount: walletAmount,
-            orderId,
-          });
-        }
-        await this.updateTaxByOrderId(orderId, {
-          paymentStatus: CONSTANTS.PAYMENT_STATUS.FAILED,
-          status: CONSTANTS.ORDER_STATUS.CANCELLED,
-        });
-        throw error;
-      }
-    }
-
     return {
-      paymentLink,
       taxEntry,
       walletAmountPaid: walletAmount,
-      gatewayAmountPaid: gatewayAmount,
-      requiresGateway: gatewayAmount > 0,
+      upiAmount,
+      requiresUpi: upiAmount > 0,
     };
   };
 
@@ -277,6 +300,32 @@ class TaxManager {
 
     for (const tax of staleHybridTaxes) {
       await this.rollbackFailedHybridPayment(tax);
+    }
+  };
+
+  static cancelStalePaymentPendingOrders = async () => {
+    const cutoff = new Date(Date.now() - 48 * 60 * 60 * 1000);
+    const staleTaxes = await Tax.find({
+      status: CONSTANTS.ORDER_STATUS.PAYMENT_PENDING,
+      createdAt: { $lt: cutoff },
+    }).lean();
+
+    for (const tax of staleTaxes) {
+      if (tax.walletAmountPaid > 0 && tax.userId) {
+        await WalletManager.rollbackTaxDebit({
+          userId: tax.userId,
+          amount: tax.walletAmountPaid,
+          orderId: tax.orderId,
+        });
+      }
+
+      await Tax.findByIdAndUpdate(tax._id, {
+        status: CONSTANTS.ORDER_STATUS.CANCELLED,
+        paymentStatus: CONSTANTS.PAYMENT_STATUS.FAILED,
+        cancellationReason:
+          "Auto-cancelled: payment not received within 48 hours",
+        walletAmountPaid: 0,
+      });
     }
   };
 }

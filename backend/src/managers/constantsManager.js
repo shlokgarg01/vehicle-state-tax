@@ -1,5 +1,7 @@
 import Constants from "../models/Constants.js";
 import { getPaymentGateway } from "../services/paymentGateway.js";
+import CONSTANTS from "../constants/constants.js";
+import config from "../config/config.js";
 
 class ConstantsManager {
   constructor() {}
@@ -65,6 +67,30 @@ class ConstantsManager {
     if (["false", "0", "no", "n", "off"].includes(val)) return false;
 
     return defaultValue;
+  };
+
+  static getUpiConfig = async () => {
+    const dbUpiId = await this.getConstantValue(
+      CONSTANTS.DB_CONSTANT_KEYS.BUSINESS_UPI_ID,
+      ""
+    );
+    const dbPayeeName = await this.getConstantValue(
+      CONSTANTS.DB_CONSTANT_KEYS.UPI_PAYEE_NAME,
+      ""
+    );
+
+    const merchantUpiId = (
+      dbUpiId ||
+      config.upi?.merchantUpiId ||
+      ""
+    ).trim();
+    const payeeName = (
+      dbPayeeName ||
+      config.upi?.payeeName ||
+      "Vehicle State Tax"
+    ).trim();
+
+    return { merchantUpiId, payeeName };
   };
 }
 

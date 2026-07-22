@@ -2,6 +2,7 @@ const CONSTANTS = {
   ITEMS_PER_PAGE: 25,
   ORDER_STATUS: {
     CREATED: "created",
+    PAYMENT_PENDING: "payment_pending",
     CONFIRMED: "confirmed",
     CLOSED: "closed",
     CANCELLED: "cancelled",
@@ -14,6 +15,7 @@ const CONSTANTS = {
   PAYMENT_METHOD: {
     GATEWAY: "gateway",
     WALLET: "wallet",
+    UPI: "upi",
   },
   PAYMENT_STATUS: {
     PENDING: "pending",
@@ -97,6 +99,8 @@ const CONSTANTS = {
   FCM_BATCH_SIZE: 500,
   DB_CONSTANT_KEYS: {
     IS_RAZORPAY_LIVE: "IS_RAZORPAY_LIVE",
+    BUSINESS_UPI_ID: "BUSINESS_UPI_ID",
+    UPI_PAYEE_NAME: "UPI_PAYEE_NAME",
   },
 };
 

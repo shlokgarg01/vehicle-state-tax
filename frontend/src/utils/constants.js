@@ -2,6 +2,7 @@ const Constants = {
   ITEMS_PER_PAGE: 25,
   ORDER_STATUS: {
     CREATED: 'created',
+    PAYMENT_PENDING: 'payment_pending',
     CONFIRMED: 'confirmed',
     CLOSED: 'closed',
     CANCELLED: 'cancelled',
@@ -64,6 +65,8 @@ const Constants = {
     NOTICE: 'NOTICE',
     APP_MIN_VERSION: 'min_app_version',
     IS_RAZORPAY_LIVE: 'IS_RAZORPAY_LIVE',
+    BUSINESS_UPI_ID: 'BUSINESS_UPI_ID',
+    UPI_PAYEE_NAME: 'UPI_PAYEE_NAME',
   },
 }
 

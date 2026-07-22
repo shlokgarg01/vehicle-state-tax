@@ -61,6 +61,10 @@ const employeeSchema = new Schema(
       type: Boolean,
       default: false,
     },
+    canConfirmPayment: {
+      type: Boolean,
+      default: false,
+    },
   },
   { timestamps: true }
 );

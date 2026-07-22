@@ -1,9 +1,9 @@
 import cron from "node-cron";
 import TaxManager from "../managers/taxManager.js";
 
-// Runs every 5 mins
-// Finds all taxes from last 1hr which are stuck in CREATED status & checks their payment status.
-// If the payment is completed, move them to CONFIRMED status.
-cron.schedule("*/5 * * * *", async () => {
-  TaxManager.updateTaxStatusViaCron();
+// Gateway payment status polling disabled — manual UPI verification is used instead.
+
+// Cancel payment_pending orders older than 48 hours (runs hourly).
+cron.schedule("0 * * * *", async () => {
+  await TaxManager.cancelStalePaymentPendingOrders();
 });

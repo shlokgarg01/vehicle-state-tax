@@ -19,6 +19,7 @@ import createAllIndiaTax from './views/allIndiaTax/createAllIndiaTax'
 import CreateLoadingTaxPrice from './views/loadingVehicletax/CreateLoadingTaxPrice'
 import CreateRoadTaxPrice from './views/roadTax/createRoadTaxPrice'
 import newOrder from './views/order/newOrder'
+import PaymentPendingOrder from './views/order/paymentPendingOrder'
 import CompleteOrder from './views/order/completeOrder'
 import searchOrder from './views/order/searchOrder'
 import RefundedOrder from './views/order/refundedOrder'
@@ -31,6 +32,7 @@ const routes = [
   { path: '/', exact: true, name: 'Home', element: Home, adminOnly: true },
 
   { path: '/orders/new', name: 'Create Price', element: newOrder },
+  { path: '/orders/payment-pending', name: 'Payment Pending', element: PaymentPendingOrder },
   { path: '/orders/completed', name: 'Create Price', element: CompleteOrder },
   { path: '/orders/refunded', name: 'Create Price', element: RefundedOrder },
   { path: '/orders/search', name: 'Create Price', element: searchOrder },
