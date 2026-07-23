@@ -29,6 +29,18 @@ const config = {
     keySecret: process.env.RAZORPAY_KEY_SECRET,
   },
 
+  pay0: {
+    apiBaseUrl: process.env.PAY0_API_BASE_URL || "https://api.pay0.shop/apiv1",
+    userToken:
+      process.env.PAY0_USER_TOKEN ||
+      process.env.PAY0_API_KEY ||
+      "",
+    secretKey:
+      process.env.PAY0_SECRET_KEY ||
+      process.env.PAY0_SECRET ||
+      "",
+  },
+
   firebase: {
     bucketName: process.env.FIREBASE_STORAGE_BUCKET_NAME,
   },

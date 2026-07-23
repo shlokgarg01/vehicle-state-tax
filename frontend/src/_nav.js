@@ -35,12 +35,6 @@ const _nav = (user) => {
     },
     isManager && {
       component: CNavItem,
-      name: 'Payment Pending',
-      to: '/orders/payment-pending',
-      icon: <CIcon icon={cilMoney} customClassName="nav-icon" />,
-    },
-    isManager && {
-      component: CNavItem,
       name: 'Completed Orders',
       to: '/orders/completed',
       icon: <CIcon icon={cilSpeedometer} customClassName="nav-icon" />,
@@ -66,11 +60,6 @@ const _nav = (user) => {
           component: CNavItem,
           name: 'New Orders',
           to: '/orders/new',
-        },
-        {
-          component: CNavItem,
-          name: 'Payment Pending',
-          to: '/orders/payment-pending',
         },
         {
           component: CNavItem,

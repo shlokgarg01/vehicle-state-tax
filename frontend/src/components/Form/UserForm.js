@@ -128,14 +128,6 @@ const UserForm = ({ userData, setUserData, errors, canEditAdminPassword = false 
           setUserData({ ...userData, canWithdraw: e.target.checked })
         }
       />
-      <CFormCheck
-        id="canConfirmPayment"
-        label="Can Confirm Payments"
-        checked={Boolean(userData.canConfirmPayment)}
-        onChange={(e) =>
-          setUserData({ ...userData, canConfirmPayment: e.target.checked })
-        }
-      />
       {/* Image preview */}
       {userData.preview || userData.imageUrl ? (
         <img

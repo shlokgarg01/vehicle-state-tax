@@ -1,7 +1,6 @@
 import express from "express";
 import {
   createTax,
-  createUpiTaxOrder,
   getAllTaxes,
   getTaxById,
   getUserTaxHistory,
@@ -10,6 +9,7 @@ import {
   uploadTax,
   updateTax,
   paymentRedirect,
+  paymentWebhook,
 } from "../controllers/taxController.js";
 import {
   authorizeRoles,
@@ -20,9 +20,9 @@ import CONSTANTS from "../constants/constants.js";
 const taxRoutes = express.Router();
 
 taxRoutes.post("/new", isAuthenticatedUser, createTax); // Create a tax entry
-taxRoutes.post("/upi/new", isAuthenticatedUser, createUpiTaxOrder); // Manual UPI checkout
 taxRoutes.get("/", getAllTaxes); // Get all tax records
 taxRoutes.get('/paymentRedirect', paymentRedirect)
+taxRoutes.post('/paymentWebhook', paymentWebhook)
 taxRoutes.get("/:id", isAuthenticatedUser, getTaxById); // Get tax by ID
 taxRoutes.get("/history/:userId", isAuthenticatedUser, getUserTaxHistory);
 taxRoutes.post(

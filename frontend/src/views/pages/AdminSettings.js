@@ -19,8 +19,7 @@ const {
   REFUND_DEDUCTION_PERCENT,
   NOTICE,
   APP_MIN_VERSION,
-  BUSINESS_UPI_ID,
-  UPI_PAYEE_NAME,
+  IS_RAZORPAY_LIVE,
 } = Constants.CONSTANT_KEYS
 
 const BOOL_TRUE = ['true', '1', 'yes', 'y', 'on']
@@ -41,17 +40,18 @@ const AdminSettings = () => {
   const initialRefundDeductionPercent = values?.[REFUND_DEDUCTION_PERCENT] ?? '0'
   const initialNotice = values?.[NOTICE] || ''
   const initialAppMinVersion = values?.[APP_MIN_VERSION] || '0'
-  const initialBusinessUpiId = values?.[BUSINESS_UPI_ID] || ''
-  const initialUpiPayeeName = values?.[UPI_PAYEE_NAME] || 'Vehicle State Tax'
+  const initialRazorpayLive = useMemo(() => {
+    if (values?.[IS_RAZORPAY_LIVE] === undefined) return true
+    return toBool(values?.[IS_RAZORPAY_LIVE])
+  }, [values?.[IS_RAZORPAY_LIVE]])
 
   const [welcomeToggle, setWelcomeToggle] = useState(false)
   const [taxToggle, setTaxToggle] = useState(false)
+  const [razorpayLiveToggle, setRazorpayLiveToggle] = useState(true)
   const [refundPassword, setRefundPassword] = useState('')
   const [refundDeductionPercent, setRefundDeductionPercent] = useState('0')
   const [notice, setNotice] = useState('')
   const [appMinVersion, setAppMinVersion] = useState('0')
-  const [businessUpiId, setBusinessUpiId] = useState('')
-  const [upiPayeeName, setUpiPayeeName] = useState('Vehicle State Tax')
 
   useEffect(() => {
     dispatch(getConstantByKey(SEND_WELCOME_WHATSAPP))
@@ -60,8 +60,7 @@ const AdminSettings = () => {
     dispatch(getConstantByKey(REFUND_DEDUCTION_PERCENT))
     dispatch(getConstantByKey(NOTICE))
     dispatch(getConstantByKey(APP_MIN_VERSION))
-    dispatch(getConstantByKey(BUSINESS_UPI_ID))
-    dispatch(getConstantByKey(UPI_PAYEE_NAME))
+    dispatch(getConstantByKey(IS_RAZORPAY_LIVE))
   }, [dispatch])
 
   useEffect(() => {
@@ -89,12 +88,8 @@ const AdminSettings = () => {
   }, [initialAppMinVersion])
 
   useEffect(() => {
-    setBusinessUpiId(initialBusinessUpiId)
-  }, [initialBusinessUpiId])
-
-  useEffect(() => {
-    setUpiPayeeName(initialUpiPayeeName)
-  }, [initialUpiPayeeName])
+    setRazorpayLiveToggle(initialRazorpayLive)
+  }, [initialRazorpayLive])
 
   useEffect(() => {
     if (updated?.[SEND_WELCOME_WHATSAPP]) {
@@ -121,13 +116,9 @@ const AdminSettings = () => {
       showToast('Minimum app version updated')
       dispatch(resetConstantUpdate(APP_MIN_VERSION))
     }
-    if (updated?.[BUSINESS_UPI_ID]) {
-      showToast('Merchant UPI ID updated')
-      dispatch(resetConstantUpdate(BUSINESS_UPI_ID))
-    }
-    if (updated?.[UPI_PAYEE_NAME]) {
-      showToast('UPI payee name updated')
-      dispatch(resetConstantUpdate(UPI_PAYEE_NAME))
+    if (updated?.[IS_RAZORPAY_LIVE]) {
+      showToast('Payment gateway updated')
+      dispatch(resetConstantUpdate(IS_RAZORPAY_LIVE))
     }
   }, [updated, dispatch])
 
@@ -156,13 +147,9 @@ const AdminSettings = () => {
       showToast(errors[APP_MIN_VERSION], 'error')
       dispatch(resetConstantUpdate(APP_MIN_VERSION))
     }
-    if (errors?.[BUSINESS_UPI_ID]) {
-      showToast(errors[BUSINESS_UPI_ID], 'error')
-      dispatch(resetConstantUpdate(BUSINESS_UPI_ID))
-    }
-    if (errors?.[UPI_PAYEE_NAME]) {
-      showToast(errors[UPI_PAYEE_NAME], 'error')
-      dispatch(resetConstantUpdate(UPI_PAYEE_NAME))
+    if (errors?.[IS_RAZORPAY_LIVE]) {
+      showToast(errors[IS_RAZORPAY_LIVE], 'error')
+      dispatch(resetConstantUpdate(IS_RAZORPAY_LIVE))
     }
   }, [errors, dispatch])
 
@@ -201,15 +188,8 @@ const AdminSettings = () => {
       }
       changes.push({ key: APP_MIN_VERSION, value: appMinVersion.trim() })
     }
-    if (businessUpiId !== initialBusinessUpiId) {
-      if (!businessUpiId.trim()) {
-        showToast('Merchant UPI ID cannot be empty', 'error')
-        return
-      }
-      changes.push({ key: BUSINESS_UPI_ID, value: businessUpiId.trim() })
-    }
-    if (upiPayeeName !== initialUpiPayeeName) {
-      changes.push({ key: UPI_PAYEE_NAME, value: upiPayeeName.trim() || 'Vehicle State Tax' })
+    if (razorpayLiveToggle !== initialRazorpayLive) {
+      changes.push({ key: IS_RAZORPAY_LIVE, value: razorpayLiveToggle })
     }
 
     if (!changes.length) {
@@ -229,8 +209,7 @@ const AdminSettings = () => {
     updating?.[REFUND_DEDUCTION_PERCENT] ||
     updating?.[NOTICE] ||
     updating?.[APP_MIN_VERSION] ||
-    updating?.[BUSINESS_UPI_ID] ||
-    updating?.[UPI_PAYEE_NAME]
+    updating?.[IS_RAZORPAY_LIVE]
 
   return (
     <div className="container-fluid p-4">
@@ -241,36 +220,17 @@ const AdminSettings = () => {
         <CCardBody>
           <CForm onSubmit={handleSubmit}>
             <CRow className="mb-4">
-              <CCol md={8}>
-                <h6 className="mb-1">Merchant UPI ID</h6>
-                <p className="text-muted small mb-2">
-                  UPI address (pa) used when customers pay via the mobile app.
-                </p>
-                <div style={{ maxWidth: 360 }}>
-                  <TextInput
-                    id="businessUpiId"
-                    placeholder="e.g. business@upi"
-                    value={businessUpiId}
-                    onChange={(e) => setBusinessUpiId(e.target.value)}
-                  />
+              <CCol md={8} className="d-flex align-items-center justify-content-between">
+                <div>
+                  <h6 className="mb-1">Razorpay Payment Gateway</h6>
+                  <p className="text-muted small mb-0">
+                    When enabled, payment links use Razorpay. When disabled, Pay0 is used.
+                  </p>
                 </div>
-              </CCol>
-            </CRow>
-
-            <CRow className="mb-4">
-              <CCol md={8}>
-                <h6 className="mb-1">UPI Payee Name</h6>
-                <p className="text-muted small mb-2">
-                  Display name shown in the customer&apos;s UPI app.
-                </p>
-                <div style={{ maxWidth: 360 }}>
-                  <TextInput
-                    id="upiPayeeName"
-                    placeholder="Vehicle State Tax"
-                    value={upiPayeeName}
-                    onChange={(e) => setUpiPayeeName(e.target.value)}
-                  />
-                </div>
+                <CFormSwitch
+                  checked={razorpayLiveToggle}
+                  onChange={(e) => setRazorpayLiveToggle(e.target.checked)}
+                />
               </CCol>
             </CRow>
 

@@ -142,14 +142,12 @@ const FieldRow = ({ label, value, copyable, isPhone }) => {
   )
 }
 
-const TaxCard = ({ data, onUploadComplete, onRefundComplete, onConfirmComplete, setIsUploading, showStatus }) => {
+const TaxCard = ({ data, onUploadComplete, onRefundComplete, setIsUploading, showStatus }) => {
   const dispatch = useDispatch()
   const { user: loggedInUser } = useSelector((state) => state.user)
   const canViewContactNumber = Boolean(loggedInUser?.canViewContactNumber)
   const canRefundToWallet =
     loggedInUser?.role === CONSTANTS.ROLES.ADMIN || Boolean(loggedInUser?.canRefund)
-  const canConfirmPayment =
-    loggedInUser?.role === CONSTANTS.ROLES.ADMIN || Boolean(loggedInUser?.canConfirmPayment)
   const isEligibleForWalletRefund = (() => {
     if (!data.createdAt) return false
     const eligibleFrom = new Date(`${CONSTANTS.WALLET_REFUND_ELIGIBLE_FROM}T00:00:00+05:30`)
@@ -163,7 +161,6 @@ const TaxCard = ({ data, onUploadComplete, onRefundComplete, onConfirmComplete, 
   const [showRefundModal, setShowRefundModal] = useState(false)
   const [refundPassword, setRefundPassword] = useState('')
   const [showMarkRefundedModal, setShowMarkRefundedModal] = useState(false)
-  const [showConfirmPaymentModal, setShowConfirmPaymentModal] = useState(false)
   const whatsappSent = data?.isWhatsAppNotificationSent
 
   const {
@@ -244,16 +241,6 @@ const TaxCard = ({ data, onUploadComplete, onRefundComplete, onConfirmComplete, 
     setShowMarkRefundedModal(false)
   }
 
-  const handleConfirmPayment = () => {
-    dispatch(
-      updateTax(data._id, {
-        status: CONSTANTS.ORDER_STATUS.CONFIRMED,
-        paymentStatus: 'completed',
-      })
-    )
-    setShowConfirmPaymentModal(false)
-  }
-
   useEffect(() => {
     if (success && updatedTax._id === data._id) {
       const message =
@@ -265,9 +252,6 @@ const TaxCard = ({ data, onUploadComplete, onRefundComplete, onConfirmComplete, 
       showToast(message)
       if (updatedTax.status === CONSTANTS.ORDER_STATUS.CANCELLED) {
         closeCancelModal()
-      }
-      if (updatedTax.status === CONSTANTS.ORDER_STATUS.CONFIRMED) {
-        onConfirmComplete?.()
       }
       dispatch({ type: TAX_CONSTANTS.UPDATE_TAX_RESET })
     }
@@ -426,47 +410,6 @@ const TaxCard = ({ data, onUploadComplete, onRefundComplete, onConfirmComplete, 
             {/* File Upload/Download */}
             <CRow className="mb-3 mt-1">
             <CCol className="d-flex align-items-center justify-content-center justify-content-md-between gap-3 flex-wrap">
-                {data.status === CONSTANTS.ORDER_STATUS.PAYMENT_PENDING &&
-                  canConfirmPayment && (
-                    <>
-                      <button
-                        className="btn btn-success btn-sm"
-                        style={{ minWidth: 120 }}
-                        onClick={() => setShowConfirmPaymentModal(true)}
-                        disabled={updateTaxLoading}
-                      >
-                        {updateTaxLoading ? 'Confirming...' : 'Confirm Payment'}
-                      </button>
-                      <Modal
-                        visible={showConfirmPaymentModal}
-                        onVisibleToggle={() => setShowConfirmPaymentModal(false)}
-                        onClose={() => setShowConfirmPaymentModal(false)}
-                        title="Confirm Payment"
-                        body={
-                          <div>
-                            <p className="mb-2">
-                              Are you sure you want to mark this payment as completed?
-                            </p>
-                            <ul className="small text-muted mb-0">
-                              <li>
-                                <strong>Vehicle:</strong> {removeSpaces(data.vehicleNumber)}
-                              </li>
-                              <li>
-                                <strong>Amount:</strong> ₹{data.amount}
-                              </li>
-                            </ul>
-                            <p className="small text-danger mt-3 mb-0">
-                              Only confirm if you have verified the UPI payment in your bank
-                              account.
-                            </p>
-                          </div>
-                        }
-                        closeBtnText="Cancel"
-                        submitBtnText="Yes, Confirm Payment"
-                        onSubmitBtnClick={handleConfirmPayment}
-                      />
-                    </>
-                  )}
                 {
                   data.status === CONSTANTS.ORDER_STATUS.CONFIRMED && <>
                     <button
