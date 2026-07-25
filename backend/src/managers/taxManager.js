@@ -171,6 +171,7 @@ class TaxManager {
         await Tax.findByIdAndUpdate(taxEntry._id, {
           status: CONSTANTS.ORDER_STATUS.CANCELLED,
           paymentStatus: CONSTANTS.PAYMENT_STATUS.FAILED,
+          cancellationReason: CONSTANTS.AUTO_CANCEL_REASONS.WALLET_CHECKOUT_CREATE_FAILED,
         });
       }
       throw error;
@@ -196,6 +197,7 @@ class TaxManager {
         await this.updateTaxByOrderId(orderId, {
           paymentStatus: CONSTANTS.PAYMENT_STATUS.FAILED,
           status: CONSTANTS.ORDER_STATUS.CANCELLED,
+          cancellationReason: CONSTANTS.AUTO_CANCEL_REASONS.WALLET_GATEWAY_LINK_FAILED,
         });
         throw error;
       }
@@ -251,6 +253,7 @@ class TaxManager {
         await Tax.findByIdAndUpdate(taxEntry._id, {
           status: CONSTANTS.ORDER_STATUS.CANCELLED,
           paymentStatus: CONSTANTS.PAYMENT_STATUS.FAILED,
+          cancellationReason: CONSTANTS.AUTO_CANCEL_REASONS.WALLET_UPI_CHECKOUT_CREATE_FAILED,
         });
       }
       throw error;
@@ -347,6 +350,7 @@ class TaxManager {
       paymentStatus: CONSTANTS.PAYMENT_STATUS.FAILED,
       status: CONSTANTS.ORDER_STATUS.CANCELLED,
       walletAmountPaid: 0,
+      cancellationReason: CONSTANTS.AUTO_CANCEL_REASONS.HYBRID_GATEWAY_TIMEOUT,
     });
   };
 
@@ -403,8 +407,7 @@ class TaxManager {
       await Tax.findByIdAndUpdate(tax._id, {
         status: CONSTANTS.ORDER_STATUS.CANCELLED,
         paymentStatus: CONSTANTS.PAYMENT_STATUS.FAILED,
-        cancellationReason:
-          "Auto-cancelled: payment not received within 48 hours",
+        cancellationReason: CONSTANTS.AUTO_CANCEL_REASONS.UPI_PAYMENT_TIMEOUT,
         walletAmountPaid: 0,
       });
     }

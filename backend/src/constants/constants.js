@@ -22,6 +22,13 @@ const CONSTANTS = {
     COMPLETED: "completed",
     FAILED: "failed",
   },
+  AUTO_CANCEL_REASONS: {
+    WALLET_CHECKOUT_CREATE_FAILED: "[AUTO] Wallet checkout failed while creating the order",
+    WALLET_GATEWAY_LINK_FAILED: "[AUTO] Payment gateway link could not be created",
+    HYBRID_GATEWAY_TIMEOUT: "[AUTO] Wallet + gateway: payment not completed",
+    WALLET_UPI_CHECKOUT_CREATE_FAILED: "[AUTO] Wallet + UPI checkout failed while creating the order",
+    UPI_PAYMENT_TIMEOUT: "[AUTO] UPI payment not received within 48 hours (wallet refunded)",
+  },
   WALLET_TRANSACTION_TYPE: {
     TAX_DEBIT: "tax_debit",
     REFUND_CREDIT: "refund_credit",
