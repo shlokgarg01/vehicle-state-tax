@@ -348,7 +348,7 @@ class TaxManager {
 
     await this.updateTaxByOrderId(tax.orderId, {
       paymentStatus: CONSTANTS.PAYMENT_STATUS.FAILED,
-      status: CONSTANTS.ORDER_STATUS.CANCELLED,
+      // status: CONSTANTS.ORDER_STATUS.CANCELLED, // not updating the status to cancelled as this causes confusion on the UI
       walletAmountPaid: 0,
       cancellationReason: CONSTANTS.AUTO_CANCEL_REASONS.HYBRID_GATEWAY_TIMEOUT,
     });

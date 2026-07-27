@@ -12,6 +12,10 @@ const CONSTANTS = {
       SUCCESS: "SUCCESS",
     },
   },
+  PAYMENT_GATEWAY: {
+    PAY0: "pay0",
+    PAYINDIA: "payindia",
+  },
   PAYMENT_METHOD: {
     GATEWAY: "gateway",
     WALLET: "wallet",
@@ -105,6 +109,7 @@ const CONSTANTS = {
   },
   FCM_BATCH_SIZE: 500,
   DB_CONSTANT_KEYS: {
+    PAYMENT_GATEWAY: "PAYMENT_GATEWAY",
     IS_RAZORPAY_LIVE: "IS_RAZORPAY_LIVE",
     BUSINESS_UPI_ID: "BUSINESS_UPI_ID",
     UPI_PAYEE_NAME: "UPI_PAYEE_NAME",

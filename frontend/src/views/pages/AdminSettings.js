@@ -19,8 +19,10 @@ const {
   REFUND_DEDUCTION_PERCENT,
   NOTICE,
   APP_MIN_VERSION,
-  IS_RAZORPAY_LIVE,
+  PAYMENT_GATEWAY,
 } = Constants.CONSTANT_KEYS
+
+const { PAYINDIA } = Constants.PAYMENT_GATEWAY
 
 const BOOL_TRUE = ['true', '1', 'yes', 'y', 'on']
 
@@ -40,14 +42,17 @@ const AdminSettings = () => {
   const initialRefundDeductionPercent = values?.[REFUND_DEDUCTION_PERCENT] ?? '0'
   const initialNotice = values?.[NOTICE] || ''
   const initialAppMinVersion = values?.[APP_MIN_VERSION] || '0'
-  const initialRazorpayLive = useMemo(() => {
-    if (values?.[IS_RAZORPAY_LIVE] === undefined) return true
-    return toBool(values?.[IS_RAZORPAY_LIVE])
-  }, [values?.[IS_RAZORPAY_LIVE]])
+  const initialPayIndiaLive = useMemo(() => {
+    const gateway = String(values?.[PAYMENT_GATEWAY] || '').toLowerCase()
+    if (gateway === PAYINDIA) return true
+    if (gateway) return false
+    // Legacy: IS_RAZORPAY_LIVE=false meant Pay0; true meant Razorpay (now defaults to Pay0)
+    return false
+  }, [values?.[PAYMENT_GATEWAY]])
 
   const [welcomeToggle, setWelcomeToggle] = useState(false)
   const [taxToggle, setTaxToggle] = useState(false)
-  const [razorpayLiveToggle, setRazorpayLiveToggle] = useState(true)
+  const [payIndiaLiveToggle, setPayIndiaLiveToggle] = useState(false)
   const [refundPassword, setRefundPassword] = useState('')
   const [refundDeductionPercent, setRefundDeductionPercent] = useState('0')
   const [notice, setNotice] = useState('')
@@ -60,7 +65,7 @@ const AdminSettings = () => {
     dispatch(getConstantByKey(REFUND_DEDUCTION_PERCENT))
     dispatch(getConstantByKey(NOTICE))
     dispatch(getConstantByKey(APP_MIN_VERSION))
-    dispatch(getConstantByKey(IS_RAZORPAY_LIVE))
+    dispatch(getConstantByKey(PAYMENT_GATEWAY))
   }, [dispatch])
 
   useEffect(() => {
@@ -88,8 +93,8 @@ const AdminSettings = () => {
   }, [initialAppMinVersion])
 
   useEffect(() => {
-    setRazorpayLiveToggle(initialRazorpayLive)
-  }, [initialRazorpayLive])
+    setPayIndiaLiveToggle(initialPayIndiaLive)
+  }, [initialPayIndiaLive])
 
   useEffect(() => {
     if (updated?.[SEND_WELCOME_WHATSAPP]) {
@@ -116,9 +121,9 @@ const AdminSettings = () => {
       showToast('Minimum app version updated')
       dispatch(resetConstantUpdate(APP_MIN_VERSION))
     }
-    if (updated?.[IS_RAZORPAY_LIVE]) {
+    if (updated?.[PAYMENT_GATEWAY]) {
       showToast('Payment gateway updated')
-      dispatch(resetConstantUpdate(IS_RAZORPAY_LIVE))
+      dispatch(resetConstantUpdate(PAYMENT_GATEWAY))
     }
   }, [updated, dispatch])
 
@@ -147,9 +152,9 @@ const AdminSettings = () => {
       showToast(errors[APP_MIN_VERSION], 'error')
       dispatch(resetConstantUpdate(APP_MIN_VERSION))
     }
-    if (errors?.[IS_RAZORPAY_LIVE]) {
-      showToast(errors[IS_RAZORPAY_LIVE], 'error')
-      dispatch(resetConstantUpdate(IS_RAZORPAY_LIVE))
+    if (errors?.[PAYMENT_GATEWAY]) {
+      showToast(errors[PAYMENT_GATEWAY], 'error')
+      dispatch(resetConstantUpdate(PAYMENT_GATEWAY))
     }
   }, [errors, dispatch])
 
@@ -188,8 +193,11 @@ const AdminSettings = () => {
       }
       changes.push({ key: APP_MIN_VERSION, value: appMinVersion.trim() })
     }
-    if (razorpayLiveToggle !== initialRazorpayLive) {
-      changes.push({ key: IS_RAZORPAY_LIVE, value: razorpayLiveToggle })
+    if (payIndiaLiveToggle !== initialPayIndiaLive) {
+      changes.push({
+        key: PAYMENT_GATEWAY,
+        value: payIndiaLiveToggle ? PAYINDIA : Constants.PAYMENT_GATEWAY.PAY0,
+      })
     }
 
     if (!changes.length) {
@@ -209,7 +217,7 @@ const AdminSettings = () => {
     updating?.[REFUND_DEDUCTION_PERCENT] ||
     updating?.[NOTICE] ||
     updating?.[APP_MIN_VERSION] ||
-    updating?.[IS_RAZORPAY_LIVE]
+    updating?.[PAYMENT_GATEWAY]
 
   return (
     <div className="container-fluid p-4">
@@ -222,14 +230,14 @@ const AdminSettings = () => {
             <CRow className="mb-4">
               <CCol md={8} className="d-flex align-items-center justify-content-between">
                 <div>
-                  <h6 className="mb-1">Razorpay Payment Gateway</h6>
+                  <h6 className="mb-1">PayIndia Payment Gateway</h6>
                   <p className="text-muted small mb-0">
-                    When enabled, payment links use Razorpay. When disabled, Pay0 is used.
+                    When enabled, payment links use PayIndia. When disabled, Pay0 is used.
                   </p>
                 </div>
                 <CFormSwitch
-                  checked={razorpayLiveToggle}
-                  onChange={(e) => setRazorpayLiveToggle(e.target.checked)}
+                  checked={payIndiaLiveToggle}
+                  onChange={(e) => setPayIndiaLiveToggle(e.target.checked)}
                 />
               </CCol>
             </CRow>

@@ -41,6 +41,11 @@ const config = {
       "",
   },
 
+  payIndia: {
+    apiBaseUrl: process.env.PAYINDIA_API_BASE_URL,
+    apiToken: process.env.PAYINDIA_API_TOKEN,
+  },
+
   firebase: {
     bucketName: process.env.FIREBASE_STORAGE_BUCKET_NAME,
   },
