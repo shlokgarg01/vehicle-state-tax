@@ -6,6 +6,7 @@ import { CContainer, CSpinner } from '@coreui/react'
 // routes config
 import routes from '../routes'
 import Constants from '../utils/constants'
+import { adminPath, adminRelativePath } from '../utils/adminPath'
 
 const AppContent = () => {
   const { user, loading } = useSelector((state) => state.user)
@@ -34,13 +35,16 @@ const AppContent = () => {
               route.element && (
                 <Route
                   key={idx}
-                  path={route.path}
-                  exact={route.exact}
-                  name={route.name}
+                  index={route.path === adminPath('/')}
+                  path={
+                    route.path === adminPath('/')
+                      ? undefined
+                      : adminRelativePath(route.path)
+                  }
                   element={
                     isRestricted ? (
                       <Navigate
-                        to={user?.role === Constants.ROLES.MANAGER ? '/orders/new' : '/'}
+                        to={user?.role === Constants.ROLES.MANAGER ? adminPath('/orders/new') : adminPath('/')}
                         replace
                       />
                     ) : (

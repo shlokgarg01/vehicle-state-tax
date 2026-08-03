@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react'
 import { useSelector } from 'react-redux'
 import { Outlet, useNavigate } from 'react-router-dom'
+import { adminPath } from '../utils/adminPath'
 
 const ProtectedRoute = ({ isAdmin }) => {
   const navigate = useNavigate()
@@ -11,13 +12,13 @@ const ProtectedRoute = ({ isAdmin }) => {
 
     // If not authenticated, redirect to login
     if (!isAuthenticated) {
-      navigate('/login')
+      navigate(adminPath('/login'))
       return
     }
 
     // If the user is authenticated but needs to be an admin
     if (isAdmin && user?.role !== 'admin') {
-      navigate('/login') // Or you can redirect to another page like '/not-authorized'
+      navigate(adminPath('/login')) // Or you can redirect to another page like '/not-authorized'
     }
   }, [isAdmin, isAuthenticated, user, loading, navigate]) // Add all relevant dependencies
 

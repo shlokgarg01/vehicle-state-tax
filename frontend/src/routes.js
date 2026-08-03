@@ -26,40 +26,51 @@ import WhatsAppMessage from './views/pages/WhatsAppMessage'
 import AdminSettings from './views/pages/AdminSettings'
 import WithdrawalList from './views/wallet/WithdrawalList'
 import PushNotificationList from './views/notifications/PushNotificationList'
+import { adminPath } from './utils/adminPath'
 
 const routes = [
-  { path: '/', exact: true, name: 'Home', element: Home, adminOnly: true },
+  { path: adminPath('/'), exact: true, name: 'Home', element: Home, adminOnly: true },
 
-  { path: '/orders/new', name: 'Create Price', element: newOrder },
-  { path: '/orders/completed', name: 'Create Price', element: CompleteOrder },
-  { path: '/orders/refunded', name: 'Create Price', element: RefundedOrder },
-  { path: '/orders/search', name: 'Create Price', element: searchOrder },
+  { path: adminPath('/orders/new'), name: 'Create Price', element: newOrder },
+  { path: adminPath('/orders/completed'), name: 'Create Price', element: CompleteOrder },
+  { path: adminPath('/orders/refunded'), name: 'Create Price', element: RefundedOrder },
+  { path: adminPath('/orders/search'), name: 'Create Price', element: searchOrder },
 
-  { path: '/border_tax/state', name: 'Create State', element: CreateBorderTaxState },
-  { path: '/border_tax/tax_mode', name: 'Create Tax Mode', element: CreateBorderTaxMode },
-  { path: '/border_tax/price', name: 'Create Price', element: CreateBorderTaxPrice },
+  { path: adminPath('/border_tax/state'), name: 'Create State', element: CreateBorderTaxState },
+  { path: adminPath('/border_tax/tax_mode'), name: 'Create Tax Mode', element: CreateBorderTaxMode },
+  { path: adminPath('/border_tax/price'), name: 'Create Price', element: CreateBorderTaxPrice },
 
-  { path: '/road_tax/state', name: 'Create State', element: CreateRoadTaxState },
-  { path: '/road_tax/tax_mode', name: 'Create Tax Mode', element: CreateRoadTaxMode },
-  { path: '/road_tax/price', name: 'Create Price', element: CreateRoadTaxPrice },
+  { path: adminPath('/road_tax/state'), name: 'Create State', element: CreateRoadTaxState },
+  { path: adminPath('/road_tax/tax_mode'), name: 'Create Tax Mode', element: CreateRoadTaxMode },
+  { path: adminPath('/road_tax/price'), name: 'Create Price', element: CreateRoadTaxPrice },
 
-  { path: '/loading_vehicle/state', name: 'Create State', element: CreateLoadingTaxState },
-  { path: '/loading_vehicle/tax_mode', name: 'Create Tax Mode', element: CreateLoadingTaxMode },
-  { path: '/loading_vehicle/price', name: 'Create Price', element: CreateLoadingTaxPrice },
+  { path: adminPath('/loading_vehicle/state'), name: 'Create State', element: CreateLoadingTaxState },
+  { path: adminPath('/loading_vehicle/tax_mode'), name: 'Create Tax Mode', element: CreateLoadingTaxMode },
+  { path: adminPath('/loading_vehicle/price'), name: 'Create Price', element: CreateLoadingTaxPrice },
 
-  { path: '/all_india_permit/price', name: 'Create Price', element: createAllIndiaPermitTax },
+  { path: adminPath('/all_india_permit/price'), name: 'Create Price', element: createAllIndiaPermitTax },
 
-  { path: '/all_india_tax/price', name: 'Create Price', element: createAllIndiaTax },
+  { path: adminPath('/all_india_tax/price'), name: 'Create Price', element: createAllIndiaTax },
 
-  { path: '/user', name: 'Users ', element: userSearch },
+  { path: adminPath('/user'), name: 'Users ', element: userSearch },
 
-  { path: '/employee', name: 'Employee ', element: EmployeeList },
+  { path: adminPath('/employee'), name: 'Employee ', element: EmployeeList },
 
-  { path: '/banners/list', name: 'List Banner ', element: BannerList },
-  { path: '/whatsapp-message', name: 'WhatsApp Message', element: WhatsAppMessage },
-  { path: '/admin', name: 'Admin', element: AdminSettings },
-  { path: '/notifications', name: 'Push Notifications', element: PushNotificationList, adminOnly: true },
-  { path: '/wallet/withdrawals', name: 'Wallet Withdrawals', element: WithdrawalList, withdrawAccess: true },
+  { path: adminPath('/banners/list'), name: 'List Banner ', element: BannerList },
+  { path: adminPath('/whatsapp-message'), name: 'WhatsApp Message', element: WhatsAppMessage },
+  { path: adminPath('/admin'), name: 'Admin', element: AdminSettings },
+  {
+    path: adminPath('/notifications'),
+    name: 'Push Notifications',
+    element: PushNotificationList,
+    adminOnly: true,
+  },
+  {
+    path: adminPath('/wallet/withdrawals'),
+    name: 'Wallet Withdrawals',
+    element: WithdrawalList,
+    withdrawAccess: true,
+  },
 ]
 
 export default routes

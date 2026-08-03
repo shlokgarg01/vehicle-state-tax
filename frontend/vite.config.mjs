@@ -11,9 +11,7 @@ export default defineConfig(() => {
     },
     css: {
       postcss: {
-        plugins: [
-          autoprefixer({}), // add options if needed
-        ],
+        plugins: [autoprefixer({})],
       },
     },
     esbuild: {
@@ -41,9 +39,6 @@ export default defineConfig(() => {
     },
     server: {
       port: 3000,
-      proxy: {
-        // https://vitejs.dev/config/server-options.html
-      },
     },
   }
 })

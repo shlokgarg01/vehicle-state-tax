@@ -7,6 +7,9 @@ import { clearErrors, loginUser } from '../../../actions/userActions'
 import Loader from '../../../components/Loader/Loader'
 import { showToast } from '../../../utils/toast'
 import Constants from '../../../utils/constants'
+import { adminPath } from '../../../utils/adminPath'
+
+const logoBanner = `${import.meta.env.BASE_URL}logo-banner.avif`
 
 const Login = () => {
   const navigate = useNavigate()
@@ -28,7 +31,7 @@ const Login = () => {
         showToast('Login Successful')
         loginSubmitted.current = false
       }
-      user.role === Constants.ROLES.ADMIN ? navigate('/') : navigate('/orders/new')
+      user.role === Constants.ROLES.ADMIN ? navigate(adminPath('/')) : navigate(adminPath('/orders/new'))
     }
 
     if (error) {
@@ -45,8 +48,8 @@ const Login = () => {
       <div className="row login-form-container text-dark">
         <div className="col-md-6 d-flex justify-content-center align-items-center">
           <img
-            src="/logo-banner.avif"
-            alt="Login"
+            src={logoBanner}
+            alt="Vehicle State Tax"
             className="img-fluid rounded"
             style={{ maxHeight: '250px', objectFit: 'contain' }}
           />
