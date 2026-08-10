@@ -10,6 +10,7 @@ import priceRoutes from "./priceRoutes.js";
 import constantRoutes from "./constantsRoutes.js";
 import citiesRoutes from "./citiesRoutes.js";
 import walletRoutes from "./walletRoutes.js";
+import referralRoutes from "./referralRoutes.js";
 
 const router = express.Router();
 
@@ -23,5 +24,6 @@ router.use("/price", priceRoutes);
 router.use("/constants", constantRoutes)
 router.use('/cities', citiesRoutes)
 router.use("/wallet", walletRoutes)
+router.use("/referral", referralRoutes)
 
 export default router;

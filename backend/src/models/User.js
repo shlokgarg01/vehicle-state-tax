@@ -28,6 +28,27 @@ const userSchema = new Schema(
       type: String,
       default: "",
     },
+    displayName: {
+      type: String,
+      trim: true,
+      maxlength: 80,
+      default: "",
+    },
+    referralCode: {
+      type: String,
+      trim: true,
+      uppercase: true,
+      unique: true,
+      sparse: true,
+    },
+    referredByUserId: {
+      type: Schema.Types.ObjectId,
+      ref: COLLECTION_NAMES.USER,
+    },
+    registrationComplete: {
+      type: Boolean,
+      default: false,
+    },
   },
   { timestamps: true }
 );

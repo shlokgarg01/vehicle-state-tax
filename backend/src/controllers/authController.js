@@ -8,6 +8,9 @@ import { generateOTP, otpHash, sendOTP } from "../utils/otpUtils.js";
 import generateToken from "../utils/generateToken.js";
 import { sendWelcomeMessage } from "../utils/sendNotifications.js";
 import ConstantsManager from "../managers/constantsManager.js";
+import ReferralManager from "../managers/referralManager.js";
+
+const isRegistrationComplete = (user) => user?.registrationComplete !== false;
 
 //  Send OTP for login (no registration required)
 export const sendOTPForLogin = asyncHandler(async (req, res, next) => {
@@ -68,11 +71,19 @@ export const authenticateViaOTP = asyncHandler(async (req, res, next) => {
     await OTP.deleteMany({ contactNumber });
 
     let user = await User.findOne({ contactNumber });
+    let isNewUser = false;
+
     if (!user) {
-      user = await User.create({ contactNumber });
-      const shouldSendWelcome = await ConstantsManager.getBooleanConstant('SEND_WELCOME_WHATSAPP', false);
-      if (shouldSendWelcome) {
-        await sendWelcomeMessage({ contactNumber });
+      isNewUser = true;
+      user = await User.create({
+        contactNumber,
+        registrationComplete: false,
+      });
+      await ReferralManager.assignUniqueReferralCode(user._id);
+    } else {
+      await ReferralManager.ensureReferralCodeForExistingUser(user._id);
+      if (user.registrationComplete === false) {
+        isNewUser = true;
       }
     }
 
@@ -85,17 +96,65 @@ export const authenticateViaOTP = asyncHandler(async (req, res, next) => {
       userUpdate.fcmToken = String(fcmToken).trim();
     }
     await User.findByIdAndUpdate(user._id, userUpdate);
-
+    user = await User.findById(user._id);
     res.status(200).json({
       success: true,
-      message: "Logged in successfully",
+      message: isNewUser
+        ? "OTP verified. Complete registration to continue."
+        : "Logged in successfully",
       token,
       user,
+      isNewUser,
+      registrationComplete: isRegistrationComplete(user),
     });
   } catch (error) {
     console.error(" Error in authenticateViaOTP:", error);
     next(new ErrorHandler("Internal Server Error", 500));
   }
+});
+
+export const completeRegistration = asyncHandler(async (req, res, next) => {
+  const user = await User.findById(req.user._id);
+  if (!user) {
+    return next(new ErrorHandler("User not found", 404));
+  }
+  if (isRegistrationComplete(user)) {
+    return next(new ErrorHandler("Registration is already complete", 400));
+  }
+
+  const { displayName, referralCode } = req.body;
+  const trimmedName = String(displayName ?? "").trim().slice(0, 80);
+  if (!trimmedName) {
+    return next(new ErrorHandler("Display name is required", 400));
+  }
+
+  await ReferralManager.registerNewUser({
+    userId: user._id,
+    referralCodeInput: referralCode,
+    displayName: trimmedName,
+  });
+
+  const updatedUser = await User.findByIdAndUpdate(
+    user._id,
+    { displayName: trimmedName, registrationComplete: true },
+    { new: true }
+  );
+
+  const shouldSendWelcome = await ConstantsManager.getBooleanConstant(
+    "SEND_WELCOME_WHATSAPP",
+    false
+  );
+  if (shouldSendWelcome) {
+    await sendWelcomeMessage({ contactNumber: updatedUser.contactNumber });
+  }
+
+  res.status(200).json({
+    success: true,
+    message: "Registration completed",
+    user: updatedUser,
+    registrationComplete: true,
+    isNewUser: false,
+  });
 });
 
 //  Employee Login
@@ -188,6 +247,7 @@ export const getUserDetails = asyncHandler(async (req, res, next) => {
       success: true,
       message: "User details fetched successfully",
       user,
+      registrationComplete: isRegistrationComplete(user),
     });
   } catch (error) {
     // Log the error for debugging

@@ -26,6 +26,7 @@ import WhatsAppMessage from './views/pages/WhatsAppMessage'
 import AdminSettings from './views/pages/AdminSettings'
 import WithdrawalList from './views/wallet/WithdrawalList'
 import PushNotificationList from './views/notifications/PushNotificationList'
+import ReferralList from './views/referral/ReferralList'
 import { adminPath } from './utils/adminPath'
 
 const routes = [
@@ -49,11 +50,9 @@ const routes = [
   { path: adminPath('/loading_vehicle/price'), name: 'Create Price', element: CreateLoadingTaxPrice },
 
   { path: adminPath('/all_india_permit/price'), name: 'Create Price', element: createAllIndiaPermitTax },
-
   { path: adminPath('/all_india_tax/price'), name: 'Create Price', element: createAllIndiaTax },
-
   { path: adminPath('/user'), name: 'Users ', element: userSearch },
-
+  { path: adminPath('/referrals'), name: 'Referrals', element: ReferralList },
   { path: adminPath('/employee'), name: 'Employee ', element: EmployeeList },
 
   { path: adminPath('/banners/list'), name: 'List Banner ', element: BannerList },

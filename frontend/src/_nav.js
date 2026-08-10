@@ -144,28 +144,28 @@ const _nav = (user) => {
         },
       ],
     },
-    isAdmin && {
-      component: CNavGroup,
-      name: 'Loading Vehicle',
-      icon: <CIcon icon={cilChartPie} customClassName="nav-icon" />,
-      items: [
-        {
-          component: CNavItem,
-          name: 'Create State',
-          to: adminPath('/loading_vehicle/state'),
-        },
-        {
-          component: CNavItem,
-          name: 'Create Tax Mode',
-          to: adminPath('/loading_vehicle/tax_mode'),
-        },
-        {
-          component: CNavItem,
-          name: 'Create Price',
-          to: adminPath('/loading_vehicle/price'),
-        },
-      ],
-    },
+    // isAdmin && {
+    //   component: CNavGroup,
+    //   name: 'Loading Vehicle',
+    //   icon: <CIcon icon={cilChartPie} customClassName="nav-icon" />,
+    //   items: [
+    //     {
+    //       component: CNavItem,
+    //       name: 'Create State',
+    //       to: adminPath('/loading_vehicle/state'),
+    //     },
+    //     {
+    //       component: CNavItem,
+    //       name: 'Create Tax Mode',
+    //       to: adminPath('/loading_vehicle/tax_mode'),
+    //     },
+    //     {
+    //       component: CNavItem,
+    //       name: 'Create Price',
+    //       to: adminPath('/loading_vehicle/price'),
+    //     },
+    //   ],
+    // },
     isAdmin && {
       component: CNavGroup,
       name: 'All India Permit',
@@ -217,6 +217,11 @@ const _nav = (user) => {
           component: CNavItem,
           name: 'Settings',
           to: adminPath('/admin'),
+        },
+        {
+          component: CNavItem,
+          name: 'Referrals',
+          to: adminPath('/referrals'),
         },
       ],
     },

@@ -14,6 +14,7 @@ const COLLECTION_NAMES = {
   WITHDRAWAL_REQUEST: "WithdrawalRequest",
   SAVED_PAYOUT_DETAIL: "SavedPayoutDetail",
   PUSH_NOTIFICATIONS_HISTORY: "pushnotificationhistory",
+  REFERRAL: "Referral",
 };
 
 export default COLLECTION_NAMES;

@@ -54,7 +54,6 @@ const createPaymentLink = async (
   }
 
   const paymentUrl = data.payment_url;
-  console.log('==========>>>>>>>>>>>>>>>>', data)
   if (!paymentUrl) {
     throw new ErrorHandler("PayIndia did not return a payment URL", 502);
   }

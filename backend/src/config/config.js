@@ -46,6 +46,18 @@ const config = {
     apiToken: process.env.PAYINDIA_API_TOKEN,
   },
 
+  sbiePay: {
+    apiKey: process.env.SBIEPAY_API_KEY,
+    apiSecret: process.env.SBIEPAY_API_SECRET,
+    encryptionKey: process.env.SBIEPAY_ENCRYPTION_KEY,
+    merchantId: process.env.SBIEPAY_MERCHANT_ID,
+    environment: process.env.SBIEPAY_ENVIRONMENT,
+    logging: process.env.SBIEPAY_LOGGING === "true",
+    currencyCode: process.env.SBIEPAY_CURRENCY_CODE || "INR",
+    baseUrl: process.env.SBIEPAY_BASE_URL,
+    apiPath: process.env.SBIEPAY_API_PATH,
+  },
+
   firebase: {
     bucketName: process.env.FIREBASE_STORAGE_BUCKET_NAME,
   },

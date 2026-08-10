@@ -3,6 +3,7 @@ import State from "../models/State.js";
 import Price from "../models/Price.js";
 import ApiFeatures from "../utils/apiFeatures.js";
 import TaxManager from "../managers/taxManager.js";
+import ReferralManager from "../managers/referralManager.js";
 import CONSTANTS from "../constants/constants.js";
 import catchAsyncErrors from "../middlewares/catchAsyncErrors.js";
 import { uploadFile } from "../helpers/uploadHelpers.js";
@@ -318,6 +319,7 @@ export const uploadTax = catchAsyncErrors(async (req, res) => {
       status: CONSTANTS.ORDER_STATUS.CLOSED,
       isWhatsAppNotificationSent,
     });
+    await ReferralManager.handleOrderClosed(tax);
   }
   res.status(uploadResponse.isUploaded ? 200 : 400).json({
     success: uploadResponse.isUploaded,
@@ -371,6 +373,7 @@ export const updateTax = async (req, res) => {
         id,
         req.body.cancellationReason
       );
+      await ReferralManager.handleOrderDisqualified(updatedTax);
       return res.status(200).json({
         success: true,
         message: "Order cancelled",
@@ -381,6 +384,12 @@ export const updateTax = async (req, res) => {
     const updatedTax = await Tax.findByIdAndUpdate(id, req.body, { new: true });
     if (!updatedTax) {
       return res.status(404).json({ success: false, message: "Tax not found" });
+    }
+    if (updatedTax.status === CONSTANTS.ORDER_STATUS.CLOSED) {
+      await ReferralManager.handleOrderClosed(updatedTax);
+    }
+    if (updatedTax.status === CONSTANTS.ORDER_STATUS.CANCELLED) {
+      await ReferralManager.handleOrderDisqualified(updatedTax);
     }
     res.status(200).json({
       success: true,
@@ -414,6 +423,7 @@ export const refundTaxToWallet = catchAsyncErrors(async (req, res, next) => {
   }
 
   const tax = await TaxManager.refundTaxToWallet(id);
+  await ReferralManager.handleOrderDisqualified(tax);
 
   res.status(200).json({
     success: true,

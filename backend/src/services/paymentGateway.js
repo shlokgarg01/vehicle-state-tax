@@ -1,5 +1,6 @@
 import Pay0Service from "./pay0.js";
 import PayIndiaService from "./payIndia.js";
+import SBIePayService from "./sbiePay.js";
 import ConstantsManager from "../managers/constantsManager.js";
 import CONSTANTS from "../constants/constants.js";
 
@@ -13,6 +14,10 @@ export const getPaymentGateway = async () => {
 
   if (gateway === CONSTANTS.PAYMENT_GATEWAY.PAYINDIA) {
     return PayIndiaService;
+  }
+
+  if (gateway === CONSTANTS.PAYMENT_GATEWAY.SBIEPAY) {
+    return SBIePayService;
   }
 
   return Pay0Service;

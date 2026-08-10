@@ -20,6 +20,8 @@ const {
   NOTICE,
   APP_MIN_VERSION,
   PAYMENT_GATEWAY,
+  REFERRAL_LEADERBOARD_ENABLED,
+  REFERRAL_LEADERBOARD_START_DATE,
 } = Constants.CONSTANT_KEYS
 
 const { PAYINDIA } = Constants.PAYMENT_GATEWAY
@@ -45,10 +47,16 @@ const AdminSettings = () => {
   const initialPayIndiaLive = useMemo(() => {
     const gateway = String(values?.[PAYMENT_GATEWAY] || '').toLowerCase()
     if (gateway === PAYINDIA) return true
+    if (gateway === Constants.PAYMENT_GATEWAY.PAY0) return false
     if (gateway) return false
-    // Legacy: IS_RAZORPAY_LIVE=false meant Pay0; true meant Razorpay (now defaults to Pay0)
     return false
   }, [values?.[PAYMENT_GATEWAY]])
+
+  const initialLeaderboardEnabled = useMemo(
+    () => toBool(values?.[REFERRAL_LEADERBOARD_ENABLED] ?? 'true'),
+    [values?.[REFERRAL_LEADERBOARD_ENABLED]]
+  )
+  const initialLeaderboardStart = values?.[REFERRAL_LEADERBOARD_START_DATE] || ''
 
   const [welcomeToggle, setWelcomeToggle] = useState(false)
   const [taxToggle, setTaxToggle] = useState(false)
@@ -57,6 +65,8 @@ const AdminSettings = () => {
   const [refundDeductionPercent, setRefundDeductionPercent] = useState('0')
   const [notice, setNotice] = useState('')
   const [appMinVersion, setAppMinVersion] = useState('0')
+  const [leaderboardEnabled, setLeaderboardEnabled] = useState(true)
+  const [leaderboardStartDate, setLeaderboardStartDate] = useState('')
 
   useEffect(() => {
     dispatch(getConstantByKey(SEND_WELCOME_WHATSAPP))
@@ -66,6 +76,8 @@ const AdminSettings = () => {
     dispatch(getConstantByKey(NOTICE))
     dispatch(getConstantByKey(APP_MIN_VERSION))
     dispatch(getConstantByKey(PAYMENT_GATEWAY))
+    dispatch(getConstantByKey(REFERRAL_LEADERBOARD_ENABLED))
+    dispatch(getConstantByKey(REFERRAL_LEADERBOARD_START_DATE))
   }, [dispatch])
 
   useEffect(() => {
@@ -97,6 +109,14 @@ const AdminSettings = () => {
   }, [initialPayIndiaLive])
 
   useEffect(() => {
+    setLeaderboardEnabled(initialLeaderboardEnabled)
+  }, [initialLeaderboardEnabled])
+
+  useEffect(() => {
+    setLeaderboardStartDate(initialLeaderboardStart)
+  }, [initialLeaderboardStart])
+
+  useEffect(() => {
     if (updated?.[SEND_WELCOME_WHATSAPP]) {
       showToast('Welcome WhatsApp updated')
       dispatch(resetConstantUpdate(SEND_WELCOME_WHATSAPP))
@@ -124,6 +144,14 @@ const AdminSettings = () => {
     if (updated?.[PAYMENT_GATEWAY]) {
       showToast('Payment gateway updated')
       dispatch(resetConstantUpdate(PAYMENT_GATEWAY))
+    }
+    if (updated?.[REFERRAL_LEADERBOARD_ENABLED]) {
+      showToast('Referral leaderboard visibility updated')
+      dispatch(resetConstantUpdate(REFERRAL_LEADERBOARD_ENABLED))
+    }
+    if (updated?.[REFERRAL_LEADERBOARD_START_DATE]) {
+      showToast('Referral leaderboard start date updated')
+      dispatch(resetConstantUpdate(REFERRAL_LEADERBOARD_START_DATE))
     }
   }, [updated, dispatch])
 
@@ -155,6 +183,14 @@ const AdminSettings = () => {
     if (errors?.[PAYMENT_GATEWAY]) {
       showToast(errors[PAYMENT_GATEWAY], 'error')
       dispatch(resetConstantUpdate(PAYMENT_GATEWAY))
+    }
+    if (errors?.[REFERRAL_LEADERBOARD_ENABLED]) {
+      showToast(errors[REFERRAL_LEADERBOARD_ENABLED], 'error')
+      dispatch(resetConstantUpdate(REFERRAL_LEADERBOARD_ENABLED))
+    }
+    if (errors?.[REFERRAL_LEADERBOARD_START_DATE]) {
+      showToast(errors[REFERRAL_LEADERBOARD_START_DATE], 'error')
+      dispatch(resetConstantUpdate(REFERRAL_LEADERBOARD_START_DATE))
     }
   }, [errors, dispatch])
 
@@ -199,6 +235,22 @@ const AdminSettings = () => {
         value: payIndiaLiveToggle ? PAYINDIA : Constants.PAYMENT_GATEWAY.PAY0,
       })
     }
+    if (leaderboardEnabled !== initialLeaderboardEnabled) {
+      changes.push({
+        key: REFERRAL_LEADERBOARD_ENABLED,
+        value: leaderboardEnabled,
+      })
+    }
+    if (leaderboardStartDate !== initialLeaderboardStart) {
+      if (!leaderboardStartDate.trim()) {
+        showToast('Referral leaderboard start date is required', 'error')
+        return
+      }
+      changes.push({
+        key: REFERRAL_LEADERBOARD_START_DATE,
+        value: leaderboardStartDate.trim(),
+      })
+    }
 
     if (!changes.length) {
       showToast('No changes to update')
@@ -217,7 +269,9 @@ const AdminSettings = () => {
     updating?.[REFUND_DEDUCTION_PERCENT] ||
     updating?.[NOTICE] ||
     updating?.[APP_MIN_VERSION] ||
-    updating?.[PAYMENT_GATEWAY]
+    updating?.[PAYMENT_GATEWAY] ||
+    updating?.[REFERRAL_LEADERBOARD_ENABLED] ||
+    updating?.[REFERRAL_LEADERBOARD_START_DATE]
 
   return (
     <div className="container-fluid p-4">
@@ -278,6 +332,31 @@ const AdminSettings = () => {
                     placeholder="e.g. 1.2.0"
                     value={appMinVersion}
                     onChange={(e) => setAppMinVersion(e.target.value)}
+                  />
+                </div>
+              </CCol>
+            </CRow>
+
+            <CRow className="mb-4">
+              <CCol md={8}>
+                <h6 className="mb-1">Referral leaderboard</h6>
+                <p className="text-muted small mb-2">
+                  Counts successful referrals (closed orders) from the start date through now.
+                </p>
+                <div className="d-flex align-items-center justify-content-between mb-3">
+                  <span>Show leaderboard in app</span>
+                  <CFormSwitch
+                    checked={leaderboardEnabled}
+                    onChange={(e) => setLeaderboardEnabled(e.target.checked)}
+                  />
+                </div>
+                <div style={{ maxWidth: 280 }}>
+                  <TextInput
+                    id="referralLeaderboardStart"
+                    type="date"
+                    placeholder="Start date"
+                    value={leaderboardStartDate}
+                    onChange={(e) => setLeaderboardStartDate(e.target.value)}
                   />
                 </div>
               </CCol>
