@@ -56,6 +56,7 @@ const config = {
     currencyCode: process.env.SBIEPAY_CURRENCY_CODE || "INR",
     baseUrl: process.env.SBIEPAY_BASE_URL,
     apiPath: process.env.SBIEPAY_API_PATH,
+    referrerUrl: process.env.BACKEND_URL,
   },
 
   firebase: {

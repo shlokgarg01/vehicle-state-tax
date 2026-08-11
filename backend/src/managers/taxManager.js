@@ -83,9 +83,9 @@ class TaxManager {
     );
   };
 
-  static getPaymentStatus = async (orderId) => {
+  static getPaymentStatus = async (orderId, amount) => {
     const gateway = await getPaymentGateway();
-    return gateway.getPaymentStatus(orderId);
+    return gateway.getPaymentStatus(orderId, amount);
   };
 
   static getTaxByOrderId = async (orderId) => {

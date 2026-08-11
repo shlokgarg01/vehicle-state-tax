@@ -22,9 +22,9 @@ const {
   PAYMENT_GATEWAY,
   REFERRAL_LEADERBOARD_ENABLED,
   REFERRAL_LEADERBOARD_START_DATE,
+  REFERRAL_POSTER_URL,
+  REFERRAL_DETAILS_TEXT,
 } = Constants.CONSTANT_KEYS
-
-const { PAYINDIA } = Constants.PAYMENT_GATEWAY
 
 const BOOL_TRUE = ['true', '1', 'yes', 'y', 'on']
 
@@ -46,9 +46,7 @@ const AdminSettings = () => {
   const initialAppMinVersion = values?.[APP_MIN_VERSION] || '0'
   const initialPayIndiaLive = useMemo(() => {
     const gateway = String(values?.[PAYMENT_GATEWAY] || '').toLowerCase()
-    if (gateway === PAYINDIA) return true
-    if (gateway === Constants.PAYMENT_GATEWAY.PAY0) return false
-    if (gateway) return false
+    if (gateway === Constants.PAYMENT_GATEWAY.PAYINDIA) return true
     return false
   }, [values?.[PAYMENT_GATEWAY]])
 
@@ -57,6 +55,8 @@ const AdminSettings = () => {
     [values?.[REFERRAL_LEADERBOARD_ENABLED]]
   )
   const initialLeaderboardStart = values?.[REFERRAL_LEADERBOARD_START_DATE] || ''
+  const initialReferralPosterUrl = values?.[REFERRAL_POSTER_URL] || ''
+  const initialReferralDetailsText = values?.[REFERRAL_DETAILS_TEXT] || ''
 
   const [welcomeToggle, setWelcomeToggle] = useState(false)
   const [taxToggle, setTaxToggle] = useState(false)
@@ -67,6 +67,8 @@ const AdminSettings = () => {
   const [appMinVersion, setAppMinVersion] = useState('0')
   const [leaderboardEnabled, setLeaderboardEnabled] = useState(true)
   const [leaderboardStartDate, setLeaderboardStartDate] = useState('')
+  const [referralPosterUrl, setReferralPosterUrl] = useState('')
+  const [referralDetailsText, setReferralDetailsText] = useState('')
 
   useEffect(() => {
     dispatch(getConstantByKey(SEND_WELCOME_WHATSAPP))
@@ -78,7 +80,17 @@ const AdminSettings = () => {
     dispatch(getConstantByKey(PAYMENT_GATEWAY))
     dispatch(getConstantByKey(REFERRAL_LEADERBOARD_ENABLED))
     dispatch(getConstantByKey(REFERRAL_LEADERBOARD_START_DATE))
+    dispatch(getConstantByKey(REFERRAL_POSTER_URL))
+    dispatch(getConstantByKey(REFERRAL_DETAILS_TEXT))
   }, [dispatch])
+
+  useEffect(() => {
+    setReferralPosterUrl(initialReferralPosterUrl)
+  }, [initialReferralPosterUrl])
+
+  useEffect(() => {
+    setReferralDetailsText(initialReferralDetailsText)
+  }, [initialReferralDetailsText])
 
   useEffect(() => {
     setWelcomeToggle(initialWelcome)
@@ -153,6 +165,14 @@ const AdminSettings = () => {
       showToast('Referral leaderboard start date updated')
       dispatch(resetConstantUpdate(REFERRAL_LEADERBOARD_START_DATE))
     }
+    if (updated?.[REFERRAL_POSTER_URL]) {
+      showToast('Referral poster updated')
+      dispatch(resetConstantUpdate(REFERRAL_POSTER_URL))
+    }
+    if (updated?.[REFERRAL_DETAILS_TEXT]) {
+      showToast('Referral details updated')
+      dispatch(resetConstantUpdate(REFERRAL_DETAILS_TEXT))
+    }
   }, [updated, dispatch])
 
   useEffect(() => {
@@ -192,10 +212,59 @@ const AdminSettings = () => {
       showToast(errors[REFERRAL_LEADERBOARD_START_DATE], 'error')
       dispatch(resetConstantUpdate(REFERRAL_LEADERBOARD_START_DATE))
     }
+    if (errors?.[REFERRAL_POSTER_URL]) {
+      showToast(errors[REFERRAL_POSTER_URL], 'error')
+      dispatch(resetConstantUpdate(REFERRAL_POSTER_URL))
+    }
+    if (errors?.[REFERRAL_DETAILS_TEXT]) {
+      showToast(errors[REFERRAL_DETAILS_TEXT], 'error')
+      dispatch(resetConstantUpdate(REFERRAL_DETAILS_TEXT))
+    }
   }, [errors, dispatch])
+
+  const isSubmitting =
+    updating?.[SEND_WELCOME_WHATSAPP] ||
+    updating?.[SEND_TAX_WHATSAPP] ||
+    updating?.[REFUND_PASSWORD] ||
+    updating?.[REFUND_DEDUCTION_PERCENT] ||
+    updating?.[NOTICE] ||
+    updating?.[APP_MIN_VERSION] ||
+    updating?.[PAYMENT_GATEWAY] ||
+    updating?.[REFERRAL_LEADERBOARD_ENABLED] ||
+    updating?.[REFERRAL_LEADERBOARD_START_DATE] ||
+    updating?.[REFERRAL_POSTER_URL] ||
+    updating?.[REFERRAL_DETAILS_TEXT]
+
+  const handlePosterFileChange = (e) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    if (!file.type.startsWith('image/')) {
+      showToast('Please select a valid image file', 'error')
+      return
+    }
+
+    // Limit to ~10MB before base64 stringification
+    if (file.size > 10 * 1024 * 1024) {
+      showToast('Image file size must be less than 10MB', 'error')
+      return
+    }
+
+    const reader = new FileReader()
+    reader.onload = () => {
+      if (reader.result) {
+        setReferralPosterUrl(String(reader.result))
+      }
+    }
+    reader.onerror = () => {
+      showToast('Failed to read image file', 'error')
+    }
+    reader.readAsDataURL(file)
+  }
 
   const handleSubmit = (e) => {
     e.preventDefault()
+
     const changes = []
 
     if (welcomeToggle !== initialWelcome) {
@@ -205,16 +274,12 @@ const AdminSettings = () => {
       changes.push({ key: SEND_TAX_WHATSAPP, value: taxToggle })
     }
     if (refundPassword !== initialRefundPassword) {
-      if (!refundPassword.trim()) {
-        showToast('Refund password cannot be empty', 'error')
-        return
-      }
       changes.push({ key: REFUND_PASSWORD, value: refundPassword.trim() })
     }
     if (refundDeductionPercent !== initialRefundDeductionPercent) {
-      const percent = Number(refundDeductionPercent)
-      if (!Number.isFinite(percent) || percent < 0 || percent > 100) {
-        showToast('Withdrawal deduction percent must be between 0 and 100', 'error')
+      const percent = parseFloat(refundDeductionPercent)
+      if (isNaN(percent) || percent < 0 || percent > 100) {
+        showToast('Deduction percent must be between 0 and 100', 'error')
         return
       }
       changes.push({ key: REFUND_DEDUCTION_PERCENT, value: String(percent) })
@@ -232,7 +297,9 @@ const AdminSettings = () => {
     if (payIndiaLiveToggle !== initialPayIndiaLive) {
       changes.push({
         key: PAYMENT_GATEWAY,
-        value: payIndiaLiveToggle ? PAYINDIA : Constants.PAYMENT_GATEWAY.PAY0,
+        value: payIndiaLiveToggle
+          ? Constants.PAYMENT_GATEWAY.PAYINDIA
+          : Constants.PAYMENT_GATEWAY.PAY0,
       })
     }
     if (leaderboardEnabled !== initialLeaderboardEnabled) {
@@ -242,36 +309,33 @@ const AdminSettings = () => {
       })
     }
     if (leaderboardStartDate !== initialLeaderboardStart) {
-      if (!leaderboardStartDate.trim()) {
-        showToast('Referral leaderboard start date is required', 'error')
-        return
-      }
       changes.push({
         key: REFERRAL_LEADERBOARD_START_DATE,
-        value: leaderboardStartDate.trim(),
+        value: leaderboardStartDate,
+      })
+    }
+    if (referralPosterUrl !== initialReferralPosterUrl) {
+      changes.push({
+        key: REFERRAL_POSTER_URL,
+        value: referralPosterUrl.trim(),
+      })
+    }
+    if (referralDetailsText !== initialReferralDetailsText) {
+      changes.push({
+        key: REFERRAL_DETAILS_TEXT,
+        value: referralDetailsText.trim(),
       })
     }
 
-    if (!changes.length) {
-      showToast('No changes to update')
+    if (changes.length === 0) {
+      showToast('No changes to save', 'info')
       return
     }
 
-    changes.forEach(({ key, value }) =>
+    changes.forEach(({ key, value }) => {
       dispatch(updateConstantByKey(key, String(value)))
-    )
+    })
   }
-
-  const isSubmitting =
-    updating?.[SEND_WELCOME_WHATSAPP] ||
-    updating?.[SEND_TAX_WHATSAPP] ||
-    updating?.[REFUND_PASSWORD] ||
-    updating?.[REFUND_DEDUCTION_PERCENT] ||
-    updating?.[NOTICE] ||
-    updating?.[APP_MIN_VERSION] ||
-    updating?.[PAYMENT_GATEWAY] ||
-    updating?.[REFERRAL_LEADERBOARD_ENABLED] ||
-    updating?.[REFERRAL_LEADERBOARD_START_DATE]
 
   return (
     <div className="container-fluid p-4">
@@ -350,13 +414,72 @@ const AdminSettings = () => {
                     onChange={(e) => setLeaderboardEnabled(e.target.checked)}
                   />
                 </div>
-                <div style={{ maxWidth: 280 }}>
+                <div style={{ maxWidth: 280 }} className="mb-3">
                   <TextInput
                     id="referralLeaderboardStart"
                     type="date"
                     placeholder="Start date"
                     value={leaderboardStartDate}
                     onChange={(e) => setLeaderboardStartDate(e.target.value)}
+                  />
+                </div>
+                <div className="mb-3">
+                  <label className="form-label text-muted small mb-1">
+                    Referral Poster Image (Base64 Upload)
+                  </label>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    className="form-control mb-2"
+                    onChange={handlePosterFileChange}
+                  />
+                  {referralPosterUrl && (
+                    <div
+                      className="mt-2 position-relative d-inline-block"
+                      style={{ maxWidth: '100%' }}
+                    >
+                      <img
+                        src={referralPosterUrl}
+                        alt="Referral Poster Preview"
+                        style={{
+                          maxHeight: 140,
+                          maxWidth: '100%',
+                          borderRadius: 8,
+                          objectFit: 'cover',
+                          border: '1px solid #cbd5e1',
+                          display: 'block',
+                        }}
+                      />
+                      <button
+                        type="button"
+                        className="btn btn-danger btn-sm p-0 d-flex align-items-center justify-content-center"
+                        style={{
+                          position: 'absolute',
+                          top: -8,
+                          right: -8,
+                          width: 24,
+                          height: 24,
+                          borderRadius: '50%',
+                          lineHeight: 1,
+                          fontSize: 14,
+                          boxShadow: '0 2px 6px rgba(0,0,0,0.25)',
+                        }}
+                        onClick={() => setReferralPosterUrl('')}
+                        title="Remove Poster"
+                      >
+                        ✕
+                      </button>
+                    </div>
+                  )}
+                </div>
+                <div>
+                  <label className="form-label text-muted small mb-1">Referral Details & Rules</label>
+                  <TextArea
+                    id="referralDetailsText"
+                    placeholder="Enter referral details, rewards info or instructions for the app bottom sheet..."
+                    value={referralDetailsText}
+                    onChange={(e) => setReferralDetailsText(e.target.value)}
+                    rows={4}
                   />
                 </div>
               </CCol>

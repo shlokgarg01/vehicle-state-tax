@@ -41,10 +41,7 @@ const getClient = () => {
 
   if (cachedClient.apiClient?.defaults) {
     cachedClient.apiClient.defaults.baseURL = getApiBaseUrl();
-    const referrer = String(config.backendUrl || "http://localhost:4000").replace(
-      /\/$/,
-      ""
-    );
+    const referrer = String(config.backendUrl).replace(/\/$/, "");
     cachedClient.apiClient.defaults.headers.common["x-referrer"] = referrer;
   }
 
@@ -129,16 +126,21 @@ const createPaymentLink = async (
   return paymentUrl;
 };
 
-const getPaymentStatus = async (orderId) => {
+const getPaymentStatus = async (orderId, amount) => {
   const client = getClient();
   const orderRefNumber = String(orderId).slice(0, 50);
 
   try {
-    const response = await client.order.search({ orderRefNumber });
+    const searchPayload = { orderRefNumber };
+    const orderAmount = Number(amount);
+    if (Number.isFinite(orderAmount) && orderAmount > 0) {
+      searchPayload.orderAmount = orderAmount;
+    }
+    const response = await client.order.search(searchPayload);
     const order = unwrapOrder(response);
     if (!order) return false;
 
-    const status = String(order.status || "").toUpperCase();
+    const status = order[0]?.orderInfo?.orderStatus
     return status === "PAID";
   } catch {
     return false;

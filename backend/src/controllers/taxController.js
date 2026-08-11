@@ -14,6 +14,7 @@ import ConstantsManager from "../managers/constantsManager.js";
 import { resolveBackendUrl } from "../utils/requestUrlUtils.js";
 import { verifyPaymentLinkCallback } from "../services/razorpay.js";
 import { verifyPay0WebhookHash } from "../services/pay0.js";
+import config from "../config/config.js";
 
 const confirmCreatedOrder = async (orderId) => {
   if (!orderId) return null;
@@ -80,7 +81,7 @@ export const getAllTaxes = async (req, res) => {
     // Sort after filtering to optimize index usage
     apiFeature.query = apiFeature.query.sort({ createdAt: sort === 'asc' ? 1 : -1 });
     apiFeature.query = apiFeature.query.populate("whoCompleted");
-    
+
     apiFeature = apiFeature.pagination(resultsPerPage);
     const taxes = await apiFeature.query;
 
@@ -179,6 +180,8 @@ export const createTaxAndPaymentURL = async (req, res) => {
         backendUrl,
       });
 
+      const referrerUrl = config.sbiePay?.referrerUrl || backendUrl;
+
       return res.status(200).json({
         success: true,
         message: result.requiresGateway
@@ -190,6 +193,8 @@ export const createTaxAndPaymentURL = async (req, res) => {
           walletAmountPaid: result.walletAmountPaid,
           gatewayAmountPaid: result.gatewayAmountPaid,
           requiresGateway: result.requiresGateway,
+          referrerUrl,
+          paymentBaseUrl: referrerUrl,
         },
       });
     }
@@ -212,10 +217,11 @@ export const createTaxAndPaymentURL = async (req, res) => {
       paymentStatus: CONSTANTS.PAYMENT_STATUS.PENDING,
     });
 
+    const referrerUrl = config.sbiePay?.referrerUrl || backendUrl;
     res.status(200).json({
       success: true,
       message: "Payment URL created successfully",
-      data: { paymentLink, taxEntry },
+      data: { paymentLink, taxEntry, referrerUrl, paymentBaseUrl: referrerUrl },
     });
   } catch (e) {
     res.status(500).json({
@@ -249,7 +255,10 @@ export const paymentStatusCheck = async (req, res) => {
       });
     }
 
-    const isPaymentCompleted = await TaxManager.getPaymentStatus(orderId);
+    const isPaymentCompleted = await TaxManager.getPaymentStatus(
+      orderId,
+      tax.amount
+    );
 
     if (isPaymentCompleted) {
       if (tax.status === CONSTANTS.ORDER_STATUS.CREATED) {
@@ -468,7 +477,7 @@ export const paymentRedirect = async (req, res) => {
 
 💼 वाहन राज्य कर टीम की ओर से
 आपका दिन शुभ हो! 🙏</pre>`)
-  } catch(error) {
+  } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }
 };

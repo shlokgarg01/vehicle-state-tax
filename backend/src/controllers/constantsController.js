@@ -46,15 +46,6 @@ export const getConstantByKey = catchAsyncErrors(async (req, res) => {
   });
 });
 
-export const getUpiConfig = catchAsyncErrors(async (req, res) => {
-  const upiConfig = await ConstantsManager.getUpiConfig();
-
-  res.status(200).json({
-    success: true,
-    message: "UPI config fetched successfully",
-    data: upiConfig,
-  });
-});
 
 // Update constant by key
 export const updateConstantByKey = catchAsyncErrors(async (req, res, next) => {
@@ -86,7 +77,7 @@ export const updateConstantByKey = catchAsyncErrors(async (req, res, next) => {
 export const getAllConstants = catchAsyncErrors(async (req, res, next) => {
   try {
     const constants = await Constants.find();
-    
+
     res.status(200).json({
       success: true,
       message: "Constants fetched successfully",

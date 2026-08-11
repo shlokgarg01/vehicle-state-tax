@@ -3,14 +3,12 @@ import { authorizeRoles, isAuthenticatedUser } from "../middlewares/authMiddlewa
 import {
   createConstant,
   getConstantByKey,
-  getUpiConfig,
   updateConstantByKey,
 } from "../controllers/constantsController.js";
 import CONSTANTS from "../constants/constants.js";
 
 const constantsRoutes = express.Router();
 
-constantsRoutes.get("/upi-config", isAuthenticatedUser, getUpiConfig);
 constantsRoutes.get("/:key", isAuthenticatedUser, getConstantByKey);
 constantsRoutes.put(
   "/:key",
