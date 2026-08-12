@@ -140,6 +140,12 @@ export const createTaxAndPaymentURL = async (req, res) => {
   try {
     const { orderId, amount, mobileNumber, category, paymentMethod, ...taxData } = req.body;
     const backendUrl = resolveBackendUrl(req);
+    if (!amount || Number(amount) <= 0) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid order amount.",
+      });
+    }
 
     let price = 0;
     if ([CONSTANTS.MODES.BORDER_TAX, CONSTANTS.MODES.ROAD_TAX].includes(taxData.category)) {
@@ -147,6 +153,12 @@ export const createTaxAndPaymentURL = async (req, res) => {
       price = await Price.findOne({ mode: category, taxMode: taxData.taxMode, seatCapacity: taxData.seatCapacity, state: state._id, status: CONSTANTS.STATUS.ACTIVE })
     } else {
       price = await Price.findOne({ mode: category, taxMode: taxData.taxMode, seatCapacity: taxData.seatCapacity, status: CONSTANTS.STATUS.ACTIVE })
+    }
+    if (!price) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid order amount.",
+      });
     }
 
     let commission = 0
