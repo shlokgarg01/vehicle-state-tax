@@ -23,10 +23,9 @@ export const sendOTPForLogin = asyncHandler(async (req, res, next) => {
     const otp =
       parseInt(contactNumber) === 8307747802 ? "114488" : generateOTP();
     const hash = otpHash(otp);
-
     await OTP.deleteMany({ contactNumber });
 
-    const otpRecord = await OTP.create({
+    await OTP.create({
       contactNumber,
       otpHash: hash,
       expiresAt: new Date(Date.now() + 5 * 60 * 1000),

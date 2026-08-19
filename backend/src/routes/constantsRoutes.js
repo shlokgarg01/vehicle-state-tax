@@ -9,7 +9,7 @@ import CONSTANTS from "../constants/constants.js";
 
 const constantsRoutes = express.Router();
 
-constantsRoutes.get("/:key", isAuthenticatedUser, getConstantByKey);
+constantsRoutes.get("/:key", getConstantByKey);
 constantsRoutes.put(
   "/:key",
   isAuthenticatedUser,
