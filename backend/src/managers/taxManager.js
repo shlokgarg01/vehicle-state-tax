@@ -8,7 +8,7 @@ import { getPaymentGateway } from "../services/paymentGateway.js";
 import { parseCustomDate } from "../helpers/dateHelper.js";
 
 class TaxManager {
-  constructor() {}
+  constructor() { }
 
   static computeCommission = async ({
     category,
@@ -83,9 +83,14 @@ class TaxManager {
     );
   };
 
-  static getPaymentStatus = async (orderId, amount) => {
+  static getPaymentStatus = async (orderId, amount, options = {}) => {
     const gateway = await getPaymentGateway();
-    return gateway.getPaymentStatus(orderId, amount);
+    let isTesting = options?.isTesting;
+    if (isTesting === undefined && orderId) {
+      const tax = await Tax.findOne({ orderId }).select("isTesting").lean();
+      if (tax?.isTesting) isTesting = tax.isTesting;
+    }
+    return gateway.getPaymentStatus(orderId, amount, { ...options, isTesting });
   };
 
   static getTaxByOrderId = async (orderId) => {

@@ -7,15 +7,32 @@ import { ErrorHandler } from "../utils/errorHandlerUtils.js";
 const normalizeMobile = (mobileNumber) =>
   String(mobileNumber).replace(/\D/g, "").slice(-10);
 
-const getUserToken = () => {
-  const token = config.pay0.userToken;
-  if (!token) {
-    throw new ErrorHandler("Pay0 user token is not configured", 500);
+const getPay0Credentials = (isTesting = false) => {
+  const isTest = isTesting === true || String(isTesting).toLowerCase() === "true";
+  if (isTest) {
+    return {
+      apiBaseUrl: config.payVST.apiBaseUrl,
+      userToken: config.payVST.userToken,
+      secretKey: config.payVST.secretKey,
+    };
   }
-  return token;
+  return {
+    apiBaseUrl: config.pay0.apiBaseUrl,
+    userToken: config.pay0.userToken,
+    secretKey: config.pay0.secretKey,
+  };
 };
 
-const postForm = async (path, fields) => {
+const getUserToken = (isTesting = false) => {
+  const creds = getPay0Credentials(isTesting);
+  if (!creds.userToken) {
+    throw new ErrorHandler("Pay0 user token is not configured", 500);
+  }
+  return creds.userToken;
+};
+
+const postForm = async (path, fields, isTesting = false) => {
+  const creds = getPay0Credentials(isTesting);
   const body = new URLSearchParams();
   Object.entries(fields).forEach(([key, value]) => {
     if (value !== undefined && value !== null && value !== "") {
@@ -23,7 +40,7 @@ const postForm = async (path, fields) => {
     }
   });
 
-  const response = await axios.post(`${config.pay0.apiBaseUrl}${path}`, body, {
+  const response = await axios.post(`${creds.apiBaseUrl}${path}`, body, {
     headers: { "Content-Type": "application/x-www-form-urlencoded" },
   });
 
@@ -37,23 +54,27 @@ const createPaymentLink = async (
   orderId,
   amount,
   mobileNumber,
-  { backendUrl } = {}
+  { backendUrl, isTesting = false } = {}
 ) => {
   const publicBackendUrl = String(backendUrl || config.backendUrl).replace(
     /\/$/,
     ""
   );
 
-  const data = await postForm("/create-order", {
-    customer_mobile: normalizeMobile(mobileNumber),
-    customer_name: normalizeMobile(mobileNumber) || "Customer",
-    user_token: getUserToken(),
-    amount: Number(amount),
-    order_id: orderId,
-    redirect_url: `${publicBackendUrl}/api/v1/tax/paymentRedirect?order_id=${encodeURIComponent(orderId)}`,
-    remark1: "Vehicle State Tax",
-    remark2: orderId,
-  });
+  const data = await postForm(
+    "/create-order",
+    {
+      customer_mobile: normalizeMobile(mobileNumber),
+      customer_name: normalizeMobile(mobileNumber) || "Customer",
+      user_token: getUserToken(isTesting),
+      amount: Number(amount),
+      order_id: orderId,
+      redirect_url: `${publicBackendUrl}/api/v1/tax/paymentRedirect?order_id=${encodeURIComponent(orderId)}`,
+      remark1: "Vehicle State Tax",
+      remark2: orderId,
+    },
+    isTesting
+  );
 
   if (!data?.status) {
     throw new ErrorHandler(
@@ -70,11 +91,16 @@ const createPaymentLink = async (
   return paymentUrl;
 };
 
-const getPaymentStatus = async (orderId) => {
-  const data = await postForm("/check-order-status", {
-    user_token: getUserToken(),
-    order_id: orderId,
-  });
+const getPaymentStatus = async (orderId, options = {}) => {
+  const isTesting = typeof options === 'object' ? options?.isTesting : false;
+  const data = await postForm(
+    "/check-order-status",
+    {
+      user_token: getUserToken(isTesting),
+      order_id: orderId,
+    },
+    isTesting
+  );
 
   if (!data?.status) {
     return false;
@@ -89,8 +115,9 @@ const getPaymentStatus = async (orderId) => {
   return txnStatus === CONSTANTS.PAYMENT.TRANSACTION_STATUS.SUCCESS;
 };
 
-export const verifyPay0WebhookHash = (orderId, receivedHash) => {
-  const secret = config.pay0.secretKey;
+export const verifyPay0WebhookHash = (orderId, receivedHash, isTesting = false) => {
+  const creds = getPay0Credentials(isTesting);
+  const secret = creds.secretKey;
   if (!secret || !orderId || !receivedHash) {
     return false;
   }
