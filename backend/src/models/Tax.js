@@ -29,7 +29,6 @@ const taxSchema = new mongoose.Schema(
     isWhatsAppNotificationSent: { type: Boolean, default: false },
     isAmountRefunded: { type: Boolean, default: false },
     refundedToWallet: { type: Boolean, default: false },
-    isTesting: { type: Boolean, default: false },
     paymentMethod: {
       type: String,
       enum: Object.values(CONSTANTS.PAYMENT_METHOD),

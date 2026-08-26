@@ -138,9 +138,7 @@ export const getUserTaxHistory = async (req, res) => {
 
 export const createTaxAndPaymentURL = async (req, res) => {
   try {
-    const { orderId, amount, mobileNumber, category, paymentMethod, isTesting, ...taxData } = req.body;
-    const isTestFlag = isTesting === true || String(isTesting).toLowerCase() === 'true';
-    taxData.isTesting = isTestFlag;
+    const { orderId, amount, mobileNumber, category, paymentMethod, ...taxData } = req.body;
     const backendUrl = resolveBackendUrl(req);
     if (!amount || Number(amount) <= 0) {
       return res.status(400).json({
@@ -217,7 +215,7 @@ export const createTaxAndPaymentURL = async (req, res) => {
       orderId,
       amount,
       mobileNumber,
-      { backendUrl, isTesting: isTestFlag }
+      { backendUrl }
     );
     const taxEntry = await TaxManager.createTaxEntry(req.user?._id, {
       ...taxData,
