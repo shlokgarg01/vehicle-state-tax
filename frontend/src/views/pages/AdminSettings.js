@@ -44,9 +44,9 @@ const AdminSettings = () => {
   const initialRefundDeductionPercent = values?.[REFUND_DEDUCTION_PERCENT] ?? '0'
   const initialNotice = values?.[NOTICE] || ''
   const initialAppMinVersion = values?.[APP_MIN_VERSION] || '0'
-  const initialPayIndiaLive = useMemo(() => {
+  const initialPayVstLive = useMemo(() => {
     const gateway = String(values?.[PAYMENT_GATEWAY] || '').toLowerCase()
-    if (gateway === Constants.PAYMENT_GATEWAY.PAYINDIA) return true
+    if (gateway === Constants.PAYMENT_GATEWAY.PAYVST) return true
     return false
   }, [values?.[PAYMENT_GATEWAY]])
 
@@ -60,7 +60,7 @@ const AdminSettings = () => {
 
   const [welcomeToggle, setWelcomeToggle] = useState(false)
   const [taxToggle, setTaxToggle] = useState(false)
-  const [payIndiaLiveToggle, setPayIndiaLiveToggle] = useState(false)
+  const [payVstLiveToggle, setPayVstLiveToggle] = useState(false)
   const [refundPassword, setRefundPassword] = useState('')
   const [refundDeductionPercent, setRefundDeductionPercent] = useState('0')
   const [notice, setNotice] = useState('')
@@ -117,8 +117,8 @@ const AdminSettings = () => {
   }, [initialAppMinVersion])
 
   useEffect(() => {
-    setPayIndiaLiveToggle(initialPayIndiaLive)
-  }, [initialPayIndiaLive])
+    setPayVstLiveToggle(initialPayVstLive)
+  }, [initialPayVstLive])
 
   useEffect(() => {
     setLeaderboardEnabled(initialLeaderboardEnabled)
@@ -294,11 +294,11 @@ const AdminSettings = () => {
       }
       changes.push({ key: APP_MIN_VERSION, value: appMinVersion.trim() })
     }
-    if (payIndiaLiveToggle !== initialPayIndiaLive) {
+    if (payVstLiveToggle !== initialPayVstLive) {
       changes.push({
         key: PAYMENT_GATEWAY,
-        value: payIndiaLiveToggle
-          ? Constants.PAYMENT_GATEWAY.PAYINDIA
+        value: payVstLiveToggle
+          ? Constants.PAYMENT_GATEWAY.PAYVST
           : Constants.PAYMENT_GATEWAY.PAY0,
       })
     }
@@ -348,14 +348,14 @@ const AdminSettings = () => {
             <CRow className="mb-4">
               <CCol md={8} className="d-flex align-items-center justify-content-between">
                 <div>
-                  <h6 className="mb-1">PayIndia Payment Gateway</h6>
+                  <h6 className="mb-1">PayVST Payment Gateway</h6>
                   <p className="text-muted small mb-0">
-                    When enabled, payment links use PayIndia. When disabled, Pay0 is used.
+                    When enabled, payment links use PayVST. When disabled, Pay0 is used.
                   </p>
                 </div>
                 <CFormSwitch
-                  checked={payIndiaLiveToggle}
-                  onChange={(e) => setPayIndiaLiveToggle(e.target.checked)}
+                  checked={payVstLiveToggle}
+                  onChange={(e) => setPayVstLiveToggle(e.target.checked)}
                 />
               </CCol>
             </CRow>

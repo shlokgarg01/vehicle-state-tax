@@ -41,6 +41,12 @@ const config = {
       "",
   },
 
+  payVST: {
+    apiBaseUrl: process.env.PAYVST_API_BASE_URL,
+    userToken: process.env.PAYVST_USER_TOKEN,
+    secretKey: process.env.PAYVST_SECRET_KEY,
+  },
+
   payIndia: {
     apiBaseUrl: process.env.PAYINDIA_API_BASE_URL,
     apiToken: process.env.PAYINDIA_API_TOKEN,

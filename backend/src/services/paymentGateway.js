@@ -1,4 +1,5 @@
 import Pay0Service from "./pay0.js";
+import PayVSTService from "./payVST.js";
 import PayIndiaService from "./payIndia.js";
 import SBIePayService from "./sbiePay.js";
 import ConstantsManager from "../managers/constantsManager.js";
@@ -11,6 +12,10 @@ export const getPaymentGateway = async () => {
       CONSTANTS.PAYMENT_GATEWAY.PAY0
     )
   ).toLowerCase();
+
+  if (gateway === CONSTANTS.PAYMENT_GATEWAY.PAYVST) {
+    return PayVSTService;
+  }
 
   if (gateway === CONSTANTS.PAYMENT_GATEWAY.PAYINDIA) {
     return PayIndiaService;

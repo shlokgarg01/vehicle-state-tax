@@ -14,6 +14,7 @@ const CONSTANTS = {
   },
   PAYMENT_GATEWAY: {
     PAY0: "pay0",
+    PAYVST: "payvst",
     PAYINDIA: "payindia",
     SBIEPAY: "sbiepay",
   },
