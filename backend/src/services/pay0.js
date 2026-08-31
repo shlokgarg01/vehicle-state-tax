@@ -71,22 +71,41 @@ const createPaymentLink = async (
 };
 
 const getPaymentStatus = async (orderId) => {
-  const data = await postForm("/check-order-status", {
-    user_token: getUserToken(),
-    order_id: orderId,
-  });
+  try {
+    const data = await postForm("/check-order-status", {
+      user_token: getUserToken(),
+      order_id: orderId,
+    });
 
-  if (!data?.status) {
+    if (!data) {
+      return false;
+    }
+
+    const status = data.status;
+    const result = data.result || data.data || data;
+
+    const txnStatus = String(
+      result?.txnStatus ||
+      result?.txn_status ||
+      result?.status ||
+      status ||
+      ""
+    ).toUpperCase();
+
+    const isSuccess =
+      txnStatus === CONSTANTS.PAYMENT.TRANSACTION_STATUS.SUCCESS ||
+      txnStatus === "COMPLETED" ||
+      txnStatus === "SUCCESS" ||
+      txnStatus === "TXN_SUCCESS" ||
+      txnStatus === "PAID" ||
+      status === true ||
+      status === "SUCCESS";
+
+    return isSuccess;
+  } catch (e) {
+    console.error("[Pay0 getPaymentStatus error]:", e?.response?.data || e.message);
     return false;
   }
-
-  const txnStatus =
-    data.result?.txnStatus ||
-    data.result?.txn_status ||
-    data.txnStatus ||
-    data.txn_status;
-
-  return txnStatus === CONSTANTS.PAYMENT.TRANSACTION_STATUS.SUCCESS;
 };
 
 export const verifyPay0WebhookHash = (orderId, receivedHash) => {

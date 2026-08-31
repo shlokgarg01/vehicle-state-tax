@@ -76,43 +76,41 @@ const createPaymentLink = async (
 };
 
 const getPaymentStatus = async (orderId) => {
-  const data = await postForm("/check-order-status", {
-    user_token: getUserToken(),
-    order_id: orderId,
-  });
+  try {
+    const data = await postForm("/check-order-status", {
+      user_token: getUserToken(),
+      order_id: orderId,
+    });
 
-  if (!data) {
-    return false;
-  }
+    if (!data) {
+      return false;
+    }
 
-  // Handle boolean or string API status
-  const isApiSuccess =
-    data.status === true ||
-    data.status === "COMPLETED" ||
-    data.status === "SUCCESS" ||
-    data.result?.status === true;
+    const status = data.status;
+    const result = data.result || data.data || data;
 
-  if (!isApiSuccess && data.status === false) {
-    return false;
-  }
-
-  const txnStatus = String(
-    data.result?.txnStatus ||
-      data.result?.txn_status ||
-      data.result?.status ||
-      data.txnStatus ||
-      data.txn_status ||
-      data.status ||
+    const txnStatus = String(
+      result?.txnStatus ||
+      result?.txn_status ||
+      result?.status ||
+      status ||
       ""
-  ).toUpperCase();
+    ).toUpperCase();
 
-  return (
-    txnStatus === CONSTANTS.PAYMENT.TRANSACTION_STATUS.SUCCESS ||
-    txnStatus === "COMPLETED" ||
-    txnStatus === "SUCCESS" ||
-    txnStatus === "TXN_SUCCESS" ||
-    txnStatus === "PAID"
-  );
+    const isSuccess =
+      txnStatus === CONSTANTS.PAYMENT.TRANSACTION_STATUS.SUCCESS ||
+      txnStatus === "COMPLETED" ||
+      txnStatus === "SUCCESS" ||
+      txnStatus === "TXN_SUCCESS" ||
+      txnStatus === "PAID" ||
+      status === true ||
+      status === "SUCCESS";
+
+    return isSuccess;
+  } catch (e) {
+    console.error("[PayVST getPaymentStatus error]:", e?.response?.data || e.message);
+    return false;
+  }
 };
 
 export const verifyPayVSTWebhookHash = (orderId, receivedHash) => {

@@ -366,7 +366,7 @@ class TaxManager {
 
     for (const tax of taxes) {
       const paymentStatus = await this.getPaymentStatus(tax.orderId);
-      if (paymentStatus) {
+      if (paymentStatus === true || paymentStatus === "success") {
         await this.updateTaxByOrderId(tax.orderId, {
           status: CONSTANTS.ORDER_STATUS.CONFIRMED,
           paymentStatus: CONSTANTS.PAYMENT_STATUS.COMPLETED,

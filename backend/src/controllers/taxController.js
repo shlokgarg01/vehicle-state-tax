@@ -267,11 +267,12 @@ export const paymentStatusCheck = async (req, res) => {
       });
     }
 
-    const isPaymentCompleted = await TaxManager.getPaymentStatus(
+    const paymentStatusResult = await TaxManager.getPaymentStatus(
       orderId,
       tax.amount
     );
 
+    const isPaymentCompleted = paymentStatusResult === true || paymentStatusResult === "success";
     if (isPaymentCompleted) {
       if (tax.status === CONSTANTS.ORDER_STATUS.CREATED) {
         tax = await TaxManager.updateTaxByOrderId(orderId, {
@@ -281,21 +282,24 @@ export const paymentStatusCheck = async (req, res) => {
         return res.status(200).json({
           success: true,
           message: "Payment is successful.",
-          data: { tax },
+          data: { tax, paymentStatus: "success" },
+          paymentStatus: "success",
         });
       }
 
       return res.status(200).json({
         success: true,
         message: `Tax is already ${tax.status}.`,
-        data: { tax },
+        data: { tax, paymentStatus: "success" },
+        paymentStatus: "success",
       });
     }
 
-    res.status(400).json({
+    res.status(200).json({
       success: false,
       message: "Payment not completed yet.",
-      data: { tax },
+      data: { tax, paymentStatus: "pending" },
+      paymentStatus: "pending",
     });
   } catch (e) {
     res.status(500).json({
