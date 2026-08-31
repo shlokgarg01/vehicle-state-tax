@@ -82,29 +82,27 @@ const getPaymentStatus = async (orderId) => {
       order_id: orderId,
     });
 
-    if (!data) {
+    if (!data || data.status === false) {
       return false;
     }
 
-    const status = data.status;
-    const result = data.result || data.data || data;
+    const result = data.result || data.data;
 
     const txnStatus = String(
       result?.txnStatus ||
       result?.txn_status ||
-      result?.status ||
-      status ||
+      data?.txnStatus ||
+      data?.txn_status ||
       ""
     ).toUpperCase();
 
+    // Must strictly check transaction status since API returns status: true for failed transactions as well
     const isSuccess =
       txnStatus === CONSTANTS.PAYMENT.TRANSACTION_STATUS.SUCCESS ||
       txnStatus === "COMPLETED" ||
       txnStatus === "SUCCESS" ||
       txnStatus === "TXN_SUCCESS" ||
-      txnStatus === "PAID" ||
-      status === true ||
-      status === "SUCCESS";
+      txnStatus === "PAID";
 
     return isSuccess;
   } catch (e) {
