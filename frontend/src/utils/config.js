@@ -1,7 +1,7 @@
 import axios from 'axios'
 
 const axiosInstance = axios.create({
-  baseURL: 'https://vehiclestatetax.webxlabs.in', // Your API base URL
+  baseURL: 'https://vehiclestatetax.com', // Your API base URL
 })
 
 axiosInstance.interceptors.request.use(
