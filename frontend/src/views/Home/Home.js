@@ -92,6 +92,7 @@ const Home = () => {
 
   const cards = [
     { title: 'Total Orders', value: data?.counts?.totalOrders, color: 'primary' },
+    { title: 'Wallet Orders', value: data?.counts?.walletOrders, color: 'success' },
     { title: 'Total Amount', value: data?.counts?.totalAmount, color: 'success' },
     { title: 'Total Commission', value: data?.counts?.totalCommission, color: 'info' },
     { title: 'Total Refund', value: data?.counts?.totalRefundedAmount, color: 'dark' },

@@ -422,6 +422,7 @@ export const dashboardAnalytics = async (req, res) => {
       userCount,
       employeeCount,
       totalTaxes,
+      walletOrdersCount,
       borderTaxCount,
       roadTaxCount,
       allIndiaTaxCount,
@@ -437,6 +438,11 @@ export const dashboardAnalytics = async (req, res) => {
       User.countDocuments(baseQuery),
       Employee.countDocuments(baseQuery),
       Tax.countDocuments(taxBaseQuery),
+      Tax.countDocuments({
+        ...taxBaseQuery,
+        paymentMethod: CONSTANTS.PAYMENT_METHOD.WALLET,
+        gatewayAmountPaid: 0
+      }),
       Tax.countDocuments({
         ...taxBaseQuery,
         category: CONSTANTS.TAX_CATEGORIES.BORDER_TAX,
@@ -529,6 +535,7 @@ export const dashboardAnalytics = async (req, res) => {
         users: userCount,
         employees: employeeCount,
         totalOrders: totalTaxes,
+        walletOrders: walletOrdersCount,
         borderTax: borderTaxCount,
         roadTax: roadTaxCount,
         allIndiaTax: allIndiaTaxCount,
