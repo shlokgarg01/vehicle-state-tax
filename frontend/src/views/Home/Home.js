@@ -99,7 +99,7 @@ const Home = () => {
     { title: 'Road Tax', value: data?.counts?.roadTax, color: 'secondary' },
     { title: 'All India Tax', value: data?.counts?.allIndiaTax, color: 'info' },
     { title: 'All India Permit', value: data?.counts?.allIndiaPermit, color: 'danger' },
-    { title: 'Loading Vehicle', value: data?.counts?.loadingVehicle, color: 'success' },
+    // { title: 'Loading Vehicle', value: data?.counts?.loadingVehicle, color: 'success' },
     { title: 'Users', value: data?.counts?.users, color: 'dark' },
     { title: 'Employees', value: data?.counts?.employees, color: 'primary' },
     { title: 'Withdrawals Processed', value: data?.counts?.totalWithdrawalsProcessed, color: 'warning' },

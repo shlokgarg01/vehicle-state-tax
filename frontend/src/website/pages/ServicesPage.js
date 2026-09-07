@@ -6,7 +6,7 @@ const SERVICES = [
   ['Road Tax Payment', 'Pay state road tax online with instant confirmation.'],
   ['Border Tax', 'Border tax payment support for interstate commercial vehicles.'],
   ['All India Permit & Tax', 'Permit and all-India tax services through the mobile app.'],
-  ['Loading Vehicle Tax', 'Tax payment for light, medium, and heavy goods vehicles.'],
+  // ['Loading Vehicle Tax', 'Tax payment for light, medium, and heavy goods vehicles.'],
   ['Tax Status Check', 'Track payment and order status from your account history.'],
   ['Payment History', 'Access past payments and receipts in the app.'],
 ]

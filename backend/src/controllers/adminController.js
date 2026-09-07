@@ -238,7 +238,7 @@ export const updateEmployee = asyncHandler(async (req, res, next) => {
     const uploaded = await uploadFile(image, "employee_images");
     if (uploaded.isUploaded) {
       employee.image = uploaded.url;
-    } else {}
+    } else { }
   }
 
   await employee.save();
@@ -385,7 +385,7 @@ export const triggerUsersExport = asyncHandler(async (req, res, next) => {
     } catch (err) {
       console.error("Error during user export job:", err.message);
     } finally {
-      fs.promises.unlink(filePath).catch(() => {});
+      fs.promises.unlink(filePath).catch(() => { });
     }
   });
 });
@@ -426,7 +426,7 @@ export const dashboardAnalytics = async (req, res) => {
       roadTaxCount,
       allIndiaTaxCount,
       allIndiaPermitCount,
-      loadingVehicleCount,
+      // loadingVehicleCount,
       totalAmount,
       totalRefundedAmount,
       totalCommission,
@@ -453,16 +453,17 @@ export const dashboardAnalytics = async (req, res) => {
         ...taxBaseQuery,
         category: CONSTANTS.TAX_CATEGORIES.ALL_INDIA_PERMIT,
       }),
-      Tax.countDocuments({
-        ...taxBaseQuery,
-        category: CONSTANTS.TAX_CATEGORIES.LOADING_VEHICLE,
-      }),
+      // Tax.countDocuments({
+      //   ...taxBaseQuery,
+      //   category: CONSTANTS.TAX_CATEGORIES.LOADING_VEHICLE,
+      // }),
       Tax.aggregate([
         { $match: taxBaseQuery },
         { $group: { _id: null, total: { $sum: { $ifNull: ["$amount", 0] } } } }
       ]).then(result => result[0]?.total || 0),
       Tax.aggregate([
-        { $match: { ...taxBaseQuery, status: CONSTANTS.ORDER_STATUS.CANCELLED }
+        {
+          $match: { ...taxBaseQuery, status: CONSTANTS.ORDER_STATUS.CANCELLED }
         },
         { $group: { _id: null, total: { $sum: { $ifNull: ["$amount", 0] } } } }
       ]).then(result => result[0]?.total || 0),
@@ -498,6 +499,25 @@ export const dashboardAnalytics = async (req, res) => {
             createdAt: { $gte: startDate, $lte: endDate },
           },
         },
+        {
+          $lookup: {
+            from: "taxes",
+            localField: "orderId",
+            foreignField: "orderId",
+            as: "tax",
+          },
+        },
+        {
+          $match: {
+            "tax.status": {
+              $in: [
+                CONSTANTS.ORDER_STATUS.CONFIRMED,
+                CONSTANTS.ORDER_STATUS.CLOSED,
+                CONSTANTS.ORDER_STATUS.CANCELLED,
+              ],
+            },
+          },
+        },
         { $group: { _id: null, total: { $sum: { $ifNull: ["$amount", 0] } } } },
       ]).then((result) => result[0]?.total || 0),
     ]);
@@ -513,7 +533,7 @@ export const dashboardAnalytics = async (req, res) => {
         roadTax: roadTaxCount,
         allIndiaTax: allIndiaTaxCount,
         allIndiaPermit: allIndiaPermitCount,
-        loadingVehicle: loadingVehicleCount,
+        // loadingVehicle: loadingVehicleCount,
         totalRefundedAmount,
         totalAmount,
         totalCommission,
