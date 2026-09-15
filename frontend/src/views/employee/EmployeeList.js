@@ -189,27 +189,23 @@ export default function EmployeeList() {
 
     let formData = new FormData()
     // formData.append('username', editUser.username)
-    if(editUser.password) formData.append('password', editUser.password)
-    if(editUser.email) formData.append('email', editUser.email)
-    if(editUser.contactNumber) formData.append('contactNumber', editUser.contactNumber)
-    if(editUser.status) formData.append('status', editUser.status)
-    if(editUser.name) formData.append('name', editUser.name)
-    if (editUser.image) {
+    if (editUser.password?.trim()) formData.append('password', editUser.password.trim())
+    if (editUser.email) formData.append('email', editUser.email)
+    if (editUser.contactNumber) formData.append('contactNumber', editUser.contactNumber)
+    if (editUser.status) formData.append('status', editUser.status)
+    if (editUser.name) formData.append('name', editUser.name)
+    if (editUser.image && editUser.image instanceof File) {
       formData.append('image', editUser.image)
     }
     if (updatedEmployee.states.length > 0) {
       updatedEmployee.states.forEach((state) => {
-        formData.append('states[]', state)
+        if (state) formData.append('states[]', state)
       })
-    } else {
-      formData.append('states[]', '')
     }
     if (updatedEmployee.categories.length > 0) {
       updatedEmployee.categories.forEach((category) => {
-        formData.append('categories[]', category)
+        if (category) formData.append('categories[]', category)
       })
-    } else {
-      formData.append('categories[]', '')
     }
     formData.append('canViewContactNumber', String(Boolean(editUser.canViewContactNumber)))
     formData.append('canRefund', String(Boolean(editUser.canRefund)))

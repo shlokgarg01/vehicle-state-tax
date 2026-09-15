@@ -77,19 +77,17 @@ const UserForm = ({ userData, setUserData, errors, canEditAdminPassword = false 
         }))}
         onChange={(selected) => setUserData({ ...userData, categories: selected })}
       />
-      {(userData.role !== Constants.ROLES.ADMIN || canEditAdminPassword) && (
-        <TextInput
-          label="Password"
-          type={showPassword ? 'text' : 'password'}
-          value={userData.password || ''}
-          onChange={(e) => setUserData({ ...userData, password: e.target.value })}
-          placeholder="Enter new password (optional)"
-          id="password"
-          showPasswordToggle={true}
-          togglePasswordVisibility={handlePasswordToggle}
-          errors={errors}
-        />
-      )}{' '}
+      <TextInput
+        label="Password"
+        type={showPassword ? 'text' : 'password'}
+        value={userData.password || ''}
+        onChange={(e) => setUserData({ ...userData, password: e.target.value })}
+        placeholder="Enter new password (optional)"
+        id="password"
+        showPasswordToggle={true}
+        togglePasswordVisibility={handlePasswordToggle}
+        errors={errors}
+      />
       <SelectBox
         id="status"
         name="status"

@@ -158,8 +158,18 @@ export const viewManagers = asyncHandler(async (req, res) => {
 export const updateEmployee = asyncHandler(async (req, res, next) => {
   const { id } = req.params;
   const { username, email, password, contactNumber, status, name } = req.body;
-  let states = req.body['states[]'] || []
-  let categories = req.body['categories[]'] || []
+  let states = req.body['states[]'] || req.body.states || [];
+  if (!Array.isArray(states)) {
+    states = states ? [states] : [];
+  }
+  states = states.filter((s) => typeof s === 'string' && s.trim() !== '');
+
+  let categories = req.body['categories[]'] || req.body.categories || [];
+  if (!Array.isArray(categories)) {
+    categories = categories ? [categories] : [];
+  }
+  categories = categories.filter((c) => typeof c === 'string' && c.trim() !== '');
+
   const { image } = req.files || {};
 
   const employee = await Employee.findById(id).select("+password");
@@ -204,12 +214,12 @@ export const updateEmployee = asyncHandler(async (req, res, next) => {
   }
 
   // Password update
-  if (password) {
-    employee.password = password
+  if (password && String(password).trim() !== "") {
+    employee.password = String(password).trim();
   }
 
-  employee.states = states
-  employee.categories = categories
+  employee.states = states;
+  employee.categories = categories;
 
   // Status update
   if (status !== undefined) {
@@ -228,17 +238,15 @@ export const updateEmployee = asyncHandler(async (req, res, next) => {
     employee.canWithdraw = parseBooleanField(req.body.canWithdraw);
   }
 
-  if (employee.image) {
-    await deleteFile(employee.image);
-  }
-
   // Image update
   if (image) {
-    // Optional: delete old image if needed
+    if (employee.image) {
+      await deleteFile(employee.image);
+    }
     const uploaded = await uploadFile(image, "employee_images");
     if (uploaded.isUploaded) {
       employee.image = uploaded.url;
-    } else { }
+    }
   }
 
   await employee.save();
