@@ -27,6 +27,7 @@ import {
   cilBriefcase,
   cilInstitution,
   cilSwapHorizontal,
+  cilWallet,
 } from '@coreui/icons'
 import { getDashboardData } from '../../actions/dashboardAction'
 import DateSelector from '../../components/Form/DateSelector'
@@ -77,7 +78,12 @@ const LedgerReport = () => {
   const govtTaxAmount = counts.govtTaxAmount ?? Math.max(0, totalAmount - totalCommission)
   const totalRefundedAmount = counts.totalRefundedAmount || 0
   const totalWithdrawalsProcessed = counts.totalWithdrawalsProcessed || 0
-  const dayEndBalance = counts.expectedDayEndBalance ?? (totalCommission - totalWithdrawalsProcessed)
+  const totalWalletAmountUsed = counts.totalWalletAmountUsed || 0
+
+  // Total = Commission + Amount Refunded - Withdrawal Amount - Amount Used from Wallet
+  const dayEndBalance =
+    counts.expectedDayEndBalance ??
+    (totalCommission + totalRefundedAmount - totalWithdrawalsProcessed - totalWalletAmountUsed)
 
   const categoryLabels = {
     border_tax: 'Border Tax',
@@ -214,7 +220,7 @@ const LedgerReport = () => {
             Daily Financial Report
           </h3>
           <p className="text-muted small mb-0">
-            Simple accounting overview: Collection, Govt Tax, Withdrawals & Day End Balance.
+            Simple accounting overview: Commission, Refunds, Withdrawals, Wallet Used & Net Balance.
           </p>
         </div>
         <div className="d-flex align-items-center gap-2 mt-2 mt-md-0">
@@ -282,113 +288,128 @@ const LedgerReport = () => {
         <div className="alert alert-danger">{error}</div>
       ) : (
         <>
-          {/* Main Hero Card: Day End Balance */}
+          {/* Main Hero Card: Net Day End Balance */}
           <CCard className="mb-4 shadow-sm border-0 hero-balance-card">
             <CCardBody className="p-4 text-center">
               <div className="text-white-50 text-uppercase fw-bold tracking-wider small">
-                Actual Day End Net Balance
+                Total Net Day End Balance
               </div>
               <div className="display-4 fw-bold my-2">{formatRs(dayEndBalance)}</div>
               <div className="small text-white-50">
-                Formula: Our Commission ({formatRs(totalCommission)}) - User Withdrawals ({formatRs(totalWithdrawalsProcessed)}) = Day End Balance ({formatRs(dayEndBalance)})
+                Formula: Commission ({formatRs(totalCommission)}) + Refunded to Wallet ({formatRs(totalRefundedAmount)}) - Withdrawals ({formatRs(totalWithdrawalsProcessed)}) - Used from Wallet ({formatRs(totalWalletAmountUsed)}) = {formatRs(dayEndBalance)}
               </div>
             </CCardBody>
           </CCard>
 
-          {/* Simple Step-by-Step Ledger Flow */}
+          {/* Simple Formula Step Cards */}
           <h5 className="fw-bold text-secondary mb-3">
             <CIcon icon={cilCalendar} className="me-2 text-primary" />
-            Financial Calculation for {selectedDate}
+            Financial Breakdown for {selectedDate}
           </h5>
 
           <CRow className="g-3 mb-4">
-            {/* Step 1: Total Collections */}
-            <CCol xs={12} md={3}>
-              <div className="step-box h-100 shadow-sm">
+            {/* 1. Commission */}
+            <CCol xs={12} sm={6} md={3}>
+              <div className="step-box h-100 shadow-sm border-success">
                 <div className="d-flex justify-content-between align-items-center mb-2">
-                  <div className="step-number bg-primary text-white">1</div>
-                  <CIcon icon={cilMoney} size="xl" className="text-primary" />
+                  <span className="badge bg-success">+ Add</span>
+                  <CIcon icon={cilBriefcase} size="xl" className="text-success" />
                 </div>
                 <div className="text-muted small text-uppercase fw-semibold">
-                  Total Collected
+                  1. Commission
                 </div>
-                <div className="fs-3 fw-bold text-dark mt-1">
-                  {formatRs(totalAmount)}
+                <div className="fs-3 fw-bold text-success mt-1">
+                  + {formatRs(totalCommission)}
                 </div>
                 <div className="small text-muted mt-1">
-                  Gross payments received from users.
+                  Our total commission earned.
                 </div>
               </div>
             </CCol>
 
-            {/* Step 2: Govt Tax */}
-            <CCol xs={12} md={3}>
-              <div className="step-box h-100 shadow-sm">
+            {/* 2. Amount Refunded to Wallet */}
+            <CCol xs={12} sm={6} md={3}>
+              <div className="step-box h-100 shadow-sm border-info">
                 <div className="d-flex justify-content-between align-items-center mb-2">
-                  <div className="step-number bg-warning text-dark">2</div>
-                  <CIcon icon={cilInstitution} size="xl" className="text-warning" />
+                  <span className="badge bg-info text-white">+ Add</span>
+                  <CIcon icon={cilXCircle} size="xl" className="text-info" />
                 </div>
                 <div className="text-muted small text-uppercase fw-semibold">
-                  Govt Tax Paid
-                </div>
-                <div className="fs-3 fw-bold text-danger mt-1">
-                  - {formatRs(govtTaxAmount)}
-                </div>
-                <div className="small text-muted mt-1">
-                  Tax portion paid to the government.
-                </div>
-              </div>
-            </CCol>
-
-            {/* Step 3: Commission Earned */}
-            <CCol xs={12} md={3}>
-              <div className="step-box h-100 shadow-sm">
-                <div className="d-flex justify-content-between align-items-center mb-2">
-                  <div className="step-number bg-info text-white">3</div>
-                  <CIcon icon={cilBriefcase} size="xl" className="text-info" />
-                </div>
-                <div className="text-muted small text-uppercase fw-semibold">
-                  Our Commission
+                  2. Refunded to Wallet
                 </div>
                 <div className="fs-3 fw-bold text-info mt-1">
-                  = {formatRs(totalCommission)}
+                  + {formatRs(totalRefundedAmount)}
                 </div>
                 <div className="small text-muted mt-1">
-                  Gross commission earned before withdrawals.
+                  Amount credited back to user wallets.
                 </div>
               </div>
             </CCol>
 
-            {/* Step 4: User Withdrawals Outflow */}
-            <CCol xs={12} md={3}>
+            {/* 3. Withdrawal Amount */}
+            <CCol xs={12} sm={6} md={3}>
               <div className="step-box h-100 shadow-sm border-danger">
                 <div className="d-flex justify-content-between align-items-center mb-2">
-                  <div className="step-number bg-danger text-white">4</div>
+                  <span className="badge bg-danger">- Deduct</span>
                   <CIcon icon={cilSwapHorizontal} size="xl" className="text-danger" />
                 </div>
                 <div className="text-muted small text-uppercase fw-semibold">
-                  Withdrawals Paid Out
+                  3. Withdrawal Amount
                 </div>
                 <div className="fs-3 fw-bold text-danger mt-1">
                   - {formatRs(totalWithdrawalsProcessed)}
                 </div>
                 <div className="small text-muted mt-1">
-                  Amount paid back into user bank accounts.
+                  Withdrawals paid out to users.
+                </div>
+              </div>
+            </CCol>
+
+            {/* 4. Amount Used from Wallet */}
+            <CCol xs={12} sm={6} md={3}>
+              <div className="step-box h-100 shadow-sm border-warning">
+                <div className="d-flex justify-content-between align-items-center mb-2">
+                  <span className="badge bg-warning text-dark">- Deduct</span>
+                  <CIcon icon={cilWallet} size="xl" className="text-warning" />
+                </div>
+                <div className="text-muted small text-uppercase fw-semibold">
+                  4. Used from Wallet
+                </div>
+                <div className="fs-3 fw-bold text-warning mt-1">
+                  - {formatRs(totalWalletAmountUsed)}
+                </div>
+                <div className="small text-muted mt-1">
+                  Wallet balance redeemed for orders.
                 </div>
               </div>
             </CCol>
           </CRow>
 
-          {/* Refund Info Box */}
+          {/* Reference Info: Total Collection & Govt Tax */}
           <CRow className="g-3 mb-4">
-            <CCol xs={12}>
+            <CCol xs={12} md={6}>
               <div className="step-box shadow-sm">
                 <div className="d-flex justify-content-between align-items-center mb-1">
-                  <span className="fw-bold text-secondary">Order Refunds (In User Wallet):</span>
-                  <span className="fs-5 fw-bold text-dark">{formatRs(totalRefundedAmount)}</span>
+                  <span className="fw-bold text-secondary">
+                    <CIcon icon={cilMoney} className="me-1 text-primary" /> Total Amount Collected:
+                  </span>
+                  <span className="fs-5 fw-bold text-dark">{formatRs(totalAmount)}</span>
                 </div>
                 <div className="small text-muted">
-                  Order refunds credited back to user wallets.
+                  Gross payments received from users for all orders.
+                </div>
+              </div>
+            </CCol>
+            <CCol xs={12} md={6}>
+              <div className="step-box shadow-sm">
+                <div className="d-flex justify-content-between align-items-center mb-1">
+                  <span className="fw-bold text-secondary">
+                    <CIcon icon={cilInstitution} className="me-1 text-warning" /> Govt Tax Portion:
+                  </span>
+                  <span className="fs-5 fw-bold text-dark">{formatRs(govtTaxAmount)}</span>
+                </div>
+                <div className="small text-muted">
+                  Tax portion paid to the government (Total Collected - Commission).
                 </div>
               </div>
             </CCol>

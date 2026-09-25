@@ -585,7 +585,11 @@ export const dashboardAnalytics = async (req, res) => {
     });
 
     const govtTaxAmount = Math.max(0, totalAmount - totalCommission);
-    const expectedDayEndBalance = totalCommission - totalWithdrawalsProcessed;
+    const expectedDayEndBalance =
+      totalCommission +
+      totalRefundedAmount -
+      totalWithdrawalsProcessed -
+      totalWalletAmountUsed;
     const expectedSystemBalance = totalAmount - totalWithdrawalsProcessed;
     const netRevenue = totalCommission;
 
