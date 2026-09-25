@@ -205,6 +205,11 @@ const _nav = (user) => {
       items: [
         {
           component: CNavItem,
+          name: 'Financial Report',
+          to: adminPath('/reports'),
+        },
+        {
+          component: CNavItem,
           name: 'Push Notifications',
           to: adminPath('/notifications'),
         },

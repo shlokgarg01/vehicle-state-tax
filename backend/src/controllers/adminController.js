@@ -430,26 +430,42 @@ export const dashboardAnalytics = async (req, res) => {
       userCount,
       employeeCount,
       totalTaxes,
+      completedOrdersCount,
+      cancelledOrdersCount,
       walletOrdersCount,
       borderTaxCount,
       roadTaxCount,
       allIndiaTaxCount,
       allIndiaPermitCount,
-      // loadingVehicleCount,
       totalAmount,
       totalRefundedAmount,
       totalCommission,
+      totalGatewayAmountPaid,
       totalWalletBalance,
       totalWithdrawalsProcessed,
       totalWalletAmountUsed,
+      categoryStatsRaw,
     ] = await Promise.all([
       User.countDocuments(baseQuery),
       Employee.countDocuments(baseQuery),
       Tax.countDocuments(taxBaseQuery),
       Tax.countDocuments({
         ...taxBaseQuery,
+        status: {
+          $in: [
+            CONSTANTS.ORDER_STATUS.CONFIRMED,
+            CONSTANTS.ORDER_STATUS.CLOSED,
+          ],
+        },
+      }),
+      Tax.countDocuments({
+        ...taxBaseQuery,
+        status: CONSTANTS.ORDER_STATUS.CANCELLED,
+      }),
+      Tax.countDocuments({
+        ...taxBaseQuery,
         paymentMethod: CONSTANTS.PAYMENT_METHOD.WALLET,
-        gatewayAmountPaid: 0
+        gatewayAmountPaid: 0,
       }),
       Tax.countDocuments({
         ...taxBaseQuery,
@@ -467,26 +483,38 @@ export const dashboardAnalytics = async (req, res) => {
         ...taxBaseQuery,
         category: CONSTANTS.TAX_CATEGORIES.ALL_INDIA_PERMIT,
       }),
-      // Tax.countDocuments({
-      //   ...taxBaseQuery,
-      //   category: CONSTANTS.TAX_CATEGORIES.LOADING_VEHICLE,
-      // }),
       Tax.aggregate([
         { $match: taxBaseQuery },
-        { $group: { _id: null, total: { $sum: { $ifNull: ["$amount", 0] } } } }
-      ]).then(result => result[0]?.total || 0),
+        { $group: { _id: null, total: { $sum: { $ifNull: ["$amount", 0] } } } },
+      ]).then((result) => result[0]?.total || 0),
       Tax.aggregate([
         {
-          $match: { ...taxBaseQuery, status: CONSTANTS.ORDER_STATUS.CANCELLED }
+          $match: { ...taxBaseQuery, status: CONSTANTS.ORDER_STATUS.CANCELLED },
         },
-        { $group: { _id: null, total: { $sum: { $ifNull: ["$amount", 0] } } } }
-      ]).then(result => result[0]?.total || 0),
+        { $group: { _id: null, total: { $sum: { $ifNull: ["$amount", 0] } } } },
+      ]).then((result) => result[0]?.total || 0),
       Tax.aggregate([
         { $match: taxBaseQuery },
-        { $group: { _id: null, total: { $sum: { $ifNull: ["$commission", 0] } } } }
-      ]).then(result => result[0]?.total || 0),
+        {
+          $group: {
+            _id: null,
+            total: { $sum: { $ifNull: ["$commission", 0] } },
+          },
+        },
+      ]).then((result) => result[0]?.total || 0),
+      Tax.aggregate([
+        { $match: taxBaseQuery },
+        {
+          $group: {
+            _id: null,
+            total: { $sum: { $ifNull: ["$gatewayAmountPaid", 0] } },
+          },
+        },
+      ]).then((result) => result[0]?.total || 0),
       Wallet.aggregate([
-        { $group: { _id: null, total: { $sum: { $ifNull: ["$balance", 0] } } } },
+        {
+          $group: { _id: null, total: { $sum: { $ifNull: ["$balance", 0] } } },
+        },
       ]).then((result) => result[0]?.total || 0),
       WithdrawalRequest.aggregate([
         {
@@ -534,7 +562,32 @@ export const dashboardAnalytics = async (req, res) => {
         },
         { $group: { _id: null, total: { $sum: { $ifNull: ["$amount", 0] } } } },
       ]).then((result) => result[0]?.total || 0),
+      Tax.aggregate([
+        { $match: taxBaseQuery },
+        {
+          $group: {
+            _id: "$category",
+            totalAmount: { $sum: { $ifNull: ["$amount", 0] } },
+            count: { $sum: 1 },
+          },
+        },
+      ]),
     ]);
+
+    const categoryStats = {};
+    categoryStatsRaw.forEach((item) => {
+      if (item._id) {
+        categoryStats[item._id] = {
+          count: item.count || 0,
+          amount: item.totalAmount || 0,
+        };
+      }
+    });
+
+    const govtTaxAmount = Math.max(0, totalAmount - totalCommission);
+    const expectedDayEndBalance = totalCommission - totalWithdrawalsProcessed;
+    const expectedSystemBalance = totalAmount - totalWithdrawalsProcessed;
+    const netRevenue = totalCommission;
 
     res.status(200).json({
       success: true,
@@ -543,18 +596,25 @@ export const dashboardAnalytics = async (req, res) => {
         users: userCount,
         employees: employeeCount,
         totalOrders: totalTaxes,
+        completedOrders: completedOrdersCount,
+        cancelledOrders: cancelledOrdersCount,
         walletOrders: walletOrdersCount,
         borderTax: borderTaxCount,
         roadTax: roadTaxCount,
         allIndiaTax: allIndiaTaxCount,
         allIndiaPermit: allIndiaPermitCount,
-        // loadingVehicle: loadingVehicleCount,
         totalRefundedAmount,
         totalAmount,
+        govtTaxAmount,
+        totalGatewayAmountPaid,
         totalCommission,
         totalWalletBalance,
         totalWithdrawalsProcessed,
         totalWalletAmountUsed,
+        expectedSystemBalance,
+        expectedDayEndBalance,
+        netRevenue,
+        categoryStats,
       },
     });
   } catch (error) {

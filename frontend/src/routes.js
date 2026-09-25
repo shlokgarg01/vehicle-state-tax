@@ -27,10 +27,17 @@ import AdminSettings from './views/pages/AdminSettings'
 import WithdrawalList from './views/wallet/WithdrawalList'
 import PushNotificationList from './views/notifications/PushNotificationList'
 import ReferralList from './views/referral/ReferralList'
+import LedgerReport from './views/reports/LedgerReport'
 import { adminPath } from './utils/adminPath'
 
 const routes = [
   { path: adminPath('/'), exact: true, name: 'Home', element: Home, adminOnly: true },
+  {
+    path: adminPath('/reports'),
+    name: 'Financial Report',
+    element: LedgerReport,
+    adminOnly: true,
+  },
 
   { path: adminPath('/orders/new'), name: 'Create Price', element: newOrder },
   { path: adminPath('/orders/completed'), name: 'Create Price', element: CompleteOrder },
