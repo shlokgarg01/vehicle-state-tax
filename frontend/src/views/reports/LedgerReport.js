@@ -20,8 +20,7 @@ import CIcon from '@coreui/icons-react'
 import {
   cilCalendar,
   cilMoney,
-  cilPrint,
-  cilSync,
+  cilCloudDownload,
   cilCheckCircle,
   cilXCircle,
   cilBriefcase,
@@ -32,6 +31,7 @@ import {
 import { getDashboardData } from '../../actions/dashboardAction'
 import DateSelector from '../../components/Form/DateSelector'
 import { formatDateInput } from '../../helpers/Date'
+import axiosInstance from '../../utils/config'
 
 const LedgerReport = () => {
   const dispatch = useDispatch()
@@ -42,29 +42,95 @@ const LedgerReport = () => {
   dYest.setDate(dYest.getDate() - 1)
   const yesterdayStr = formatDateInput(dYest)
 
-  const [selectedDate, setSelectedDate] = useState(todayStr)
+  const [activePreset, setActivePreset] = useState('today')
+  const [startDate, setStartDate] = useState(todayStr)
+  const [endDate, setEndDate] = useState(todayStr)
+  const [downloadingExcel, setDownloadingExcel] = useState(false)
 
-  const fetchReport = (date) => {
-    dispatch(getDashboardData({ startDate: date, endDate: date }))
+  const fetchReport = (start, end) => {
+    dispatch(getDashboardData({ startDate: start, endDate: end }))
   }
 
-  const handleDateChange = (date) => {
-    setSelectedDate(date)
-    fetchReport(date)
+  const handleApply = () => {
+    setActivePreset('custom')
+    fetchReport(startDate, endDate)
+  }
+
+  const handleStartDateChange = (val) => {
+    setStartDate(val)
+    setActivePreset('custom')
+  }
+
+  const handleEndDateChange = (val) => {
+    setEndDate(val)
+    setActivePreset('custom')
   }
 
   const setToday = () => {
-    setSelectedDate(todayStr)
-    fetchReport(todayStr)
+    setActivePreset('today')
+    setStartDate(todayStr)
+    setEndDate(todayStr)
+    fetchReport(todayStr, todayStr)
   }
 
   const setYesterday = () => {
-    setSelectedDate(yesterdayStr)
-    fetchReport(yesterdayStr)
+    setActivePreset('yesterday')
+    setStartDate(yesterdayStr)
+    setEndDate(yesterdayStr)
+    fetchReport(yesterdayStr, yesterdayStr)
+  }
+
+  const setLast7Days = () => {
+    const d = new Date()
+    d.setDate(d.getDate() - 6)
+    const start = formatDateInput(d)
+    setActivePreset('last7days')
+    setStartDate(start)
+    setEndDate(todayStr)
+    fetchReport(start, todayStr)
+  }
+
+  const setThisMonth = () => {
+    const now = new Date()
+    const firstDay = new Date(now.getFullYear(), now.getMonth(), 1)
+    const start = formatDateInput(firstDay)
+    setActivePreset('thisMonth')
+    setStartDate(start)
+    setEndDate(todayStr)
+    fetchReport(start, todayStr)
+  }
+
+  const handleDownloadExcel = async () => {
+    try {
+      setDownloadingExcel(true)
+      const response = await axiosInstance.get(
+        `api/v1/admin/reports/export-excel?startDate=${startDate}&endDate=${endDate}`,
+        {
+          responseType: 'blob',
+        },
+      )
+
+      const url = window.URL.createObjectURL(new Blob([response.data]))
+      const link = document.createElement('a')
+      link.href = url
+      link.setAttribute(
+        'download',
+        `Financial_Report_${startDate}_to_${endDate}.xlsx`,
+      )
+      document.body.appendChild(link)
+      link.click()
+      link.remove()
+      window.URL.revokeObjectURL(url)
+    } catch (err) {
+      console.error('Error downloading excel:', err)
+      alert('Failed to download Excel report')
+    } finally {
+      setDownloadingExcel(false)
+    }
   }
 
   useEffect(() => {
-    fetchReport(selectedDate)
+    fetchReport(startDate, endDate)
   }, [])
 
   const counts = data?.counts || {}
@@ -91,6 +157,8 @@ const LedgerReport = () => {
     all_india_tax: 'All India Tax',
     all_india_permit: 'All India Permit',
   }
+
+  const dateDisplayStr = startDate === endDate ? startDate : `${startDate} to ${endDate}`
 
   return (
     <CContainer fluid className="py-3">
@@ -165,7 +233,7 @@ const LedgerReport = () => {
         .preset-btn {
           border: none;
           border-radius: 20px;
-          padding: 6px 18px;
+          padding: 6px 16px;
           font-size: 0.85rem;
           font-weight: 600;
           color: #64748b;
@@ -186,7 +254,7 @@ const LedgerReport = () => {
         .date-picker-wrapper {
           display: flex;
           align-items: center;
-          gap: 0.5rem;
+          gap: 0.35rem;
           margin: 0;
         }
         .date-picker-wrapper input[type="date"] {
@@ -220,26 +288,26 @@ const LedgerReport = () => {
             Daily Financial Report
           </h3>
           <p className="text-muted small mb-0">
-            Simple accounting overview: Commission, Refunds, Withdrawals, Wallet Used & Net Balance.
+            Simple accounting overview from <span className="fw-semibold text-dark">{dateDisplayStr}</span> (both dates included).
           </p>
         </div>
         <div className="d-flex align-items-center gap-2 mt-2 mt-md-0">
           <button
-            className="btn btn-outline-secondary btn-sm"
-            onClick={() => fetchReport(selectedDate)}
+            className="btn btn-info text-white btn-sm d-inline-flex align-items-center gap-1 fw-semibold"
+            disabled={downloadingExcel}
+            onClick={handleDownloadExcel}
           >
-            <CIcon icon={cilSync} className="me-1" /> Refresh
-          </button>
-          <button
-            className="btn btn-dark btn-sm"
-            onClick={() => window.print()}
-          >
-            <CIcon icon={cilPrint} className="me-1" /> Print Report
+            {downloadingExcel ? (
+              <CSpinner size="sm" color="light" />
+            ) : (
+              <CIcon icon={cilCloudDownload} className="me-1" />
+            )}
+            Download Payment Report
           </button>
         </div>
       </div>
 
-      {/* Sleek Vertically Centered Date Selector Bar */}
+      {/* Sleek Vertically Centered Multi-Date Selector Bar */}
       <CCard className="mb-4 shadow-sm border-0 no-print date-filter-card">
         <CCardBody className="date-filter-card-body px-3">
           <div className="date-filter-bar">
@@ -247,34 +315,70 @@ const LedgerReport = () => {
             <div className="date-filter-left">
               <div className="date-filter-label">
                 <CIcon icon={cilCalendar} size="lg" className="text-success" />
-                <span>Select Date:</span>
+                <span>Date Range:</span>
               </div>
               <div className="preset-btn-group">
                 <button
                   type="button"
-                  className={`preset-btn ${selectedDate === todayStr ? 'active' : ''}`}
+                  className={`preset-btn ${activePreset === 'today' ? 'active' : ''
+                    }`}
                   onClick={setToday}
                 >
                   Today
                 </button>
                 <button
                   type="button"
-                  className={`preset-btn ${selectedDate === yesterdayStr ? 'active' : ''}`}
+                  className={`preset-btn ${activePreset === 'yesterday' ? 'active' : ''
+                    }`}
                   onClick={setYesterday}
                 >
                   Yesterday
                 </button>
+                <button
+                  type="button"
+                  className={`preset-btn ${activePreset === 'last7days' ? 'active' : ''
+                    }`}
+                  onClick={setLast7Days}
+                >
+                  Last 7 Days
+                </button>
+                <button
+                  type="button"
+                  className={`preset-btn ${activePreset === 'thisMonth' ? 'active' : ''
+                    }`}
+                  onClick={setThisMonth}
+                >
+                  This Month
+                </button>
               </div>
             </div>
 
-            {/* Right Control: Date Picker Input */}
-            <div className="date-picker-wrapper">
-              <span className="small text-muted fw-semibold d-none d-sm-inline">Custom:</span>
-              <DateSelector
-                id="reportDate"
-                value={selectedDate}
-                onChange={(e) => handleDateChange(e.target.value)}
-              />
+            {/* Right Controls: Start Date + End Date Pickers + Apply Button */}
+            <div className="d-flex align-items-center gap-2 flex-wrap">
+              <div className="date-picker-wrapper">
+                <span className="small text-muted fw-semibold me-1">Start:</span>
+                <DateSelector
+                  id="reportStartDate"
+                  value={startDate}
+                  onChange={(e) => handleStartDateChange(e.target.value)}
+                />
+              </div>
+              <div className="date-picker-wrapper">
+                <span className="small text-muted fw-semibold me-1">End:</span>
+                <DateSelector
+                  id="reportEndDate"
+                  value={endDate}
+                  onChange={(e) => handleEndDateChange(e.target.value)}
+                />
+              </div>
+              <button
+                type="button"
+                className="btn btn-sm btn-success text-white fw-semibold rounded-2 px-3 d-inline-flex align-items-center justify-content-center"
+                style={{ height: '36px' }}
+                onClick={handleApply}
+              >
+                Apply
+              </button>
             </div>
           </div>
         </CCardBody>
@@ -304,7 +408,7 @@ const LedgerReport = () => {
           {/* Simple Formula Step Cards */}
           <h5 className="fw-bold text-secondary mb-3">
             <CIcon icon={cilCalendar} className="me-2 text-primary" />
-            Financial Breakdown for {selectedDate}
+            Financial Breakdown for {dateDisplayStr}
           </h5>
 
           <CRow className="g-3 mb-4">

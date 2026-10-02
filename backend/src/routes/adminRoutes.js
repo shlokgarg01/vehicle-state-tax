@@ -7,6 +7,7 @@ import {
   createEmployee,
   dashboardAnalytics,
   triggerUsersExport,
+  exportFinancialReportExcel,
 } from "../controllers/adminController.js";
 import { resendTaxWhatsAppNotification, refundTaxToWallet } from "../controllers/taxController.js";
 import {
@@ -74,6 +75,14 @@ adminRoutes.get(
   isAuthenticatedUser,
   authorizeRoles([CONSTANTS.USER_ROLES.ADMIN, CONSTANTS.USER_ROLES.MANAGER]),
   dashboardAnalytics
+);
+
+// financial report excel export
+adminRoutes.get(
+  "/reports/export-excel",
+  isAuthenticatedUser,
+  authorizeRoles([CONSTANTS.USER_ROLES.ADMIN, CONSTANTS.USER_ROLES.MANAGER]),
+  exportFinancialReportExcel
 );
 
 // resend tax via WhatsApp

@@ -14,6 +14,7 @@ import os from "os";
 import path from "path";
 import { sendUsersListOnMail } from "../utils/sendNotifications.js";
 import { formatReadableDateTime } from "../helpers/dateHelper.js";
+import ExcelJS from "exceljs";
 
 const parseBooleanField = (value, defaultValue = false) => {
   if (value === undefined || value === null || value === "") {
@@ -621,6 +622,178 @@ export const dashboardAnalytics = async (req, res) => {
         categoryStats,
       },
     });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
+export const exportFinancialReportExcel = async (req, res) => {
+  try {
+    let { startDate, endDate } = req.query;
+    if (!startDate || !endDate) {
+      return res.status(400).json({
+        success: false,
+        message: "startDate and endDate are required",
+      });
+    }
+
+    const start = new Date(`${startDate}T00:00:00+05:30`);
+    const end = new Date(`${endDate}T23:59:59.999+05:30`);
+
+    const taxes = await Tax.find({
+      createdAt: { $gte: start, $lte: end },
+    })
+      .populate("userId", "name username contactNumber mobileNumber email")
+      .sort({ createdAt: -1 });
+
+    const workbook = new ExcelJS.Workbook();
+    workbook.creator = "Vehicle State Tax Admin";
+    workbook.created = new Date();
+
+    const worksheet = workbook.addWorksheet("Financial Report");
+
+    // Title Row - Simple dark text, no green colors
+    worksheet.mergeCells("A1:I1");
+    const titleCell = worksheet.getCell("A1");
+    titleCell.value = `Financial Payments Report (${startDate} to ${endDate})`;
+    titleCell.font = { name: "Calibri", size: 12, bold: true, color: { argb: "FF111827" } };
+    titleCell.alignment = { vertical: "middle", horizontal: "center" };
+    worksheet.getRow(1).height = 24;
+
+    // Header Row - Simple light gray background
+    const headerRow = worksheet.getRow(2);
+    headerRow.values = [
+      "Date & Time",
+      "Order ID",
+      "Mobile Number",
+      "Vehicle Number",
+      "Payment Status",
+      "Payment Method",
+      "Gateway Amount (₹)",
+      "Wallet Amount (₹)",
+      "Total Amount (₹)",
+    ];
+
+    headerRow.font = { name: "Calibri", size: 10, bold: true, color: { argb: "FF111827" } };
+    headerRow.eachCell((cell) => {
+      cell.fill = {
+        type: "pattern",
+        pattern: "solid",
+        fgColor: { argb: "FFF3F4F6" },
+      };
+      cell.alignment = { vertical: "middle", horizontal: "center" };
+      cell.border = {
+        top: { style: "thin", color: { argb: "FFD1D5DB" } },
+        left: { style: "thin", color: { argb: "FFD1D5DB" } },
+        bottom: { style: "thin", color: { argb: "FF9CA3AF" } },
+        right: { style: "thin", color: { argb: "FFD1D5DB" } },
+      };
+    });
+    headerRow.height = 22;
+
+    // Data Rows
+    taxes.forEach((tax) => {
+      const mobileNumber =
+        tax.mobileNumber ||
+        tax.userId?.contactNumber ||
+        tax.userId?.mobileNumber ||
+        "N/A";
+
+      let paymentStatusStr = "Pending";
+      if (
+        tax.status === CONSTANTS.ORDER_STATUS.CONFIRMED ||
+        tax.status === CONSTANTS.ORDER_STATUS.CLOSED
+      ) {
+        paymentStatusStr = "Completed";
+      } else if (tax.status === CONSTANTS.ORDER_STATUS.CANCELLED) {
+        paymentStatusStr = "Cancelled";
+      } else if (tax.paymentStatus === CONSTANTS.PAYMENT_STATUS.COMPLETED) {
+        paymentStatusStr = "Completed";
+      } else if (tax.paymentStatus === CONSTANTS.PAYMENT_STATUS.FAILED) {
+        paymentStatusStr = "Failed";
+      }
+
+      let paymentMethodStr = "Gateway";
+      if (tax.gatewayAmountPaid > 0 && tax.walletAmountPaid > 0) {
+        paymentMethodStr = "Gateway + Wallet";
+      } else if (
+        tax.paymentMethod === CONSTANTS.PAYMENT_METHOD.WALLET ||
+        tax.gatewayAmountPaid === 0
+      ) {
+        paymentMethodStr = "Wallet";
+      } else if (tax.paymentMethod === CONSTANTS.PAYMENT_METHOD.UPI) {
+        paymentMethodStr = "UPI";
+      } else if (tax.paymentMethod === CONSTANTS.PAYMENT_METHOD.GATEWAY) {
+        paymentMethodStr = "Gateway";
+      }
+
+      const formattedDate = formatReadableDateTime(tax.createdAt);
+
+      const row = worksheet.addRow([
+        formattedDate,
+        tax.orderId || "",
+        mobileNumber,
+        tax.vehicleNumber || "",
+        paymentStatusStr,
+        paymentMethodStr,
+        tax.gatewayAmountPaid || 0,
+        tax.walletAmountPaid || 0,
+        tax.amount || 0,
+      ]);
+
+      row.font = { name: "Calibri", size: 10, color: { argb: "FF1F2937" } };
+      row.getCell(1).alignment = { horizontal: "center" };
+      row.getCell(2).alignment = { horizontal: "center" };
+      row.getCell(3).alignment = { horizontal: "center" };
+      row.getCell(4).alignment = { horizontal: "center" };
+      row.getCell(5).alignment = { horizontal: "center" };
+      row.getCell(6).alignment = { horizontal: "center" };
+      row.getCell(7).alignment = { horizontal: "right" };
+      row.getCell(7).numFmt = '"₹"#,##0.00';
+      row.getCell(8).alignment = { horizontal: "right" };
+      row.getCell(8).numFmt = '"₹"#,##0.00';
+      row.getCell(9).alignment = { horizontal: "right" };
+      row.getCell(9).numFmt = '"₹"#,##0.00';
+
+      row.eachCell((cell) => {
+        cell.border = {
+          top: { style: "thin", color: { argb: "FFE5E7EB" } },
+          left: { style: "thin", color: { argb: "FFE5E7EB" } },
+          bottom: { style: "thin", color: { argb: "FFE5E7EB" } },
+          right: { style: "thin", color: { argb: "FFE5E7EB" } },
+        };
+      });
+    });
+
+    // Reduced column widths
+    const tightWidths = [18, 15, 14, 14, 14, 15, 15, 15, 15];
+    worksheet.columns.forEach((column, index) => {
+      let maxLength = 0;
+      column.eachCell({ includeEmpty: true }, (cell) => {
+        const columnLength = cell.value ? cell.value.toString().length : 8;
+        if (columnLength > maxLength) {
+          maxLength = columnLength;
+        }
+      });
+      const suggestedWidth = Math.max(maxLength + 1, 10);
+      const defaultTightWidth = tightWidths[index] || 14;
+      column.width = Math.min(suggestedWidth, defaultTightWidth);
+    });
+
+    res.setHeader(
+      "Content-Type",
+      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    );
+    res.setHeader(
+      "Content-Disposition",
+      `attachment; filename=Financial_Report_${startDate}_to_${endDate}.xlsx`
+    );
+
+    await workbook.xlsx.write(res);
+    res.end();
   } catch (error) {
     res.status(500).json({
       success: false,
