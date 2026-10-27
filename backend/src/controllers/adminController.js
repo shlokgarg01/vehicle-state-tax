@@ -419,12 +419,23 @@ export const dashboardAnalytics = async (req, res) => {
       },
     }
 
-    let taxBaseQuery = {
-      createdAt: {
-        $gte: startDate,
-        $lte: endDate,
+    const completedStatusQuery = {
+      status: {
+        $in: [
+          CONSTANTS.ORDER_STATUS.CONFIRMED,
+          CONSTANTS.ORDER_STATUS.CLOSED,
+        ],
       },
-      status: { $in: [CONSTANTS.ORDER_STATUS.CONFIRMED, CONSTANTS.ORDER_STATUS.CLOSED, CONSTANTS.ORDER_STATUS.CANCELLED] }
+    };
+
+    const validCancelledQuery = {
+      status: CONSTANTS.ORDER_STATUS.CANCELLED,
+      cancellationReason: { $not: /^\s*\[AUTO\]/i },
+    };
+
+    let taxBaseQuery = {
+      ...baseQuery,
+      $or: [completedStatusQuery, validCancelledQuery],
     };
 
     const [
@@ -451,17 +462,12 @@ export const dashboardAnalytics = async (req, res) => {
       Employee.countDocuments(baseQuery),
       Tax.countDocuments(taxBaseQuery),
       Tax.countDocuments({
-        ...taxBaseQuery,
-        status: {
-          $in: [
-            CONSTANTS.ORDER_STATUS.CONFIRMED,
-            CONSTANTS.ORDER_STATUS.CLOSED,
-          ],
-        },
+        ...baseQuery,
+        ...completedStatusQuery,
       }),
       Tax.countDocuments({
-        ...taxBaseQuery,
-        status: CONSTANTS.ORDER_STATUS.CANCELLED,
+        ...baseQuery,
+        ...validCancelledQuery,
       }),
       Tax.countDocuments({
         ...taxBaseQuery,
@@ -490,7 +496,10 @@ export const dashboardAnalytics = async (req, res) => {
       ]).then((result) => result[0]?.total || 0),
       Tax.aggregate([
         {
-          $match: { ...taxBaseQuery, status: CONSTANTS.ORDER_STATUS.CANCELLED },
+          $match: {
+            ...baseQuery,
+            ...validCancelledQuery,
+          },
         },
         { $group: { _id: null, total: { $sum: { $ifNull: ["$amount", 0] } } } },
       ]).then((result) => result[0]?.total || 0),
@@ -552,13 +561,20 @@ export const dashboardAnalytics = async (req, res) => {
         },
         {
           $match: {
-            "tax.status": {
-              $in: [
-                CONSTANTS.ORDER_STATUS.CONFIRMED,
-                CONSTANTS.ORDER_STATUS.CLOSED,
-                CONSTANTS.ORDER_STATUS.CANCELLED,
-              ],
-            },
+            $or: [
+              {
+                "tax.status": {
+                  $in: [
+                    CONSTANTS.ORDER_STATUS.CONFIRMED,
+                    CONSTANTS.ORDER_STATUS.CLOSED,
+                  ],
+                },
+              },
+              {
+                "tax.status": CONSTANTS.ORDER_STATUS.CANCELLED,
+                "tax.cancellationReason": { $not: /^\s*\[AUTO\]/i },
+              },
+            ],
           },
         },
         { $group: { _id: null, total: { $sum: { $ifNull: ["$amount", 0] } } } },
@@ -645,6 +661,20 @@ export const exportFinancialReportExcel = async (req, res) => {
 
     const taxes = await Tax.find({
       createdAt: { $gte: start, $lte: end },
+      $or: [
+        {
+          status: {
+            $in: [
+              CONSTANTS.ORDER_STATUS.CONFIRMED,
+              CONSTANTS.ORDER_STATUS.CLOSED,
+            ],
+          },
+        },
+        {
+          status: CONSTANTS.ORDER_STATUS.CANCELLED,
+          cancellationReason: { $not: /^\s*\[AUTO\]/i },
+        },
+      ],
     })
       .populate("userId", "name username contactNumber mobileNumber email")
       .sort({ createdAt: -1 });
